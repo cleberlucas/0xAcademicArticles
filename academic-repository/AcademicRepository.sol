@@ -116,14 +116,6 @@ contract AcademicRepository {
         }
     }
 
-    function showAuthorizedModels()
-        public
-        payable
-        returns (string[] memory authorizedModels)
-    {
-        return _storeKey.authorizedModels;
-    }
-
     function sendPost(
         string memory model,
         string[] memory description
@@ -284,27 +276,6 @@ contract AcademicRepository {
         emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
-    function showPost(
-        AcademicRepositoryLibrary.PostID memory postID
-    ) public payable returns (AcademicRepositoryLibrary.Post memory post) {
-        return _storeData.posts[postID.posterID][postID.model][postID.sequence];
-    }
-
-    function showPosts(
-        AcademicRepositoryLibrary.PostID[] memory postIDs
-    ) public payable returns (AcademicRepositoryLibrary.Post[] memory posts) {
-        AcademicRepositoryLibrary.Post[]
-            memory result = new AcademicRepositoryLibrary.Post[](
-                postIDs.length
-            );
-        for (uint256 i = 0; i < postIDs.length; i++)
-            result[i] = _storeData.posts[postIDs[i].posterID][postIDs[i].model][
-                postIDs[i].sequence
-            ];
-
-        return result;
-    }
-
     function registerAuthority(
         address authorityID,
         AcademicRepositoryLibrary.Authority memory authority
@@ -327,6 +298,27 @@ contract AcademicRepository {
         }
     }
 
+    function showPost(
+        AcademicRepositoryLibrary.PostID memory postID
+    ) public view returns (AcademicRepositoryLibrary.Post memory post) {
+        return _storeData.posts[postID.posterID][postID.model][postID.sequence];
+    }
+
+    function showPosts(
+        AcademicRepositoryLibrary.PostID[] memory postIDs
+    ) public view returns (AcademicRepositoryLibrary.Post[] memory posts) {
+        AcademicRepositoryLibrary.Post[]
+            memory result = new AcademicRepositoryLibrary.Post[](
+                postIDs.length
+            );
+        for (uint256 i = 0; i < postIDs.length; i++)
+            result[i] = _storeData.posts[postIDs[i].posterID][postIDs[i].model][
+                postIDs[i].sequence
+            ];
+
+        return result;
+    }
+
     function showAuthority(
         address authorityID
     )
@@ -345,7 +337,7 @@ contract AcademicRepository {
 
     function showAuthoritysIDs()
         public
-        payable
+        view
         returns (address[] memory authorityIDs)
     {
         return _storeKey.authorityIDs;
@@ -353,17 +345,25 @@ contract AcademicRepository {
 
     function showPostIDs()
         public
-        payable
+        view
         returns (AcademicRepositoryLibrary.PostID[] memory postIDs)
     {
         return _storeKey.postIDs;
     }
 
-    function getStoreKey()
+    function showStoreKey()
         public
-        payable
+        view
         returns (AcademicRepositoryLibrary.StoreKey memory storeKey)
     {
-        return storeKey;
+        return _storeKey;
+    }
+
+    function showAuthorizedModels()
+        public
+        view
+        returns (string[] memory authorizedModels)
+    {
+        return _storeKey.authorizedModels;
     }
 }
