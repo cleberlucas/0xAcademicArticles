@@ -31,41 +31,21 @@ contract AcademicRepository {
         _;
     }
 
-    modifier IsAuthenticitySolicited(
-        bool solicited,
+    modifier IsAuthenticityNotSolicited(
         AcademicRepositoryLibrary.PostID memory postID
     ) {
-        if (solicited) {
-            require(
-                _storeData
-                .posts[postID.posterID][postID.model][postID.sequence]
-                    .authenticity
-                    .authority != address(0),
-                ""
-            );
-        } else {
-            require(
-                _storeData
-                .posts[postID.posterID][postID.model][postID.sequence]
-                    .authenticity
-                    .authority == address(0),
-                ""
-            );
-        }
+        require(showPost(postID).authenticity.authority == address(0), "");
+
         _;
     }
 
-    modifier IsPostCreate(AcademicRepositoryLibrary.PostID memory postID) {
-        require(
-            _storeData
-            .posts[postID.posterID][postID.model][postID.sequence].created,
-            ""
-        );
+    modifier IsPostCreated(AcademicRepositoryLibrary.PostID memory postID) {
+        require(showPost(postID).created, "");
         _;
     }
 
     modifier IsAuthorizedModel(string memory model) {
-        bool IsAuthorizedModel;
+        bool result;
         string[] memory authorizedModels;
 
         authorizedModels = _storeKey.authorizedModels;
@@ -75,22 +55,29 @@ contract AcademicRepository {
                 keccak256(abi.encodePacked(authorizedModels[i])) ==
                 keccak256(abi.encodePacked(model))
             ) {
-                IsAuthorizedModel = true;
+                result = true;
                 break;
             }
         }
 
-        require(IsAuthorizedModel, "");
+        require(result, "");
         _;
     }
 
-    modifier IsAuthority(address authorityID) {
-        require(
-            keccak256(
-                abi.encodePacked(_storeData.authoritys[authorityID].name)
-            ) != keccak256(abi.encodePacked("")),
-            ""
-        );
+    modifier IsAuthority() {
+        bool result;
+        address[] memory authoritys;
+
+        authoritys = _storeKey.authorityIDs;
+
+        for (uint256 i = 0; i < authoritys.length; i++) {
+            if (authoritys[i] == msg.sender) {
+                result = true;
+                break;
+            }
+        }
+
+        require(result, "");
         _;
     }
 
@@ -99,10 +86,7 @@ contract AcademicRepository {
         _;
     }
 
-    function sendAuthorizedModel(
-        string memory model,
-        string[] memory descriptions
-    ) public payable IsOwner {
+    function sendAuthorizedModel(string memory model) public payable IsOwner {
         _storeKey.authorizedModels.push(model);
     }
 
@@ -181,11 +165,10 @@ contract AcademicRepository {
     )
         public
         payable
-        IsPostCreate(
+        IsPostCreated(
             AcademicRepositoryLibrary.PostID(msg.sender, model, sequence)
         )
-        IsAuthenticitySolicited(
-            false,
+        IsAuthenticityNotSolicited(
             AcademicRepositoryLibrary.PostID(msg.sender, model, sequence)
         )
     {
@@ -205,24 +188,14 @@ contract AcademicRepository {
     function deleteAuthenticateRequest(
         string memory model,
         uint256 sequence
-    )
-        public
-        payable
-        IsAuthenticitySolicited(
-            true,
-            AcademicRepositoryLibrary.PostID(msg.sender, model, sequence)
-        )
-    {
+    ) public payable {
         AcademicRepositoryLibrary.PostID memory postID;
         postID.posterID = msg.sender;
         postID.model = model;
         postID.sequence = sequence;
 
         deleteAuthenticateRequest(
-            _storeData
-            .posts[postID.posterID][postID.model][postID.sequence]
-                .authenticity
-                .authority,
+            showPost(postID).authenticity.authority,
             postID
         );
 
@@ -259,7 +232,7 @@ contract AcademicRepository {
         AcademicRepositoryLibrary.PostID memory postID,
         bool authentic,
         string memory message
-    ) public payable IsRequestForMe(postID) IsAuthority(msg.sender) {
+    ) public payable IsRequestForMe(postID) IsAuthority {
         AcademicRepositoryLibrary.Authenticity memory authenticity;
 
         authenticity.authority = msg.sender;
@@ -279,8 +252,7 @@ contract AcademicRepository {
         request.model = model;
         request.sequence = sequence;
         deleteAuthenticateRequest(
-            _storeData
-            .posts[msg.sender][model][sequence].authenticity.authority,
+            showPost(request).authenticity.authority,
             request
         );
 
@@ -325,13 +297,23 @@ contract AcademicRepository {
     function registerAuthority(
         address authorityID,
         AcademicRepositoryLibrary.Authority memory authority
-    ) public payable {
+    ) public payable IsOwner {
         _storeData.authoritys[authorityID] = authority;
+        _storeKey.authorityIDs.push(authorityID);
     }
 
-    function unregisterAuthority(address authorityID) public payable {
+    function unregisterAuthority(address authorityID) public payable IsOwner {
         delete _storeData.authoritys[authorityID];
         delete _storeData.requests[authorityID];
+
+        for (uint256 i = 0; i < _storeKey.authorityIDs.length; i++) {
+            if (_storeKey.authorityIDs[i] == authorityID) {
+                _storeKey.authorityIDs[i] = _storeKey.authorityIDs[
+                    _storeKey.authorityIDs.length - 1
+                ];
+                _storeKey.authorityIDs.pop();
+            }
+        }
     }
 
     function showAuthority(
@@ -348,21 +330,6 @@ contract AcademicRepository {
         address authorityID
     ) public view returns (AcademicRepositoryLibrary.PostID[] memory requests) {
         return _storeData.requests[authorityID];
-    }
-
-    function setStoreKeyAuthoritysIDs(address authorityID) public payable {
-        _storeKey.authorityIDs.push(authorityID);
-    }
-
-    function deleteStoreKeyAuthoritysIDs(address authorityID) public payable {
-        for (uint256 i = 0; i < _storeKey.authorityIDs.length; i++) {
-            if (_storeKey.authorityIDs[i] == authorityID) {
-                _storeKey.authorityIDs[i] = _storeKey.authorityIDs[
-                    _storeKey.authorityIDs.length - 1
-                ];
-                _storeKey.authorityIDs.pop();
-            }
-        }
     }
 
     function showAuthoritysIDs()
