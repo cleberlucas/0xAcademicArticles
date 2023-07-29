@@ -26,6 +26,18 @@ contract AcademicRepository {
 
     address private immutable OWNER;
 
+    enum EventState {
+        INSERT,
+        DELETE
+    }
+
+    event EventPost(
+        uint256 time,
+        address who,
+        AcademicRepositoryLibrary.PostID postID,
+        EventState eventState
+    );
+
     modifier IsOwner() {
         require(OWNER == msg.sender, "");
         _;
@@ -131,6 +143,8 @@ contract AcademicRepository {
         _storeKey.postIDs.push(postID);
 
         _storeData.postSequences[msg.sender][model]++;
+
+        emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
     function sendPostWithAuthenticateRequest(
@@ -156,6 +170,8 @@ contract AcademicRepository {
         _storeData.requests[authorityID].push(postID);
 
         _storeData.postSequences[msg.sender][model]++;
+
+        emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
     function sendAuthenticateRequest(
@@ -194,10 +210,7 @@ contract AcademicRepository {
         postID.model = model;
         postID.sequence = sequence;
 
-        deleteAuthenticateRequest(
-            showPost(postID).authenticity.authority,
-            postID
-        );
+        deleteRequest(showPost(postID).authenticity.authority, postID);
 
         _storeData
         .posts[postID.posterID][postID.model][postID.sequence]
@@ -205,7 +218,7 @@ contract AcademicRepository {
             .authority = address(0);
     }
 
-    function deleteAuthenticateRequest(
+    function deleteRequest(
         address authorityID,
         AcademicRepositoryLibrary.PostID memory request
     ) private {
@@ -243,18 +256,15 @@ contract AcademicRepository {
         .posts[postID.posterID][postID.model][postID.sequence]
             .authenticity = authenticity;
 
-        deleteAuthenticateRequest(msg.sender, postID);
+        deleteRequest(msg.sender, postID);
     }
 
     function deletePost(string memory model, uint256 sequence) public payable {
-        AcademicRepositoryLibrary.PostID memory request;
-        request.posterID = msg.sender;
-        request.model = model;
-        request.sequence = sequence;
-        deleteAuthenticateRequest(
-            showPost(request).authenticity.authority,
-            request
-        );
+        AcademicRepositoryLibrary.PostID memory postID;
+        postID.posterID = msg.sender;
+        postID.model = model;
+        postID.sequence = sequence;
+        deleteRequest(showPost(postID).authenticity.authority, postID);
 
         for (uint256 i = 0; i < _storeKey.postIDs.length; i++) {
             if (
@@ -271,6 +281,7 @@ contract AcademicRepository {
         }
 
         delete _storeData.posts[msg.sender][model][sequence];
+        emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
     function showPost(
