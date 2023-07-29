@@ -32,9 +32,8 @@ contract AcademicRepository {
     }
 
     event EventPost(
+        AcademicRepositoryLibrary.PostID indexed postID,
         uint256 time,
-        address who,
-        AcademicRepositoryLibrary.PostID postID,
         EventState eventState
     );
 
