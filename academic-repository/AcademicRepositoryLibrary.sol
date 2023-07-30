@@ -32,7 +32,7 @@ library AcademicRepositoryLibrary  {
     }
 
     struct Post {
-        bool created;
+        uint256 time;
         string[] description;
         Authenticity authenticity;
     }
