@@ -1,4 +1,3 @@
-//                        _                _
 //     /\                | |              (_)
 //    /  \   ___ __ _  __| | ___ _ __ ___  _  ___
 //   / /\ \ / __/ _` |/ _` |/ _ \ '_ ` _ \| |/ __|
@@ -31,309 +30,6 @@ contract AcademicRepository {
         _;
     }
 
-    modifier IsAuthenticityNotSolicited(
-        AcademicRepositoryLibrary.PostID memory postID
-    ) {
-        require(showPost(postID).authenticity.authority == address(0), "");
-
-        _;
-    }
-
-    modifier IsPostCreated(AcademicRepositoryLibrary.PostID memory postID) {
-        require(showPost(postID).time != 0, "");
-        _;
-    }
-
-    modifier IsAuthorizedModel(string memory model) {
-        bool result;
-        string[] memory authorizedModels;
-
-        authorizedModels = _storeKey.authorizedModels;
-
-        for (uint256 i = 0; i < authorizedModels.length; i++) {
-            if (
-                keccak256(abi.encodePacked(authorizedModels[i])) ==
-                keccak256(abi.encodePacked(model))
-            ) {
-                result = true;
-                break;
-            }
-        }
-
-        require(result, "");
-        _;
-    }
-
-    modifier IsAuthority() {
-        bool result;
-        address[] memory authoritys;
-
-        authoritys = _storeKey.authorityIDs;
-
-        for (uint256 i = 0; i < authoritys.length; i++) {
-            if (authoritys[i] == msg.sender) {
-                result = true;
-                break;
-            }
-        }
-
-        require(result, "");
-        _;
-    }
-
-    modifier IsRequestForMe(AcademicRepositoryLibrary.PostID memory postID) {
-        require(showPost(postID).authenticity.authority == msg.sender, "");
-        _;
-    }
-
-    function sendAuthorizedModel(string memory model) public payable IsOwner {
-        _storeKey.authorizedModels.push(model);
-    }
-
-    function removeAuthorizedModel(string memory model) public payable IsOwner {
-        for (uint256 i = 0; i < _storeKey.authorizedModels.length; i++) {
-            if (
-                keccak256(abi.encodePacked(_storeKey.authorizedModels[i])) ==
-                keccak256(abi.encodePacked(model))
-            ) {
-                _storeKey.authorizedModels[i] = _storeKey.authorizedModels[
-                    _storeKey.authorizedModels.length - 1
-                ];
-                _storeKey.authorizedModels.pop();
-            }
-        }
-    }
-
-    function sendPost(
-        string memory model,
-        string[] memory description
-    ) public payable IsAuthorizedModel(model) {
-        AcademicRepositoryLibrary.PostID memory postID;
-        AcademicRepositoryLibrary.Post memory post;
-
-        postID.posterID = msg.sender;
-        postID.model = model;
-        postID.sequence = _storeData.postSequences[msg.sender][model];
-
-        post.time = block.timestamp;
-        post.description = description;
-
-        _storeData.posts[postID.posterID][postID.model][postID.sequence] = post;
-
-        _storeKey.postIDs.push(postID);
-
-        _storeData.postSequences[msg.sender][model]++;
-    }
-
-    function sendPostWithAuthenticateRequest(
-        string memory model,
-        string[] memory description,
-        address authorityID
-    ) public payable IsAuthorizedModel(model) {
-        AcademicRepositoryLibrary.PostID memory postID;
-        AcademicRepositoryLibrary.Post memory post;
-
-        postID.posterID = msg.sender;
-        postID.model = model;
-        postID.sequence = _storeData.postSequences[msg.sender][model];
-
-        post.time = block.timestamp;
-        post.description = description;
-        post.authenticity.authority = authorityID;
-
-        _storeData.posts[postID.posterID][postID.model][postID.sequence] = post;
-
-        _storeKey.postIDs.push(postID);
-
-        _storeData.requests[authorityID].push(postID);
-
-        _storeData.postSequences[msg.sender][model]++;
-    }
-
-    function sendAuthenticateRequest(
-        string memory model,
-        uint256 sequence,
-        address authorityID
-    )
-        public
-        payable
-        IsPostCreated(
-            AcademicRepositoryLibrary.PostID(msg.sender, model, sequence)
-        )
-        IsAuthenticityNotSolicited(
-            AcademicRepositoryLibrary.PostID(msg.sender, model, sequence)
-        )
-    {
-        AcademicRepositoryLibrary.PostID memory postID;
-        postID.posterID = msg.sender;
-        postID.model = model;
-        postID.sequence = sequence;
-
-        _storeData
-        .posts[postID.posterID][postID.model][postID.sequence]
-            .authenticity
-            .authority = authorityID;
-
-        _storeData.requests[authorityID].push(postID);
-    }
-
-    function deleteAuthenticateRequest(
-        string memory model,
-        uint256 sequence
-    ) public payable {
-        AcademicRepositoryLibrary.PostID memory postID;
-        postID.posterID = msg.sender;
-        postID.model = model;
-        postID.sequence = sequence;
-
-        deleteRequest(showPost(postID).authenticity.authority, postID);
-
-        _storeData
-        .posts[postID.posterID][postID.model][postID.sequence]
-            .authenticity
-            .authority = address(0);
-    }
-
-    function deleteRequest(
-        address authorityID,
-        AcademicRepositoryLibrary.PostID memory request
-    ) private {
-        for (uint256 i = 0; i < _storeData.requests[authorityID].length; i++) {
-            if (
-                _storeData.requests[authorityID][i].posterID ==
-                request.posterID &&
-                keccak256(
-                    abi.encodePacked(_storeData.requests[authorityID][i].model)
-                ) ==
-                keccak256(abi.encodePacked(request.model)) &&
-                _storeData.requests[authorityID][i].sequence == request.sequence
-            ) {
-                _storeData.requests[authorityID][i] = _storeData.requests[
-                    authorityID
-                ][_storeData.requests[authorityID].length - 1];
-                _storeData.requests[authorityID].pop();
-                break;
-            }
-        }
-    }
-
-    function authenticatePost(
-        AcademicRepositoryLibrary.PostID memory postID,
-        bool authentic,
-        string memory message
-    ) public payable IsRequestForMe(postID) IsAuthority {
-        AcademicRepositoryLibrary.Authenticity memory authenticity;
-
-        authenticity.authority = msg.sender;
-        authenticity.authentic = authentic;
-        authenticity.message = message;
-
-        _storeData
-        .posts[postID.posterID][postID.model][postID.sequence]
-            .authenticity = authenticity;
-
-        deleteRequest(msg.sender, postID);
-    }
-
-    function deletePost(string memory model, uint256 sequence) public payable {
-        AcademicRepositoryLibrary.PostID memory postID;
-        postID.posterID = msg.sender;
-        postID.model = model;
-        postID.sequence = sequence;
-        deleteRequest(showPost(postID).authenticity.authority, postID);
-
-        for (uint256 i = 0; i < _storeKey.postIDs.length; i++) {
-            if (
-                keccak256(abi.encodePacked(_storeKey.postIDs[i].model)) ==
-                keccak256(abi.encodePacked(model)) &&
-                _storeKey.postIDs[i].posterID == msg.sender &&
-                _storeKey.postIDs[i].sequence == sequence
-            ) {
-                _storeKey.postIDs[i] = _storeKey.postIDs[
-                    _storeKey.postIDs.length - 1
-                ];
-                _storeKey.postIDs.pop();
-            }
-        }
-
-        delete _storeData.posts[msg.sender][model][sequence];
-    }
-
-    function registerAuthority(
-        address authorityID,
-        AcademicRepositoryLibrary.Authority memory authority
-    ) public payable IsOwner {
-        _storeData.authoritys[authorityID] = authority;
-        _storeKey.authorityIDs.push(authorityID);
-    }
-
-    function unregisterAuthority(address authorityID) public payable IsOwner {
-        delete _storeData.authoritys[authorityID];
-        delete _storeData.requests[authorityID];
-
-        for (uint256 i = 0; i < _storeKey.authorityIDs.length; i++) {
-            if (_storeKey.authorityIDs[i] == authorityID) {
-                _storeKey.authorityIDs[i] = _storeKey.authorityIDs[
-                    _storeKey.authorityIDs.length - 1
-                ];
-                _storeKey.authorityIDs.pop();
-            }
-        }
-    }
-
-    function showPost(
-        AcademicRepositoryLibrary.PostID memory postID
-    ) public view returns (AcademicRepositoryLibrary.Post memory post) {
-        return _storeData.posts[postID.posterID][postID.model][postID.sequence];
-    }
-
-    function showPosts(
-        AcademicRepositoryLibrary.PostID[] memory postIDs
-    ) public view returns (AcademicRepositoryLibrary.Post[] memory posts) {
-        AcademicRepositoryLibrary.Post[]
-            memory result = new AcademicRepositoryLibrary.Post[](
-                postIDs.length
-            );
-        for (uint256 i = 0; i < postIDs.length; i++)
-            result[i] = _storeData.posts[postIDs[i].posterID][postIDs[i].model][
-                postIDs[i].sequence
-            ];
-
-        return result;
-    }
-
-    function showAuthority(
-        address authorityID
-    )
-        public
-        view
-        returns (AcademicRepositoryLibrary.Authority memory authority)
-    {
-        return _storeData.authoritys[authorityID];
-    }
-
-    function ShowAuthenticateRequests(
-        address authorityID
-    ) public view returns (AcademicRepositoryLibrary.PostID[] memory requests) {
-        return _storeData.requests[authorityID];
-    }
-
-    function showAuthoritysIDs()
-        public
-        view
-        returns (address[] memory authorityIDs)
-    {
-        return _storeKey.authorityIDs;
-    }
-
-    function showPostIDs()
-        public
-        view
-        returns (AcademicRepositoryLibrary.PostID[] memory postIDs)
-    {
-        return _storeKey.postIDs;
-    }
-
     function showStoreKey()
         public
         view
@@ -342,11 +38,605 @@ contract AcademicRepository {
         return _storeKey;
     }
 
-    function showAuthorizedModels()
+    function registerPost(
+        AcademicRepositoryLibrary.PostID memory postID
+    ) public payable IsOwner {
+        _storeKey.postIDs.push(postID);
+    }
+
+    function unregisterPost(
+        AcademicRepositoryLibrary.PostID memory PostID
+    ) public payable IsOwner {
+        AcademicRepositoryLibrary.PostID[] storage postIDs = _storeKey.postIDs;
+
+        for (uint256 i = 0; i < postIDs.length; i++) {
+            if (
+                postIDs[i].posterID == PostID.posterID &&
+                postIDs[i].academicType == PostID.academicType &&
+                postIDs[i].sequence == PostID.sequence
+            ) {
+                postIDs[i] = _storeKey.postIDs[postIDs.length - 1];
+                postIDs.pop();
+            }
+        }
+    }
+
+    event EventAuthenticatedPosterAdded(address indexed posterID);
+    event EventAuthenticatedPosterUnregister(address indexed posterID);
+
+    function registerAuthenticatedPoster(
+        address posterID,
+        AcademicRepositoryLibrary.AuthenticatedPoster memory poster
+    ) public payable IsOwner {
+        _storeData.AuthenticatedPosters[posterID] = poster;
+        _storeKey.posterIDs.push(posterID);
+
+        emit EventAuthenticatedPosterAdded(posterID);
+    }
+
+    function unregisterAuthenticatedPoster(
+        address posterID
+    ) public payable IsOwner {
+        delete _storeData.AuthenticatedPosters[posterID];
+
+        for (uint256 i = 0; i < _storeKey.posterIDs.length; i++) {
+            if (_storeKey.posterIDs[i] == posterID) {
+                _storeKey.posterIDs[i] = _storeKey.posterIDs[
+                    _storeKey.posterIDs.length - 1
+                ];
+                _storeKey.posterIDs.pop();
+            }
+        }
+
+        emit EventAuthenticatedPosterUnregister(posterID);
+    }
+
+    function showAuthenticatedPoster(
+        address posterID
+    )
         public
         view
-        returns (string[] memory authorizedModels)
+        returns (AcademicRepositoryLibrary.AuthenticatedPoster memory authority)
     {
-        return _storeKey.authorizedModels;
+        return _storeData.AuthenticatedPosters[posterID];
+    }
+
+    event EventFinalProjectAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+    event EventFinalProjectUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerFinalProject(
+        AcademicRepositoryLibrary.FinalProject memory finalProject
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.FinalProject
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.FinalProject
+        ][posterID]++;
+        _storeData.FinalProject[posterID][sequence] = finalProject;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.FinalProject,
+                sequence
+            )
+        );
+        emit EventFinalProjectAdded(posterID, sequence);
+    }
+
+    function showFinalProject(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.FinalProject memory finalProject = _storeData
+            .FinalProject[posterID][sequence];
+        return finalProject.time;
+    }
+
+    function unregisterFinalProject(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.FinalProject[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.FinalProject,
+                sequence
+            )
+        );
+        emit EventFinalProjectUnregisterd(posterID, sequence);
+    }
+
+    event EventScientificPaperAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventScientificPaperUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerScientificPaper(
+        AcademicRepositoryLibrary.ScientificPaper memory scientificPaper
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.ScientificPaper
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.ScientificPaper
+        ][posterID]++;
+        _storeData.ScientificPaper[posterID][sequence] = scientificPaper;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.ScientificPaper,
+                sequence
+            )
+        );
+        emit EventScientificPaperAdded(posterID, sequence);
+    }
+
+    function showScientificPaper(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.ScientificPaper
+            memory scientificPaper = _storeData.ScientificPaper[posterID][
+                sequence
+            ];
+        return scientificPaper.time;
+    }
+
+    function unregisterScientificPaper(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.ScientificPaper[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.ScientificPaper,
+                sequence
+            )
+        );
+        emit EventScientificPaperUnregisterd(posterID, sequence);
+    }
+
+    event EventMonographAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventMonographUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerMonograph(
+        AcademicRepositoryLibrary.Monograph memory monograph
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.Monograph
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.Monograph
+        ][posterID]++;
+        _storeData.Monograph[posterID][sequence] = monograph;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.Monograph,
+                sequence
+            )
+        );
+        emit EventMonographAdded(posterID, sequence);
+    }
+
+    function showMonograph(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.Monograph memory monograph = _storeData
+            .Monograph[posterID][sequence];
+        return monograph.time;
+    }
+
+    function unregisterMonograph(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.Monograph[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.Monograph,
+                sequence
+            )
+        );
+        emit EventMonographUnregisterd(posterID, sequence);
+    }
+
+    event EventMastersThesisAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventMastersThesisUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerMastersThesis(
+        AcademicRepositoryLibrary.MastersThesis memory mastersThesis
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.MastersThesis
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.MastersThesis
+        ][posterID]++;
+        _storeData.MastersThesis[posterID][sequence] = mastersThesis;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.MastersThesis,
+                sequence
+            )
+        );
+        emit EventMastersThesisAdded(posterID, sequence);
+    }
+
+    function showMastersThesis(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.MastersThesis
+            memory mastersThesis = _storeData.MastersThesis[posterID][sequence];
+        return mastersThesis.time;
+    }
+
+    function unregisterMastersThesis(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.MastersThesis[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.MastersThesis,
+                sequence
+            )
+        );
+        emit EventMastersThesisUnregisterd(posterID, sequence);
+    }
+
+    event EventDoctoralThesisAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventDoctoralThesisUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerDoctoralThesis(
+        AcademicRepositoryLibrary.DoctoralThesis memory doctoralThesis
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.DoctoralThesis
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.DoctoralThesis
+        ][posterID]++;
+        _storeData.DoctoralThesis[posterID][sequence] = doctoralThesis;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.DoctoralThesis,
+                sequence
+            )
+        );
+        emit EventDoctoralThesisAdded(posterID, sequence);
+    }
+
+    function showDoctoralThesis(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.DoctoralThesis
+            memory doctoralThesis = _storeData.DoctoralThesis[posterID][
+                sequence
+            ];
+        return doctoralThesis.time;
+    }
+
+    function unregisterDoctoralThesis(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.DoctoralThesis[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.DoctoralThesis,
+                sequence
+            )
+        );
+        emit EventDoctoralThesisUnregisterd(posterID, sequence);
+    }
+
+    event EventResearchReportAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventResearchReportUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerResearchReport(
+        AcademicRepositoryLibrary.ResearchReport memory researchReport
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.ResearchReport
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.ResearchReport
+        ][posterID]++;
+        _storeData.ResearchReport[posterID][sequence] = researchReport;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.ResearchReport,
+                sequence
+            )
+        );
+        emit EventResearchReportAdded(posterID, sequence);
+    }
+
+    function showResearchReport(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.ResearchReport
+            memory researchReport = _storeData.ResearchReport[posterID][
+                sequence
+            ];
+        return researchReport.time;
+    }
+
+    function unregisterResearchReport(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.ResearchReport[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.ResearchReport,
+                sequence
+            )
+        );
+        emit EventResearchReportUnregisterd(posterID, sequence);
+    }
+
+    event EventBookReviewAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventBookReviewUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerBookReview(
+        AcademicRepositoryLibrary.BookReview memory bookReview
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.BookReview
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.BookReview
+        ][posterID]++;
+        _storeData.BookReview[posterID][sequence] = bookReview;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.BookReview,
+                sequence
+            )
+        );
+        emit EventBookReviewAdded(posterID, sequence);
+    }
+
+    function showBookReview(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.BookReview memory bookReview = _storeData
+            .BookReview[posterID][sequence];
+        return bookReview.time;
+    }
+
+    function unregisterBookReview(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.BookReview[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.BookReview,
+                sequence
+            )
+        );
+        emit EventBookReviewUnregisterd(posterID, sequence);
+    }
+
+    event EventResearchProposalAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventResearchProposalUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerResearchProposal(
+        AcademicRepositoryLibrary.ResearchProposal memory researchProposal
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.ResearchProposal
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.ResearchProposal
+        ][posterID]++;
+        _storeData.ResearchProposal[posterID][sequence] = researchProposal;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.ResearchProposal,
+                sequence
+            )
+        );
+        emit EventResearchProposalAdded(posterID, sequence);
+    }
+
+    function showResearchProposal(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.ResearchProposal
+            memory researchProposal = _storeData.ResearchProposal[posterID][
+                sequence
+            ];
+        return researchProposal.time;
+    }
+
+    function unregisterResearchProposal(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.ResearchProposal[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.ResearchProposal,
+                sequence
+            )
+        );
+        emit EventResearchProposalUnregisterd(posterID, sequence);
+    }
+
+    event EventInternshipReportAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventInternshipReportUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerInternshipReport(
+        AcademicRepositoryLibrary.InternshipReport memory internshipReport
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.InternshipReport
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.InternshipReport
+        ][posterID]++;
+        _storeData.InternshipReport[posterID][sequence] = internshipReport;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.InternshipReport,
+                sequence
+            )
+        );
+        emit EventInternshipReportAdded(posterID, sequence);
+    }
+
+    function showInternshipReport(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.InternshipReport
+            memory internshipReport = _storeData.InternshipReport[posterID][
+                sequence
+            ];
+        return internshipReport.time;
+    }
+
+    function unregisterInternshipReport(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.InternshipReport[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.InternshipReport,
+                sequence
+            )
+        );
+        emit EventInternshipReportUnregisterd(posterID, sequence);
+    }
+
+    event EventCourseworkAdded(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    event EventCourseworkUnregisterd(
+        address indexed posterID,
+        uint256 indexed sequence
+    );
+
+    function registerCoursework(
+        AcademicRepositoryLibrary.Coursework memory coursework
+    ) public {
+        address posterID = msg.sender;
+        uint256 sequence = _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.Coursework
+        ][posterID];
+        _storeData.NextSequenceAcademicType[
+            AcademicRepositoryLibrary.AcademicTypes.Coursework
+        ][posterID]++;
+        _storeData.Coursework[posterID][sequence] = coursework;
+        registerPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.Coursework,
+                sequence
+            )
+        );
+        emit EventCourseworkAdded(posterID, sequence);
+    }
+
+    function showCoursework(
+        address posterID,
+        uint256 sequence
+    ) public view returns (uint256 title) {
+        AcademicRepositoryLibrary.Coursework memory coursework = _storeData
+            .Coursework[posterID][sequence];
+        return coursework.time;
+    }
+
+    function unregisterCoursework(uint256 sequence) public {
+        address posterID = msg.sender;
+        delete _storeData.Coursework[posterID][sequence];
+        unregisterPost(
+            AcademicRepositoryLibrary.PostID(
+                msg.sender,
+                AcademicRepositoryLibrary.AcademicTypes.Coursework,
+                sequence
+            )
+        );
+        emit EventCourseworkUnregisterd(posterID, sequence);
     }
 }
