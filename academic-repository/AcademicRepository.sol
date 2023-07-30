@@ -628,7 +628,6 @@ contract AcademicRepository {
     event EventCourseworkUnregisterd(
         address indexed posterID,
         uint256 indexed sequence,
-        uint256 time,
         uint256 time
     );
 
