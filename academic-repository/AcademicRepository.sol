@@ -40,13 +40,13 @@ contract AcademicRepository {
 
     function registerPost(
         AcademicRepositoryLibrary.PostID memory postID
-    ) public payable IsOwner {
+    ) private IsOwner {
         _storeKey.postIDs.push(postID);
     }
 
     function unregisterPost(
         AcademicRepositoryLibrary.PostID memory PostID
-    ) public payable IsOwner {
+    ) private IsOwner {
         AcademicRepositoryLibrary.PostID[] storage postIDs = _storeKey.postIDs;
 
         for (uint256 i = 0; i < postIDs.length; i++) {
