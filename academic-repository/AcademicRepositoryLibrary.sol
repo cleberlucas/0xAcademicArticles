@@ -57,7 +57,6 @@ library AcademicRepositoryLibrary {
     }
 
     struct FinalProject {
-        uint256 time;
         string summary;
         string authors;
         string advisors;
@@ -67,7 +66,6 @@ library AcademicRepositoryLibrary {
     }
 
     struct ScientificPaper {
-        uint256 time;
         string summary;
         string authors;
         string advisors;
@@ -77,34 +75,34 @@ library AcademicRepositoryLibrary {
     }
 
     struct Monograph {
-        uint256 time;
+        string comming;
     }
 
     struct MastersThesis {
-        uint256 time;
+        string comming;
     }
 
     struct DoctoralThesis {
-        uint256 time;
+        string comming;
     }
 
     struct ResearchReport {
-        uint256 time;
+        string comming;
     }
 
     struct BookReview {
-        uint256 time;
+        string comming;
     }
 
     struct ResearchProposal {
-        uint256 time;
+        string comming;
     }
 
     struct InternshipReport {
-        uint256 time;
+        string comming;
     }
 
     struct Coursework {
-        uint256 time;
+        string comming;
     }
 }

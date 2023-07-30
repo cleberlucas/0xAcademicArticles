@@ -61,8 +61,8 @@ contract AcademicRepository {
         }
     }
 
-    event EventAuthenticatedPosterAdded(address indexed posterID);
-    event EventAuthenticatedPosterUnregister(address indexed posterID);
+    event EventAuthenticatedPosterAdded(address indexed posterID, uint256 time);
+    event EventAuthenticatedPosterUnregister(address indexed posterID,  uint256 time);
 
     function registerAuthenticatedPoster(
         address posterID,
@@ -71,7 +71,7 @@ contract AcademicRepository {
         _storeData.AuthenticatedPosters[posterID] = poster;
         _storeKey.posterIDs.push(posterID);
 
-        emit EventAuthenticatedPosterAdded(posterID);
+        emit EventAuthenticatedPosterAdded(posterID, block.timestamp);
     }
 
     function unregisterAuthenticatedPoster(
@@ -88,7 +88,7 @@ contract AcademicRepository {
             }
         }
 
-        emit EventAuthenticatedPosterUnregister(posterID);
+        emit EventAuthenticatedPosterUnregister(posterID, block.timestamp);
     }
 
     function showAuthenticatedPoster(
@@ -103,11 +103,13 @@ contract AcademicRepository {
 
     event EventFinalProjectAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
     event EventFinalProjectUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerFinalProject(
@@ -128,16 +130,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventFinalProjectAdded(posterID, sequence);
+        emit EventFinalProjectAdded(posterID, sequence, block.timestamp);
     }
 
     function showFinalProject(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.FinalProject memory finalProject = _storeData
-            .FinalProject[posterID][sequence];
-        return finalProject.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.FinalProject memory finalProject)
+    {
+        return _storeData.FinalProject[posterID][sequence];
     }
 
     function unregisterFinalProject(uint256 sequence) public {
@@ -150,17 +154,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventFinalProjectUnregisterd(posterID, sequence);
+        emit EventFinalProjectUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventScientificPaperAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventScientificPaperUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerScientificPaper(
@@ -181,18 +187,20 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventScientificPaperAdded(posterID, sequence);
+        emit EventScientificPaperAdded(posterID, sequence, block.timestamp);
     }
 
     function showScientificPaper(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.ScientificPaper
-            memory scientificPaper = _storeData.ScientificPaper[posterID][
-                sequence
-            ];
-        return scientificPaper.time;
+    )
+        public
+        view
+        returns (
+            AcademicRepositoryLibrary.ScientificPaper memory scientificPaper
+        )
+    {
+        return _storeData.ScientificPaper[posterID][sequence];
     }
 
     function unregisterScientificPaper(uint256 sequence) public {
@@ -205,17 +213,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventScientificPaperUnregisterd(posterID, sequence);
+        emit EventScientificPaperUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventMonographAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventMonographUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerMonograph(
@@ -236,16 +246,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMonographAdded(posterID, sequence);
+        emit EventMonographAdded(posterID, sequence, block.timestamp);
     }
 
     function showMonograph(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.Monograph memory monograph = _storeData
-            .Monograph[posterID][sequence];
-        return monograph.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.Monograph memory monograph)
+    {
+        return _storeData.Monograph[posterID][sequence];
     }
 
     function unregisterMonograph(uint256 sequence) public {
@@ -258,17 +270,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMonographUnregisterd(posterID, sequence);
+        emit EventMonographUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventMastersThesisAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventMastersThesisUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerMastersThesis(
@@ -289,16 +303,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMastersThesisAdded(posterID, sequence);
+        emit EventMastersThesisAdded(posterID, sequence, block.timestamp);
     }
 
     function showMastersThesis(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.MastersThesis
-            memory mastersThesis = _storeData.MastersThesis[posterID][sequence];
-        return mastersThesis.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.MastersThesis memory mastersThesis)
+    {
+        return _storeData.MastersThesis[posterID][sequence];
     }
 
     function unregisterMastersThesis(uint256 sequence) public {
@@ -311,17 +327,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMastersThesisUnregisterd(posterID, sequence);
+        emit EventMastersThesisUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventDoctoralThesisAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventDoctoralThesisUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerDoctoralThesis(
@@ -342,18 +360,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventDoctoralThesisAdded(posterID, sequence);
+        emit EventDoctoralThesisAdded(posterID, sequence, block.timestamp);
     }
 
     function showDoctoralThesis(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.DoctoralThesis
-            memory doctoralThesis = _storeData.DoctoralThesis[posterID][
-                sequence
-            ];
-        return doctoralThesis.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.DoctoralThesis memory doctoralThesis)
+    {
+        return _storeData.DoctoralThesis[posterID][sequence];
     }
 
     function unregisterDoctoralThesis(uint256 sequence) public {
@@ -366,17 +384,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventDoctoralThesisUnregisterd(posterID, sequence);
+        emit EventDoctoralThesisUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventResearchReportAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventResearchReportUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerResearchReport(
@@ -397,18 +417,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchReportAdded(posterID, sequence);
+        emit EventResearchReportAdded(posterID, sequence, block.timestamp);
     }
 
     function showResearchReport(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.ResearchReport
-            memory researchReport = _storeData.ResearchReport[posterID][
-                sequence
-            ];
-        return researchReport.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.ResearchReport memory researchReport)
+    {
+        return _storeData.ResearchReport[posterID][sequence];
     }
 
     function unregisterResearchReport(uint256 sequence) public {
@@ -421,17 +441,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchReportUnregisterd(posterID, sequence);
+        emit EventResearchReportUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventBookReviewAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventBookReviewUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerBookReview(
@@ -452,16 +474,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventBookReviewAdded(posterID, sequence);
+        emit EventBookReviewAdded(posterID, sequence, block.timestamp);
     }
 
     function showBookReview(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.BookReview memory bookReview = _storeData
-            .BookReview[posterID][sequence];
-        return bookReview.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.BookReview memory bookReview)
+    {
+        return _storeData.BookReview[posterID][sequence];
     }
 
     function unregisterBookReview(uint256 sequence) public {
@@ -474,17 +498,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventBookReviewUnregisterd(posterID, sequence);
+        emit EventBookReviewUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventResearchProposalAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventResearchProposalUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerResearchProposal(
@@ -505,18 +531,20 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchProposalAdded(posterID, sequence);
+        emit EventResearchProposalAdded(posterID, sequence, block.timestamp);
     }
 
     function showResearchProposal(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.ResearchProposal
-            memory researchProposal = _storeData.ResearchProposal[posterID][
-                sequence
-            ];
-        return researchProposal.time;
+    )
+        public
+        view
+        returns (
+            AcademicRepositoryLibrary.ResearchProposal memory researchProposal
+        )
+    {
+        return _storeData.ResearchProposal[posterID][sequence];
     }
 
     function unregisterResearchProposal(uint256 sequence) public {
@@ -529,17 +557,19 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchProposalUnregisterd(posterID, sequence);
+        emit EventResearchProposalUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventInternshipReportAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventInternshipReportUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     function registerInternshipReport(
@@ -560,18 +590,20 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventInternshipReportAdded(posterID, sequence);
+        emit EventInternshipReportAdded(posterID, sequence, block.timestamp);
     }
 
     function showInternshipReport(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.InternshipReport
-            memory internshipReport = _storeData.InternshipReport[posterID][
-                sequence
-            ];
-        return internshipReport.time;
+    )
+        public
+        view
+        returns (
+            AcademicRepositoryLibrary.InternshipReport memory internshipReport
+        )
+    {
+        return _storeData.InternshipReport[posterID][sequence];
     }
 
     function unregisterInternshipReport(uint256 sequence) public {
@@ -584,17 +616,20 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventInternshipReportUnregisterd(posterID, sequence);
+        emit EventInternshipReportUnregisterd(posterID, sequence, block.timestamp);
     }
 
     event EventCourseworkAdded(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time
     );
 
     event EventCourseworkUnregisterd(
         address indexed posterID,
-        uint256 indexed sequence
+        uint256 indexed sequence,
+        uint256 time,
+        uint256 time
     );
 
     function registerCoursework(
@@ -615,16 +650,18 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventCourseworkAdded(posterID, sequence);
+        emit EventCourseworkAdded(posterID, sequence, block.timestamp);
     }
 
     function showCoursework(
         address posterID,
         uint256 sequence
-    ) public view returns (uint256 title) {
-        AcademicRepositoryLibrary.Coursework memory coursework = _storeData
-            .Coursework[posterID][sequence];
-        return coursework.time;
+    )
+        public
+        view
+        returns (AcademicRepositoryLibrary.Coursework memory coursework)
+    {
+        return _storeData.Coursework[posterID][sequence];
     }
 
     function unregisterCoursework(uint256 sequence) public {
@@ -637,6 +674,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventCourseworkUnregisterd(posterID, sequence);
+        emit EventCourseworkUnregisterd(posterID, sequence, block.timestamp);
     }
 }
