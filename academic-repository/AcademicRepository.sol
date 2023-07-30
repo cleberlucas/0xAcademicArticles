@@ -26,7 +26,7 @@ contract AcademicRepository {
     address private immutable OWNER;
 
     modifier IsOwner() {
-        require(OWNER == msg.sender, "");
+        require(OWNER == msg.sender, "You must be the owner to perform this action");
         _;
     }
 
@@ -268,7 +268,7 @@ contract AcademicRepository {
         );
     }
 
-    function RegistereDoctoralThesis(
+    function registereDoctoralThesis(
         AcademicRepositoryLibrary.DoctoralThesis memory doctoralThesis
     ) public {
         address posterID = msg.sender;

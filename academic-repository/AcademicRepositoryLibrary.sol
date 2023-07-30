@@ -57,6 +57,7 @@ library AcademicRepositoryLibrary {
     }
 
     struct FinalProject {
+        string title;
         string summary;
         string authors;
         string advisors;
@@ -66,6 +67,7 @@ library AcademicRepositoryLibrary {
     }
 
     struct ScientificPaper {
+        string title;
         string summary;
         string authors;
         string advisors;
