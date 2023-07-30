@@ -61,17 +61,12 @@ contract AcademicRepository {
         }
     }
 
-    event EventAuthenticatedPosterAdded(address indexed posterID, uint256 time);
-    event EventAuthenticatedPosterUnregister(address indexed posterID,  uint256 time);
-
     function registerAuthenticatedPoster(
         address posterID,
         AcademicRepositoryLibrary.AuthenticatedPoster memory poster
     ) public payable IsOwner {
         _storeData.AuthenticatedPosters[posterID] = poster;
         _storeKey.posterIDs.push(posterID);
-
-        emit EventAuthenticatedPosterAdded(posterID, block.timestamp);
     }
 
     function unregisterAuthenticatedPoster(
@@ -87,8 +82,6 @@ contract AcademicRepository {
                 _storeKey.posterIDs.pop();
             }
         }
-
-        emit EventAuthenticatedPosterUnregister(posterID, block.timestamp);
     }
 
     function showAuthenticatedPoster(
@@ -100,17 +93,6 @@ contract AcademicRepository {
     {
         return _storeData.AuthenticatedPosters[posterID];
     }
-
-    event EventFinalProjectAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-    event EventFinalProjectUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerFinalProject(
         AcademicRepositoryLibrary.FinalProject memory finalProject
@@ -130,7 +112,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventFinalProjectAdded(posterID, sequence, block.timestamp);
     }
 
     function showFinalProject(
@@ -154,20 +135,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventFinalProjectUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventScientificPaperAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventScientificPaperUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerScientificPaper(
         AcademicRepositoryLibrary.ScientificPaper memory scientificPaper
@@ -187,7 +155,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventScientificPaperAdded(posterID, sequence, block.timestamp);
     }
 
     function showScientificPaper(
@@ -213,20 +180,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventScientificPaperUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventMonographAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventMonographUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerMonograph(
         AcademicRepositoryLibrary.Monograph memory monograph
@@ -246,7 +200,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMonographAdded(posterID, sequence, block.timestamp);
     }
 
     function showMonograph(
@@ -270,20 +223,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMonographUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventMastersThesisAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventMastersThesisUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerMastersThesis(
         AcademicRepositoryLibrary.MastersThesis memory mastersThesis
@@ -303,7 +243,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMastersThesisAdded(posterID, sequence, block.timestamp);
     }
 
     function showMastersThesis(
@@ -327,22 +266,9 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventMastersThesisUnregisterd(posterID, sequence, block.timestamp);
     }
 
-    event EventDoctoralThesisAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventDoctoralThesisUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    function registerDoctoralThesis(
+    function RegistereDoctoralThesis(
         AcademicRepositoryLibrary.DoctoralThesis memory doctoralThesis
     ) public {
         address posterID = msg.sender;
@@ -360,7 +286,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventDoctoralThesisAdded(posterID, sequence, block.timestamp);
     }
 
     function showDoctoralThesis(
@@ -374,7 +299,7 @@ contract AcademicRepository {
         return _storeData.DoctoralThesis[posterID][sequence];
     }
 
-    function unregisterDoctoralThesis(uint256 sequence) public {
+    function unRegisteredoctoralThesis(uint256 sequence) public {
         address posterID = msg.sender;
         delete _storeData.DoctoralThesis[posterID][sequence];
         unregisterPost(
@@ -384,20 +309,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventDoctoralThesisUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventResearchReportAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventResearchReportUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerResearchReport(
         AcademicRepositoryLibrary.ResearchReport memory researchReport
@@ -417,7 +329,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchReportAdded(posterID, sequence, block.timestamp);
     }
 
     function showResearchReport(
@@ -441,20 +352,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchReportUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventBookReviewAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventBookReviewUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerBookReview(
         AcademicRepositoryLibrary.BookReview memory bookReview
@@ -474,7 +372,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventBookReviewAdded(posterID, sequence, block.timestamp);
     }
 
     function showBookReview(
@@ -498,20 +395,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventBookReviewUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventResearchProposalAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventResearchProposalUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerResearchProposal(
         AcademicRepositoryLibrary.ResearchProposal memory researchProposal
@@ -531,7 +415,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchProposalAdded(posterID, sequence, block.timestamp);
     }
 
     function showResearchProposal(
@@ -557,20 +440,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventResearchProposalUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventInternshipReportAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventInternshipReportUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerInternshipReport(
         AcademicRepositoryLibrary.InternshipReport memory internshipReport
@@ -590,7 +460,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventInternshipReportAdded(posterID, sequence, block.timestamp);
     }
 
     function showInternshipReport(
@@ -616,20 +485,7 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventInternshipReportUnregisterd(posterID, sequence, block.timestamp);
     }
-
-    event EventCourseworkAdded(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
-
-    event EventCourseworkUnregisterd(
-        address indexed posterID,
-        uint256 indexed sequence,
-        uint256 time
-    );
 
     function registerCoursework(
         AcademicRepositoryLibrary.Coursework memory coursework
@@ -649,7 +505,6 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventCourseworkAdded(posterID, sequence, block.timestamp);
     }
 
     function showCoursework(
@@ -673,6 +528,5 @@ contract AcademicRepository {
                 sequence
             )
         );
-        emit EventCourseworkUnregisterd(posterID, sequence, block.timestamp);
     }
 }
