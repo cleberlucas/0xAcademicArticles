@@ -26,17 +26,6 @@ contract AcademicRepository {
 
     address private immutable OWNER;
 
-    enum EventState {
-        INSERT,
-        DELETE
-    }
-
-    event EventPost(
-        AcademicRepositoryLibrary.PostID indexed postID,
-        uint256 time,
-        EventState eventState
-    );
-
     modifier IsOwner() {
         require(OWNER == msg.sender, "");
         _;
@@ -51,7 +40,7 @@ contract AcademicRepository {
     }
 
     modifier IsPostCreated(AcademicRepositoryLibrary.PostID memory postID) {
-        require(showPost(postID).created, "");
+        require(showPost(postID).time != 0, "");
         _;
     }
 
@@ -126,7 +115,7 @@ contract AcademicRepository {
         postID.model = model;
         postID.sequence = _storeData.postSequences[msg.sender][model];
 
-        post.created = true;
+        post.time = block.timestamp;
         post.description = description;
 
         _storeData.posts[postID.posterID][postID.model][postID.sequence] = post;
@@ -134,8 +123,6 @@ contract AcademicRepository {
         _storeKey.postIDs.push(postID);
 
         _storeData.postSequences[msg.sender][model]++;
-
-        emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
     function sendPostWithAuthenticateRequest(
@@ -150,7 +137,7 @@ contract AcademicRepository {
         postID.model = model;
         postID.sequence = _storeData.postSequences[msg.sender][model];
 
-        post.created = true;
+        post.time = block.timestamp;
         post.description = description;
         post.authenticity.authority = authorityID;
 
@@ -161,8 +148,6 @@ contract AcademicRepository {
         _storeData.requests[authorityID].push(postID);
 
         _storeData.postSequences[msg.sender][model]++;
-
-        emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
     function sendAuthenticateRequest(
@@ -272,7 +257,6 @@ contract AcademicRepository {
         }
 
         delete _storeData.posts[msg.sender][model][sequence];
-        emit EventPost(block.timestamp, msg.sender, postID, EventState.INSERT);
     }
 
     function registerAuthority(
