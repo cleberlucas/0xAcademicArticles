@@ -24,17 +24,14 @@ library AcademicRepositoryLibrary {
     }
 
     struct Monograph {
-        string title;
         string comming;
     }
 
     struct MastersThesis {
-        string title;
         string comming;
     }
 
     struct DoctoralThesis {
-        string title;
         string comming;
     }
 }
