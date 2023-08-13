@@ -2,7 +2,16 @@
 
 pragma solidity >=0.8.18;
 
-library AcademicRepositoryLibrary {
+library AcademicLibrary {
+    struct Institution {
+        string name;
+        string country;
+        string phone;
+        string email;
+        string websiteUrl;
+        string logoUrl;
+    }
+
     struct FinalProject {
         string title;
         string summary;
@@ -10,7 +19,7 @@ library AcademicRepositoryLibrary {
         string advisors;
         string course;
         string institution;
-        string url;
+        string documentUrl;
     }
 
     struct ScientificArticle {
@@ -20,7 +29,7 @@ library AcademicRepositoryLibrary {
         string advisors;
         string course;
         string institution;
-        string url;
+        string documentUrl;
     }
 
     struct Monograph {

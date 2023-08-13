@@ -1,25 +1,16 @@
 // SPDX-License-Identifier: AFL-3.0
-import "AcademicRepositoryLibrary.sol";
+import "AcademicLibrary.sol";
 
 pragma solidity >=0.8.18;
 
-contract AcademicRepository {
+contract InstituitionRepository {
     constructor() {
         OWNER = msg.sender;
     }
 
     struct StoreData {
         address[] InstitutionIDs;
-        mapping(address InstitutionID => Institution) Institutions;
-    }
-
-    struct Institution {
-        string name;
-        string country;
-        string phone;
-        string email;
-        string website;
-        string logo;
+        mapping(address InstitutionID => AcademicLibrary.Institution) Institutions;
     }
 
     StoreData private _storeData;
@@ -40,16 +31,23 @@ contract AcademicRepository {
 
     function showInstitution(
         address InstitutionID
-    ) public view returns (Institution memory authority) {
+    ) public view returns (AcademicLibrary.Institution memory authority) {
         return _storeData.Institutions[InstitutionID];
     }
     
     function registerInstitution(
         address InstitutionID,
-        Institution memory institution
+        AcademicLibrary.Institution memory institution
     ) public payable IsOwner {
         _storeData.Institutions[InstitutionID] = institution;
         _storeData.InstitutionIDs.push(InstitutionID);
+    }
+
+    function editInstitution(
+        address InstitutionID,
+        AcademicLibrary.Institution memory institution
+    ) public payable IsOwner {
+        _storeData.Institutions[InstitutionID] = institution;
     }
 
     function unregisterInstitution(
