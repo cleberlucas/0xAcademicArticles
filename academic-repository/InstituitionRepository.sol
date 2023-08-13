@@ -9,8 +9,8 @@ contract InstituitionRepository {
     }
 
     struct StoreData {
-        address[] InstitutionIDs;
-        mapping(address InstitutionID => AcademicLibrary.Institution) Institutions;
+        address[] InstitutionID;
+        mapping(address InstitutionID => AcademicLibrary.Institution) Institution;
     }
 
     StoreData private _storeData;
@@ -25,42 +25,42 @@ contract InstituitionRepository {
         _;
     }
 
-    function showInstitutionIDs() public view returns (address[] memory InstitutionIDs) {
-        return _storeData.InstitutionIDs;
+    function showInstitutionID() public view returns (address[] memory InstitutionIDs) {
+        return _storeData.InstitutionID;
     }
 
     function showInstitution(
         address InstitutionID
     ) public view returns (AcademicLibrary.Institution memory authority) {
-        return _storeData.Institutions[InstitutionID];
+        return _storeData.Institution[InstitutionID];
     }
     
     function registerInstitution(
         address InstitutionID,
         AcademicLibrary.Institution memory institution
     ) public payable IsOwner {
-        _storeData.Institutions[InstitutionID] = institution;
-        _storeData.InstitutionIDs.push(InstitutionID);
+        _storeData.Institution[InstitutionID] = institution;
+        _storeData.InstitutionID.push(InstitutionID);
     }
 
     function editInstitution(
         address InstitutionID,
         AcademicLibrary.Institution memory institution
     ) public payable IsOwner {
-        _storeData.Institutions[InstitutionID] = institution;
+        _storeData.Institution[InstitutionID] = institution;
     }
 
     function unregisterInstitution(
         address InstitutionID
     ) public payable IsOwner {
-        delete _storeData.Institutions[InstitutionID];
+        delete _storeData.Institution[InstitutionID];
 
-        for (uint256 i = 0; i < _storeData.InstitutionIDs.length; i++) {
-            if (_storeData.InstitutionIDs[i] == InstitutionID) {
-                _storeData.InstitutionIDs[i] = _storeData.InstitutionIDs[
-                    _storeData.InstitutionIDs.length - 1
+        for (uint256 i = 0; i < _storeData.InstitutionID.length; i++) {
+            if (_storeData.InstitutionID[i] == InstitutionID) {
+                _storeData.InstitutionID[i] = _storeData.InstitutionID[
+                    _storeData.InstitutionID.length - 1
                 ];
-                _storeData.InstitutionIDs.pop();
+                _storeData.InstitutionID.pop();
             }
         }
     }

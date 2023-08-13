@@ -19,7 +19,8 @@ library AcademicLibrary {
         string advisors;
         string course;
         string institution;
-        string documentUrl;
+        string link;
+        address authenticated;
     }
 
     struct ScientificArticle {
@@ -29,7 +30,8 @@ library AcademicLibrary {
         string advisors;
         string course;
         string institution;
-        string documentUrl;
+        string link;
+        address authenticated;
     }
 
     struct Monograph {
