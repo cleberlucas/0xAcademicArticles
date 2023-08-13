@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AFL-3.0
-import "AcademicLibrary.sol";
+import "./AcademicLibrary.sol";
 
 pragma solidity >=0.8.18;
 
@@ -10,41 +10,42 @@ contract ScientificArticleRepository {
 
     address private immutable OWNER;
 
-    struct PostID {
+    struct ScientificArticleID {
         address posterID;
         uint256 sequence;
     }
 
     struct StoreData {
-        PostID[] postID;
         address[] institutionID;
+        ScientificArticleID[] scientificArticleID;
         mapping(address posterID => uint256 sequence) nextSequence;
         mapping(address posterID => mapping(uint256 sequence => AcademicLibrary.ScientificArticle)) scientificArticle;
     }
 
     StoreData private _storeData;
 
-    event ScientificArticlehRegistered(
+    event ScientificArticleRegistered(
         address indexed posterID,
         uint256 indexed sequence,
-        AcademicLibrary.ScientificArticle Data
+        AcademicLibrary.ScientificArticle scientificArticle
     );
 
-    event ScientificArticlehEdited(
+    event ScientificArticleEdited(
         address indexed posterID,
         uint256 indexed sequence,
-        AcademicLibrary.ScientificArticle Data
+        AcademicLibrary.ScientificArticle scientificArticle
     );
 
-    event ScientificArticlehUnRegistered(
-        address indexed posterID,
-        uint256 indexed sequence
-    );
-
-    event ScientificArticlehAuthenticated(
+    event ScientificArticleUnRegistered(
         address indexed posterID,
         uint256 indexed sequence,
-        address indexed institution
+        AcademicLibrary.ScientificArticle scientificArticle
+    );
+
+    event ScientificArticleAuthenticated(
+        address indexed posterID,
+        uint256 indexed sequence,
+        address indexed authenticator
     );
 
     modifier IsOwner() {
@@ -76,6 +77,44 @@ contract ScientificArticleRepository {
                 )
             ) != keccak256(abi.encodePacked((""))),
             "It is not possible to execute this action because the post register do not exist"
+        );
+        _;
+    }
+
+    modifier IsNotAuthenticated(address posterID, uint256 sequence) {
+        require(
+            _storeData.scientificArticle[posterID][sequence].authenticated ==
+                address(0),
+            "It will not be possible to authenticate because it is already authenticated"
+        );
+        _;
+    }
+
+    modifier ExistInstitutionID(address institutionID) {
+        bool exitsInstitutionID;
+
+        for (uint256 i = 0; i < _storeData.institutionID.length; i++)
+            if (_storeData.institutionID[i] == institutionID)
+                exitsInstitutionID = true;
+
+        require(
+            exitsInstitutionID,
+            "Do not hesitate to register an institution with this id"
+        );
+        _;
+    }
+
+    modifier NotExistInstitutionID(address institutionID) {
+        bool notExitsInstitutionID;
+        notExitsInstitutionID = true;
+
+        for (uint256 i = 0; i < _storeData.institutionID.length; i++)
+            if (_storeData.institutionID[i] == institutionID)
+                notExitsInstitutionID = false;
+
+        require(
+            notExitsInstitutionID,
+            "There is already an id of an institution registered with the same id"
         );
         _;
     }
@@ -138,13 +177,13 @@ contract ScientificArticleRepository {
 
     function registerInstitutionID(
         address institutionID
-    ) public payable IsOwner {
+    ) public payable IsOwner NotExistInstitutionID(institutionID) {
         _storeData.institutionID.push(institutionID);
     }
 
     function unregisterInstitutionID(
         address institutionID
-    ) public payable IsOwner {
+    ) public payable IsOwner ExistInstitutionID(institutionID) {
         for (uint256 i = 0; i < _storeData.institutionID.length; i++) {
             if (_storeData.institutionID[i] == institutionID) {
                 _storeData.institutionID[i] = _storeData.institutionID[
@@ -155,77 +194,148 @@ contract ScientificArticleRepository {
         }
     }
 
-    function showPostID() public view returns (PostID[] memory postID) {
-        return _storeData.postID;
+    function showScientificArticleID()
+        public
+        view
+        returns (ScientificArticleID[] memory scientificArticleID)
+    {
+        return _storeData.scientificArticleID;
     }
 
     function authenticateScientificArticle(
         address posterId,
         uint256 sequence
-    ) public IsRegistered(posterId, sequence) IsInstitution() {
-        _storeData.scientificArticle[posterId][sequence].authenticated = msg
-            .sender;
+    )
+        public
+        payable
+        IsRegistered(posterId, sequence)
+        IsNotAuthenticated(posterId, sequence)
+        IsInstitution
+    {
+        _storeData.scientificArticle[posterId][sequence].authenticated = msg.sender;
 
-        emit ScientificArticlehAuthenticated(posterId, sequence, msg.sender);
+        emit ScientificArticleAuthenticated(posterId, sequence, msg.sender);
     }
 
     function showScientificArticle(
-        PostID memory postID
-    )
-        public
-        view
-        returns (AcademicLibrary.ScientificArticle memory scientificArticle)
-    {
-        return _storeData.scientificArticle[postID.posterID][postID.sequence];
+        ScientificArticleID memory scientificArticleID
+    ) public view returns (AcademicLibrary.ScientificArticle memory scientificArticle) {
+        return
+            _storeData.scientificArticle[scientificArticleID.posterID][
+                scientificArticleID.sequence
+            ];
     }
 
     function editScientificArticle(
         uint256 sequence,
-        AcademicLibrary.ScientificArticle memory scientificArticle
+        string memory title,
+        string memory summary,
+        string memory authors,
+        string memory advisors,
+        string memory course,
+        string memory institution,
+        string memory link
     )
         public
+        payable
+        ValidateScientificArticle(
+            AcademicLibrary.ScientificArticle(
+                title,
+                summary,
+                authors,
+                advisors,
+                course,
+                institution,
+                link,
+                address(0)
+            )
+        )
         IsRegistered(msg.sender, sequence)
-        ValidateScientificArticle(scientificArticle)
     {
-        scientificArticle.authenticated = address(0);
+        AcademicLibrary.ScientificArticle memory scientificArticle;
+
+        scientificArticle = AcademicLibrary.ScientificArticle(
+            title,
+            summary,
+            authors,
+            advisors,
+            course,
+            institution,
+            link,
+            address(0)
+        );
+
         _storeData.scientificArticle[msg.sender][sequence] = scientificArticle;
 
-        emit ScientificArticlehEdited(msg.sender, sequence, scientificArticle);
+        emit ScientificArticleEdited(msg.sender, sequence, scientificArticle);
     }
 
     function registerScientificArticle(
-        AcademicLibrary.ScientificArticle memory scientificArticle
-    ) public ValidateScientificArticle(scientificArticle) {
-        address posterID = msg.sender;
-        uint256 sequence = _storeData.nextSequence[posterID];
-        _storeData.scientificArticle[posterID][sequence] = scientificArticle;
-        _storeData.postID.push(PostID(msg.sender, sequence));
-        _storeData.nextSequence[posterID]++;
+        string memory title,
+        string memory summary,
+        string memory authors,
+        string memory advisors,
+        string memory course,
+        string memory institution,
+        string memory link
+    )
+        public
+        payable
+        ValidateScientificArticle(
+            AcademicLibrary.ScientificArticle(
+                title,
+                summary,
+                authors,
+                advisors,
+                course,
+                institution,
+                link,
+                address(0)
+            )
+        )
+    {
+        uint256 sequence = _storeData.nextSequence[msg.sender];
+        AcademicLibrary.ScientificArticle memory scientificArticle;
 
-        emit ScientificArticlehRegistered(
-            posterID,
-            sequence,
-            scientificArticle
+        scientificArticle = AcademicLibrary.ScientificArticle(
+            title,
+            summary,
+            authors,
+            advisors,
+            course,
+            institution,
+            link,
+            address(0)
         );
+
+        _storeData.scientificArticle[msg.sender][sequence] = scientificArticle;
+        _storeData.scientificArticleID.push(ScientificArticleID(msg.sender, sequence));
+        _storeData.nextSequence[msg.sender]++;
+
+        emit ScientificArticleRegistered(msg.sender, sequence, scientificArticle);
     }
 
-    function unregisterScientificArticle(uint256 sequence) public {
-        address posterID = msg.sender;
+    function unregisterScientificArticle(
+        uint256 sequence
+    ) public payable IsRegistered(msg.sender, sequence) {
+        AcademicLibrary.ScientificArticle memory scientificArticle;
 
-        delete _storeData.scientificArticle[posterID][sequence];
+        scientificArticle = _storeData.scientificArticle[msg.sender][sequence];
 
-        for (uint256 i = 0; i < _storeData.postID.length; i++) {
+        delete _storeData.scientificArticle[msg.sender][sequence];
+
+        for (uint256 i = 0; i < _storeData.scientificArticleID.length; i++) {
             if (
-                _storeData.postID[i].posterID == msg.sender &&
-                _storeData.postID[i].sequence == sequence
+                _storeData.scientificArticleID[i].posterID == msg.sender &&
+                _storeData.scientificArticleID[i].sequence == sequence
             ) {
-                _storeData.postID[i] = _storeData.postID[
-                    _storeData.postID.length - 1
+                _storeData.scientificArticleID[i] = _storeData.scientificArticleID[
+                    _storeData.scientificArticleID.length - 1
                 ];
-                _storeData.postID.pop();
+                _storeData.scientificArticleID.pop();
             }
         }
 
-        emit ScientificArticlehUnRegistered(posterID, sequence);
+        emit ScientificArticleUnRegistered(msg.sender, sequence, scientificArticle);
     }
 }

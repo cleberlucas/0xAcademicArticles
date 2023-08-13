@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AFL-3.0
-import "AcademicLibrary.sol";
+import "./AcademicLibrary.sol";
 
 pragma solidity >=0.8.18;
 
@@ -10,41 +10,42 @@ contract FinalProjectRepository {
 
     address private immutable OWNER;
 
-    struct PostID {
+    struct FinalProjectID {
         address posterID;
         uint256 sequence;
     }
 
     struct StoreData {
-        PostID[] postID;
         address[] institutionID;
+        FinalProjectID[] finalProjectID;
         mapping(address posterID => uint256 sequence) nextSequence;
         mapping(address posterID => mapping(uint256 sequence => AcademicLibrary.FinalProject)) finalProject;
     }
 
     StoreData private _storeData;
 
-    event FinalProjecthRegistered(
+    event FinalProjectRegistered(
         address indexed posterID,
         uint256 indexed sequence,
-        AcademicLibrary.FinalProject Data
+        AcademicLibrary.FinalProject finalProject
     );
 
-    event FinalProjecthEdited(
+    event FinalProjectEdited(
         address indexed posterID,
         uint256 indexed sequence,
-        AcademicLibrary.FinalProject Data
+        AcademicLibrary.FinalProject finalProject
     );
 
-    event FinalProjecthUnRegistered(
-        address indexed posterID,
-        uint256 indexed sequence
-    );
-
-    event FinalProjecthAuthenticated(
+    event FinalProjectUnRegistered(
         address indexed posterID,
         uint256 indexed sequence,
-        address indexed institution
+        AcademicLibrary.FinalProject finalProject
+    );
+
+    event FinalProjectAuthenticated(
+        address indexed posterID,
+        uint256 indexed sequence,
+        address indexed authenticator
     );
 
     modifier IsOwner() {
@@ -76,6 +77,44 @@ contract FinalProjectRepository {
                 )
             ) != keccak256(abi.encodePacked((""))),
             "It is not possible to execute this action because the post register do not exist"
+        );
+        _;
+    }
+
+    modifier IsNotAuthenticated(address posterID, uint256 sequence) {
+        require(
+            _storeData.finalProject[posterID][sequence].authenticated ==
+                address(0),
+            "It will not be possible to authenticate because it is already authenticated"
+        );
+        _;
+    }
+
+    modifier ExistInstitutionID(address institutionID) {
+        bool exitsInstitutionID;
+
+        for (uint256 i = 0; i < _storeData.institutionID.length; i++)
+            if (_storeData.institutionID[i] == institutionID)
+                exitsInstitutionID = true;
+
+        require(
+            exitsInstitutionID,
+            "Do not hesitate to register an institution with this id"
+        );
+        _;
+    }
+
+    modifier NotExistInstitutionID(address institutionID) {
+        bool notExitsInstitutionID;
+        notExitsInstitutionID = true;
+
+        for (uint256 i = 0; i < _storeData.institutionID.length; i++)
+            if (_storeData.institutionID[i] == institutionID)
+                notExitsInstitutionID = false;
+
+        require(
+            notExitsInstitutionID,
+            "There is already an id of an institution registered with the same id"
         );
         _;
     }
@@ -138,13 +177,13 @@ contract FinalProjectRepository {
 
     function registerInstitutionID(
         address institutionID
-    ) public payable IsOwner {
+    ) public payable IsOwner NotExistInstitutionID(institutionID) {
         _storeData.institutionID.push(institutionID);
     }
 
     function unregisterInstitutionID(
         address institutionID
-    ) public payable IsOwner {
+    ) public payable IsOwner ExistInstitutionID(institutionID) {
         for (uint256 i = 0; i < _storeData.institutionID.length; i++) {
             if (_storeData.institutionID[i] == institutionID) {
                 _storeData.institutionID[i] = _storeData.institutionID[
@@ -155,77 +194,148 @@ contract FinalProjectRepository {
         }
     }
 
-    function showPostID() public view returns (PostID[] memory postID) {
-        return _storeData.postID;
+    function showFinalProjectID()
+        public
+        view
+        returns (FinalProjectID[] memory finalProjectID)
+    {
+        return _storeData.finalProjectID;
     }
 
     function authenticateFinalProject(
         address posterId,
         uint256 sequence
-    ) public IsRegistered(posterId, sequence) IsInstitution() {
-        _storeData.finalProject[posterId][sequence].authenticated = msg
-            .sender;
+    )
+        public
+        payable
+        IsRegistered(posterId, sequence)
+        IsNotAuthenticated(posterId, sequence)
+        IsInstitution
+    {
+        _storeData.finalProject[posterId][sequence].authenticated = msg.sender;
 
-        emit FinalProjecthAuthenticated(posterId, sequence, msg.sender);
+        emit FinalProjectAuthenticated(posterId, sequence, msg.sender);
     }
 
     function showFinalProject(
-        PostID memory postID
-    )
-        public
-        view
-        returns (AcademicLibrary.FinalProject memory finalProject)
-    {
-        return _storeData.finalProject[postID.posterID][postID.sequence];
+        FinalProjectID memory finalProjectID
+    ) public view returns (AcademicLibrary.FinalProject memory finalProject) {
+        return
+            _storeData.finalProject[finalProjectID.posterID][
+                finalProjectID.sequence
+            ];
     }
 
     function editFinalProject(
         uint256 sequence,
-        AcademicLibrary.FinalProject memory finalProject
+        string memory title,
+        string memory summary,
+        string memory authors,
+        string memory advisors,
+        string memory course,
+        string memory institution,
+        string memory link
     )
         public
+        payable
+        ValidateFinalProject(
+            AcademicLibrary.FinalProject(
+                title,
+                summary,
+                authors,
+                advisors,
+                course,
+                institution,
+                link,
+                address(0)
+            )
+        )
         IsRegistered(msg.sender, sequence)
-        ValidateFinalProject(finalProject)
     {
-        finalProject.authenticated = address(0);
+        AcademicLibrary.FinalProject memory finalProject;
+
+        finalProject = AcademicLibrary.FinalProject(
+            title,
+            summary,
+            authors,
+            advisors,
+            course,
+            institution,
+            link,
+            address(0)
+        );
+
         _storeData.finalProject[msg.sender][sequence] = finalProject;
 
-        emit FinalProjecthEdited(msg.sender, sequence, finalProject);
+        emit FinalProjectEdited(msg.sender, sequence, finalProject);
     }
 
     function registerFinalProject(
-        AcademicLibrary.FinalProject memory finalProject
-    ) public ValidateFinalProject(finalProject) {
-        address posterID = msg.sender;
-        uint256 sequence = _storeData.nextSequence[posterID];
-        _storeData.finalProject[posterID][sequence] = finalProject;
-        _storeData.postID.push(PostID(msg.sender, sequence));
-        _storeData.nextSequence[posterID]++;
+        string memory title,
+        string memory summary,
+        string memory authors,
+        string memory advisors,
+        string memory course,
+        string memory institution,
+        string memory link
+    )
+        public
+        payable
+        ValidateFinalProject(
+            AcademicLibrary.FinalProject(
+                title,
+                summary,
+                authors,
+                advisors,
+                course,
+                institution,
+                link,
+                address(0)
+            )
+        )
+    {
+        uint256 sequence = _storeData.nextSequence[msg.sender];
+        AcademicLibrary.FinalProject memory finalProject;
 
-        emit FinalProjecthRegistered(
-            posterID,
-            sequence,
-            finalProject
+        finalProject = AcademicLibrary.FinalProject(
+            title,
+            summary,
+            authors,
+            advisors,
+            course,
+            institution,
+            link,
+            address(0)
         );
+
+        _storeData.finalProject[msg.sender][sequence] = finalProject;
+        _storeData.finalProjectID.push(FinalProjectID(msg.sender, sequence));
+        _storeData.nextSequence[msg.sender]++;
+
+        emit FinalProjectRegistered(msg.sender, sequence, finalProject);
     }
 
-    function unregisterFinalProject(uint256 sequence) public {
-        address posterID = msg.sender;
+    function unregisterFinalProject(
+        uint256 sequence
+    ) public payable IsRegistered(msg.sender, sequence) {
+        AcademicLibrary.FinalProject memory finalProject;
 
-        delete _storeData.finalProject[posterID][sequence];
+        finalProject = _storeData.finalProject[msg.sender][sequence];
 
-        for (uint256 i = 0; i < _storeData.postID.length; i++) {
+        delete _storeData.finalProject[msg.sender][sequence];
+
+        for (uint256 i = 0; i < _storeData.finalProjectID.length; i++) {
             if (
-                _storeData.postID[i].posterID == msg.sender &&
-                _storeData.postID[i].sequence == sequence
+                _storeData.finalProjectID[i].posterID == msg.sender &&
+                _storeData.finalProjectID[i].sequence == sequence
             ) {
-                _storeData.postID[i] = _storeData.postID[
-                    _storeData.postID.length - 1
+                _storeData.finalProjectID[i] = _storeData.finalProjectID[
+                    _storeData.finalProjectID.length - 1
                 ];
-                _storeData.postID.pop();
+                _storeData.finalProjectID.pop();
             }
         }
 
-        emit FinalProjecthUnRegistered(posterID, sequence);
+        emit FinalProjectUnRegistered(msg.sender, sequence, finalProject);
     }
 }
