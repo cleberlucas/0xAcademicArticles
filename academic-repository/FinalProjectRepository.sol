@@ -25,26 +25,22 @@ contract FinalProjectRepository {
     StoreData private _storeData;
 
     event FinalProjectRegistered(
-        address indexed posterID,
-        uint256 indexed sequence,
+        FinalProjectID indexed finalProjectID,
         AcademicLibrary.FinalProject finalProject
     );
 
     event FinalProjectEdited(
-        address indexed posterID,
-        uint256 indexed sequence,
+        FinalProjectID indexed finalProjectID,
         AcademicLibrary.FinalProject finalProject
     );
 
     event FinalProjectUnRegistered(
-        address indexed posterID,
-        uint256 indexed sequence,
+        FinalProjectID indexed finalProjectID,
         AcademicLibrary.FinalProject finalProject
     );
 
     event FinalProjectAuthenticated(
-        address indexed posterID,
-        uint256 indexed sequence,
+        FinalProjectID indexed finalProjectID,
         address indexed authenticator
     );
 
@@ -69,11 +65,11 @@ contract FinalProjectRepository {
         _;
     }
 
-    modifier IsRegistered(address posterID, uint256 sequence) {
+    modifier IsRegistered(FinalProjectID memory finalProjectID) {
         require(
             keccak256(
                 abi.encodePacked(
-                    (_storeData.finalProject[posterID][sequence].title)
+                    (_storeData.finalProject[finalProjectID.posterID][finalProjectID.sequence].title)
                 )
             ) != keccak256(abi.encodePacked((""))),
             "It is not possible to execute this action because the post register do not exist"
@@ -81,9 +77,9 @@ contract FinalProjectRepository {
         _;
     }
 
-    modifier IsNotAuthenticated(address posterID, uint256 sequence) {
+    modifier IsNotAuthenticated(FinalProjectID memory finalProjectID) {
         require(
-            _storeData.finalProject[posterID][sequence].authenticated ==
+            _storeData.finalProject[finalProjectID.posterID][finalProjectID.sequence].authenticated ==
                 address(0),
             "It will not be possible to authenticate because it is already authenticated"
         );
@@ -203,18 +199,17 @@ contract FinalProjectRepository {
     }
 
     function authenticateFinalProject(
-        address posterId,
-        uint256 sequence
+        FinalProjectID memory finalProjectID
     )
         public
         payable
-        IsRegistered(posterId, sequence)
-        IsNotAuthenticated(posterId, sequence)
+        IsRegistered(finalProjectID)
+        IsNotAuthenticated(finalProjectID)
         IsInstitution
     {
-        _storeData.finalProject[posterId][sequence].authenticated = msg.sender;
+        _storeData.finalProject[finalProjectID.posterID][finalProjectID.sequence].authenticated = msg.sender;
 
-        emit FinalProjectAuthenticated(posterId, sequence, msg.sender);
+        emit FinalProjectAuthenticated(finalProjectID, msg.sender);
     }
 
     function showFinalProject(
@@ -250,7 +245,7 @@ contract FinalProjectRepository {
                 address(0)
             )
         )
-        IsRegistered(msg.sender, sequence)
+        IsRegistered(FinalProjectID(msg.sender, sequence))
     {
         AcademicLibrary.FinalProject memory finalProject;
 
@@ -267,7 +262,7 @@ contract FinalProjectRepository {
 
         _storeData.finalProject[msg.sender][sequence] = finalProject;
 
-        emit FinalProjectEdited(msg.sender, sequence, finalProject);
+        emit FinalProjectEdited(FinalProjectID(msg.sender, sequence), finalProject);
     }
 
     function registerFinalProject(
@@ -312,12 +307,12 @@ contract FinalProjectRepository {
         _storeData.finalProjectID.push(FinalProjectID(msg.sender, sequence));
         _storeData.nextSequence[msg.sender]++;
 
-        emit FinalProjectRegistered(msg.sender, sequence, finalProject);
+        emit FinalProjectRegistered(FinalProjectID(msg.sender, sequence), finalProject);
     }
 
     function unregisterFinalProject(
         uint256 sequence
-    ) public payable IsRegistered(msg.sender, sequence) {
+    ) public payable IsRegistered(FinalProjectID(msg.sender, sequence)) {
         AcademicLibrary.FinalProject memory finalProject;
 
         finalProject = _storeData.finalProject[msg.sender][sequence];
@@ -336,6 +331,6 @@ contract FinalProjectRepository {
             }
         }
 
-        emit FinalProjectUnRegistered(msg.sender, sequence, finalProject);
+        emit FinalProjectUnRegistered(FinalProjectID(msg.sender, sequence), finalProject);
     }
 }

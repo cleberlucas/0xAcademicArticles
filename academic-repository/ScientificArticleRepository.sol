@@ -25,26 +25,22 @@ contract ScientificArticleRepository {
     StoreData private _storeData;
 
     event ScientificArticleRegistered(
-        address indexed posterID,
-        uint256 indexed sequence,
+        ScientificArticleID indexed scientificArticleID,
         AcademicLibrary.ScientificArticle scientificArticle
     );
 
     event ScientificArticleEdited(
-        address indexed posterID,
-        uint256 indexed sequence,
+        ScientificArticleID indexed scientificArticleID,
         AcademicLibrary.ScientificArticle scientificArticle
     );
 
     event ScientificArticleUnRegistered(
-        address indexed posterID,
-        uint256 indexed sequence,
+        ScientificArticleID indexed scientificArticleID,
         AcademicLibrary.ScientificArticle scientificArticle
     );
 
     event ScientificArticleAuthenticated(
-        address indexed posterID,
-        uint256 indexed sequence,
+        ScientificArticleID indexed scientificArticleID,
         address indexed authenticator
     );
 
@@ -69,11 +65,11 @@ contract ScientificArticleRepository {
         _;
     }
 
-    modifier IsRegistered(address posterID, uint256 sequence) {
+    modifier IsRegistered(ScientificArticleID memory scientificArticleID) {
         require(
             keccak256(
                 abi.encodePacked(
-                    (_storeData.scientificArticle[posterID][sequence].title)
+                    (_storeData.scientificArticle[scientificArticleID.posterID][scientificArticleID.sequence].title)
                 )
             ) != keccak256(abi.encodePacked((""))),
             "It is not possible to execute this action because the post register do not exist"
@@ -81,9 +77,9 @@ contract ScientificArticleRepository {
         _;
     }
 
-    modifier IsNotAuthenticated(address posterID, uint256 sequence) {
+    modifier IsNotAuthenticated(ScientificArticleID memory scientificArticleID) {
         require(
-            _storeData.scientificArticle[posterID][sequence].authenticated ==
+            _storeData.scientificArticle[scientificArticleID.posterID][scientificArticleID.sequence].authenticated ==
                 address(0),
             "It will not be possible to authenticate because it is already authenticated"
         );
@@ -203,18 +199,17 @@ contract ScientificArticleRepository {
     }
 
     function authenticateScientificArticle(
-        address posterId,
-        uint256 sequence
+        ScientificArticleID memory scientificArticleID
     )
         public
         payable
-        IsRegistered(posterId, sequence)
-        IsNotAuthenticated(posterId, sequence)
+        IsRegistered(scientificArticleID)
+        IsNotAuthenticated(scientificArticleID)
         IsInstitution
     {
-        _storeData.scientificArticle[posterId][sequence].authenticated = msg.sender;
+        _storeData.scientificArticle[scientificArticleID.posterID][scientificArticleID.sequence].authenticated = msg.sender;
 
-        emit ScientificArticleAuthenticated(posterId, sequence, msg.sender);
+        emit ScientificArticleAuthenticated(scientificArticleID, msg.sender);
     }
 
     function showScientificArticle(
@@ -250,7 +245,7 @@ contract ScientificArticleRepository {
                 address(0)
             )
         )
-        IsRegistered(msg.sender, sequence)
+        IsRegistered(ScientificArticleID(msg.sender, sequence))
     {
         AcademicLibrary.ScientificArticle memory scientificArticle;
 
@@ -267,7 +262,7 @@ contract ScientificArticleRepository {
 
         _storeData.scientificArticle[msg.sender][sequence] = scientificArticle;
 
-        emit ScientificArticleEdited(msg.sender, sequence, scientificArticle);
+        emit ScientificArticleEdited(ScientificArticleID(msg.sender, sequence), scientificArticle);
     }
 
     function registerScientificArticle(
@@ -312,12 +307,12 @@ contract ScientificArticleRepository {
         _storeData.scientificArticleID.push(ScientificArticleID(msg.sender, sequence));
         _storeData.nextSequence[msg.sender]++;
 
-        emit ScientificArticleRegistered(msg.sender, sequence, scientificArticle);
+        emit ScientificArticleRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle);
     }
 
     function unregisterScientificArticle(
         uint256 sequence
-    ) public payable IsRegistered(msg.sender, sequence) {
+    ) public payable IsRegistered(ScientificArticleID(msg.sender, sequence)) {
         AcademicLibrary.ScientificArticle memory scientificArticle;
 
         scientificArticle = _storeData.scientificArticle[msg.sender][sequence];
@@ -336,6 +331,6 @@ contract ScientificArticleRepository {
             }
         }
 
-        emit ScientificArticleUnRegistered(msg.sender, sequence, scientificArticle);
+        emit ScientificArticleUnRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle);
     }
 }
