@@ -26,17 +26,17 @@ contract ScientificArticleRepository {
 
     event ScientificArticleRegistered(
         ScientificArticleID indexed scientificArticleID,
-        AcademicLibrary.ScientificArticle scientificArticle
+        string scientificArticleTitle
     );
 
     event ScientificArticleEdited(
         ScientificArticleID indexed scientificArticleID,
-        AcademicLibrary.ScientificArticle scientificArticle
+        string scientificArticleTitle
     );
 
     event ScientificArticleUnRegistered(
         ScientificArticleID indexed scientificArticleID,
-        AcademicLibrary.ScientificArticle scientificArticle
+        string scientificArticleTitle
     );
 
     event ScientificArticleAuthenticated(
@@ -262,7 +262,7 @@ contract ScientificArticleRepository {
 
         _storeData.scientificArticle[msg.sender][sequence] = scientificArticle;
 
-        emit ScientificArticleEdited(ScientificArticleID(msg.sender, sequence), scientificArticle);
+        emit ScientificArticleEdited(ScientificArticleID(msg.sender, sequence), scientificArticle.title);
     }
 
     function registerScientificArticle(
@@ -307,7 +307,7 @@ contract ScientificArticleRepository {
         _storeData.scientificArticleID.push(ScientificArticleID(msg.sender, sequence));
         _storeData.nextSequence[msg.sender]++;
 
-        emit ScientificArticleRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle);
+        emit ScientificArticleRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle.title);
     }
 
     function unregisterScientificArticle(
@@ -331,6 +331,6 @@ contract ScientificArticleRepository {
             }
         }
 
-        emit ScientificArticleUnRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle);
+        emit ScientificArticleUnRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle.title);
     }
 }

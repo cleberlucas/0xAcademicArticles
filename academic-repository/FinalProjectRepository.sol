@@ -26,17 +26,17 @@ contract FinalProjectRepository {
 
     event FinalProjectRegistered(
         FinalProjectID indexed finalProjectID,
-        AcademicLibrary.FinalProject finalProject
+        string finalProjectTitle
     );
 
     event FinalProjectEdited(
         FinalProjectID indexed finalProjectID,
-        AcademicLibrary.FinalProject finalProject
+        string finalProjectTitle
     );
 
     event FinalProjectUnRegistered(
         FinalProjectID indexed finalProjectID,
-        AcademicLibrary.FinalProject finalProject
+        string finalProjectTitle
     );
 
     event FinalProjectAuthenticated(
@@ -262,7 +262,7 @@ contract FinalProjectRepository {
 
         _storeData.finalProject[msg.sender][sequence] = finalProject;
 
-        emit FinalProjectEdited(FinalProjectID(msg.sender, sequence), finalProject);
+        emit FinalProjectEdited(FinalProjectID(msg.sender, sequence), finalProject.title);
     }
 
     function registerFinalProject(
@@ -307,7 +307,7 @@ contract FinalProjectRepository {
         _storeData.finalProjectID.push(FinalProjectID(msg.sender, sequence));
         _storeData.nextSequence[msg.sender]++;
 
-        emit FinalProjectRegistered(FinalProjectID(msg.sender, sequence), finalProject);
+        emit FinalProjectRegistered(FinalProjectID(msg.sender, sequence), finalProject.title);
     }
 
     function unregisterFinalProject(
@@ -331,6 +331,6 @@ contract FinalProjectRepository {
             }
         }
 
-        emit FinalProjectUnRegistered(FinalProjectID(msg.sender, sequence), finalProject);
+        emit FinalProjectUnRegistered(FinalProjectID(msg.sender, sequence), finalProject.title);
     }
 }
