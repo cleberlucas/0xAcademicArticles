@@ -1,46 +1,46 @@
 // SPDX-License-Identifier: AFL-3.0
-import "./AcademicLibrary.sol";
+import "../AcademicLibrary/AcademicLibrary.1.sol";
 
 pragma solidity >=0.8.18;
 
-contract FinalProjectRepository {
+contract ScientificArticleRepository {
     constructor() {
         OWNER = msg.sender;
     }
 
     address private immutable OWNER;
 
-    struct FinalProjectID {
+    struct ScientificArticleID {
         address posterID;
         uint256 sequence;
     }
 
     struct StoreData {
         address[] institutionID;
-        FinalProjectID[] finalProjectID;
+        ScientificArticleID[] scientificArticleID;
         mapping(address posterID => uint256 sequence) nextSequence;
-        mapping(address posterID => mapping(uint256 sequence => AcademicLibrary.FinalProject)) finalProject;
+        mapping(address posterID => mapping(uint256 sequence => AcademicLibrary.ScientificArticle)) scientificArticle;
     }
 
     StoreData private _storeData;
 
-    event FinalProjectRegistered(
-        FinalProjectID indexed finalProjectID,
-        string finalProjectTitle
+    event ScientificArticleRegistered(
+        ScientificArticleID indexed scientificArticleID,
+        string scientificArticleTitle
     );
 
-    event FinalProjectEdited(
-        FinalProjectID indexed finalProjectID,
-        string finalProjectTitle
+    event ScientificArticleEdited(
+        ScientificArticleID indexed scientificArticleID,
+        string scientificArticleTitle
     );
 
-    event FinalProjectUnRegistered(
-        FinalProjectID indexed finalProjectID,
-        string finalProjectTitle
+    event ScientificArticleUnRegistered(
+        ScientificArticleID indexed scientificArticleID,
+        string scientificArticleTitle
     );
 
-    event FinalProjectAuthenticated(
-        FinalProjectID indexed finalProjectID,
+    event ScientificArticleAuthenticated(
+        ScientificArticleID indexed scientificArticleID,
         address indexed authenticator
     );
 
@@ -65,11 +65,11 @@ contract FinalProjectRepository {
         _;
     }
 
-    modifier IsRegistered(FinalProjectID memory finalProjectID) {
+    modifier IsRegistered(ScientificArticleID memory scientificArticleID) {
         require(
             keccak256(
                 abi.encodePacked(
-                    (_storeData.finalProject[finalProjectID.posterID][finalProjectID.sequence].title)
+                    (_storeData.scientificArticle[scientificArticleID.posterID][scientificArticleID.sequence].title)
                 )
             ) != keccak256(abi.encodePacked((""))),
             "It is not possible to execute this action because the post register do not exist"
@@ -77,9 +77,9 @@ contract FinalProjectRepository {
         _;
     }
 
-    modifier IsNotAuthenticated(FinalProjectID memory finalProjectID) {
+    modifier IsNotAuthenticated(ScientificArticleID memory scientificArticleID) {
         require(
-            _storeData.finalProject[finalProjectID.posterID][finalProjectID.sequence].authenticated ==
+            _storeData.scientificArticle[scientificArticleID.posterID][scientificArticleID.sequence].authenticated ==
                 address(0),
             "It will not be possible to authenticate because it is already authenticated"
         );
@@ -115,47 +115,47 @@ contract FinalProjectRepository {
         _;
     }
 
-    modifier ValidateFinalProject(
-        AcademicLibrary.FinalProject memory finalProject
+    modifier ValidateScientificArticle(
+        AcademicLibrary.ScientificArticle memory scientificArticle
     ) {
         require(
-            keccak256(abi.encodePacked((finalProject.title))) !=
+            keccak256(abi.encodePacked((scientificArticle.title))) !=
                 keccak256(abi.encodePacked((""))),
             "Title cannot be empty"
         );
 
         require(
-            keccak256(abi.encodePacked((finalProject.summary))) !=
+            keccak256(abi.encodePacked((scientificArticle.summary))) !=
                 keccak256(abi.encodePacked((""))),
             "Summary cannot be empty"
         );
 
         require(
-            keccak256(abi.encodePacked((finalProject.authors))) !=
+            keccak256(abi.encodePacked((scientificArticle.authors))) !=
                 keccak256(abi.encodePacked((""))),
             "Authors cannot be empty"
         );
 
         require(
-            keccak256(abi.encodePacked((finalProject.advisors))) !=
+            keccak256(abi.encodePacked((scientificArticle.advisors))) !=
                 keccak256(abi.encodePacked((""))),
             "Advisors cannot be empty"
         );
 
         require(
-            keccak256(abi.encodePacked((finalProject.course))) !=
+            keccak256(abi.encodePacked((scientificArticle.course))) !=
                 keccak256(abi.encodePacked((""))),
             "Course cannot be empty"
         );
 
         require(
-            keccak256(abi.encodePacked((finalProject.institution))) !=
+            keccak256(abi.encodePacked((scientificArticle.institution))) !=
                 keccak256(abi.encodePacked((""))),
             "Institution cannot be empty"
         );
 
         require(
-            keccak256(abi.encodePacked((finalProject.link))) !=
+            keccak256(abi.encodePacked((scientificArticle.link))) !=
                 keccak256(abi.encodePacked((""))),
             "Link cannot be empty"
         );
@@ -190,38 +190,38 @@ contract FinalProjectRepository {
         }
     }
 
-    function showFinalProjectID()
+    function showScientificArticleID()
         public
         view
-        returns (FinalProjectID[] memory finalProjectID)
+        returns (ScientificArticleID[] memory scientificArticleID)
     {
-        return _storeData.finalProjectID;
+        return _storeData.scientificArticleID;
     }
 
-    function authenticateFinalProject(
-        FinalProjectID memory finalProjectID
+    function authenticateScientificArticle(
+        ScientificArticleID memory scientificArticleID
     )
         public
         payable
-        IsRegistered(finalProjectID)
-        IsNotAuthenticated(finalProjectID)
+        IsRegistered(scientificArticleID)
+        IsNotAuthenticated(scientificArticleID)
         IsInstitution
     {
-        _storeData.finalProject[finalProjectID.posterID][finalProjectID.sequence].authenticated = msg.sender;
+        _storeData.scientificArticle[scientificArticleID.posterID][scientificArticleID.sequence].authenticated = msg.sender;
 
-        emit FinalProjectAuthenticated(finalProjectID, msg.sender);
+        emit ScientificArticleAuthenticated(scientificArticleID, msg.sender);
     }
 
-    function showFinalProject(
-        FinalProjectID memory finalProjectID
-    ) public view returns (AcademicLibrary.FinalProject memory finalProject) {
+    function showScientificArticle(
+        ScientificArticleID memory scientificArticleID
+    ) public view returns (AcademicLibrary.ScientificArticle memory scientificArticle) {
         return
-            _storeData.finalProject[finalProjectID.posterID][
-                finalProjectID.sequence
+            _storeData.scientificArticle[scientificArticleID.posterID][
+                scientificArticleID.sequence
             ];
     }
 
-    function editFinalProject(
+    function editScientificArticle(
         uint256 sequence,
         string memory title,
         string memory summary,
@@ -233,8 +233,8 @@ contract FinalProjectRepository {
     )
         public
         payable
-        ValidateFinalProject(
-            AcademicLibrary.FinalProject(
+        ValidateScientificArticle(
+            AcademicLibrary.ScientificArticle(
                 title,
                 summary,
                 authors,
@@ -245,11 +245,11 @@ contract FinalProjectRepository {
                 address(0)
             )
         )
-        IsRegistered(FinalProjectID(msg.sender, sequence))
+        IsRegistered(ScientificArticleID(msg.sender, sequence))
     {
-        AcademicLibrary.FinalProject memory finalProject;
+        AcademicLibrary.ScientificArticle memory scientificArticle;
 
-        finalProject = AcademicLibrary.FinalProject(
+        scientificArticle = AcademicLibrary.ScientificArticle(
             title,
             summary,
             authors,
@@ -260,12 +260,12 @@ contract FinalProjectRepository {
             address(0)
         );
 
-        _storeData.finalProject[msg.sender][sequence] = finalProject;
+        _storeData.scientificArticle[msg.sender][sequence] = scientificArticle;
 
-        emit FinalProjectEdited(FinalProjectID(msg.sender, sequence), finalProject.title);
+        emit ScientificArticleEdited(ScientificArticleID(msg.sender, sequence), scientificArticle.title);
     }
 
-    function registerFinalProject(
+    function registerScientificArticle(
         string memory title,
         string memory summary,
         string memory authors,
@@ -276,8 +276,8 @@ contract FinalProjectRepository {
     )
         public
         payable
-        ValidateFinalProject(
-            AcademicLibrary.FinalProject(
+        ValidateScientificArticle(
+            AcademicLibrary.ScientificArticle(
                 title,
                 summary,
                 authors,
@@ -290,9 +290,9 @@ contract FinalProjectRepository {
         )
     {
         uint256 sequence = _storeData.nextSequence[msg.sender];
-        AcademicLibrary.FinalProject memory finalProject;
+        AcademicLibrary.ScientificArticle memory scientificArticle;
 
-        finalProject = AcademicLibrary.FinalProject(
+        scientificArticle = AcademicLibrary.ScientificArticle(
             title,
             summary,
             authors,
@@ -303,34 +303,34 @@ contract FinalProjectRepository {
             address(0)
         );
 
-        _storeData.finalProject[msg.sender][sequence] = finalProject;
-        _storeData.finalProjectID.push(FinalProjectID(msg.sender, sequence));
+        _storeData.scientificArticle[msg.sender][sequence] = scientificArticle;
+        _storeData.scientificArticleID.push(ScientificArticleID(msg.sender, sequence));
         _storeData.nextSequence[msg.sender]++;
 
-        emit FinalProjectRegistered(FinalProjectID(msg.sender, sequence), finalProject.title);
+        emit ScientificArticleRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle.title);
     }
 
-    function unregisterFinalProject(
+    function unregisterScientificArticle(
         uint256 sequence
-    ) public payable IsRegistered(FinalProjectID(msg.sender, sequence)) {
-        AcademicLibrary.FinalProject memory finalProject;
+    ) public payable IsRegistered(ScientificArticleID(msg.sender, sequence)) {
+        AcademicLibrary.ScientificArticle memory scientificArticle;
 
-        finalProject = _storeData.finalProject[msg.sender][sequence];
+        scientificArticle = _storeData.scientificArticle[msg.sender][sequence];
 
-        delete _storeData.finalProject[msg.sender][sequence];
+        delete _storeData.scientificArticle[msg.sender][sequence];
 
-        for (uint256 i = 0; i < _storeData.finalProjectID.length; i++) {
+        for (uint256 i = 0; i < _storeData.scientificArticleID.length; i++) {
             if (
-                _storeData.finalProjectID[i].posterID == msg.sender &&
-                _storeData.finalProjectID[i].sequence == sequence
+                _storeData.scientificArticleID[i].posterID == msg.sender &&
+                _storeData.scientificArticleID[i].sequence == sequence
             ) {
-                _storeData.finalProjectID[i] = _storeData.finalProjectID[
-                    _storeData.finalProjectID.length - 1
+                _storeData.scientificArticleID[i] = _storeData.scientificArticleID[
+                    _storeData.scientificArticleID.length - 1
                 ];
-                _storeData.finalProjectID.pop();
+                _storeData.scientificArticleID.pop();
             }
         }
 
-        emit FinalProjectUnRegistered(FinalProjectID(msg.sender, sequence), finalProject.title);
+        emit ScientificArticleUnRegistered(ScientificArticleID(msg.sender, sequence), scientificArticle.title);
     }
 }

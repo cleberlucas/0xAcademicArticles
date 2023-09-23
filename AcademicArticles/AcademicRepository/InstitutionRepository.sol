@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AFL-3.0
-import "./AcademicLibrary.sol";
+import "../AcademicLibrary/AcademicLibrary.1.sol";
 
 pragma solidity >=0.8.18;
 
-contract InstitutionRegister {
+contract InstitutionRepository {
     constructor() {
         OWNER = msg.sender;
     }
