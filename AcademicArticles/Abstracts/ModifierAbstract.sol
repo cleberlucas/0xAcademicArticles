@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 pragma solidity >=0.8.21;
 
 abstract contract ModifierAbstract is DepositingShared, ModifierHelpper {
+    using Strings for uint256;
+    
     modifier IsOwner() {
         RequireHelpper(OWNER == msg.sender, "");
         _;
@@ -18,7 +20,7 @@ abstract contract ModifierAbstract is DepositingShared, ModifierHelpper {
     ) {
         for (uint256 i = 0; i < articlesKey.length; i++) {
             if (!IsArticleRegisteredHelpper(articlesKey[i])){
-                RequireHelpper(false, string.concat("", Strings.toString(i))); 
+                RequireHelpper(false, string.concat("", i.toString())); 
                 break ;
             }           
         }
@@ -50,7 +52,7 @@ abstract contract ModifierAbstract is DepositingShared, ModifierHelpper {
                 ].authenticator != address(0)
             ) 
              {
-                RequireHelpper(false, string.concat("", Strings.toString(i))); 
+                RequireHelpper(false, string.concat("", i.toString())); 
                 break ;
              }              
         }      
