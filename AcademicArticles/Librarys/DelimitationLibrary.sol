@@ -3,7 +3,6 @@
 pragma solidity >=0.8.18;
 
 library DelimitationLibrary {
-
     struct Institution {
         string name;
         string country;
@@ -41,7 +40,7 @@ library DelimitationLibrary {
         ScientificArticle,
         These,
         Monograph,
-        Dissertation   
+        Dissertation
     }
 
     enum AcademicDegree {

@@ -1,21 +1,16 @@
 // SPDX-License-Identifier: AFL-3.0
 
 import "../Librarys/DelimitationLibrary.sol";
-import "../Librarys/RepositoryLibrary.sol";
-import "../Shareds/DepositingShared.sol";
+import "../Librarys/DepositingLibrary.sol";
+import "../Globals/DepositingGlobal.sol";
 
 pragma solidity >=0.8.18;
 
-contract ViewHandler is DepositingShared {
-
-    function Key() public view returns (RepositoryLibrary.Key memory key) {
-        return keyShared;
-    }
-
+contract ViewHandler is DepositingGlobal {
     function ArticlesKey()
         public
         view
-        returns (RepositoryLibrary.ArticleKey[] memory articlesKey)
+        returns (DepositingLibrary.ArticleKey[] memory articlesKey)
     {
         return keyShared.articles;
     }
@@ -23,9 +18,9 @@ contract ViewHandler is DepositingShared {
     function ArticlesKey(
         uint256 startIndex,
         uint256 endIndex
-    ) public view returns (RepositoryLibrary.ArticleKey[] memory articlesKey) {
-        RepositoryLibrary.ArticleKey[]
-            memory result = new RepositoryLibrary.ArticleKey[](
+    ) public view returns (DepositingLibrary.ArticleKey[] memory articlesKey) {
+        DepositingLibrary.ArticleKey[]
+            memory result = new DepositingLibrary.ArticleKey[](
                 startIndex - endIndex + 1
             );
 
@@ -79,7 +74,7 @@ contract ViewHandler is DepositingShared {
     }
 
     function Article(
-        RepositoryLibrary.ArticleKey[] memory articlesKey
+        DepositingLibrary.ArticleKey[] memory articlesKey
     ) public view returns (DelimitationLibrary.Article[] memory article) {
         DelimitationLibrary.Article[]
             memory result = new DelimitationLibrary.Article[](

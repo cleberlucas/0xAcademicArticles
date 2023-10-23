@@ -3,7 +3,7 @@ import "./DelimitationLibrary.sol";
 
 pragma solidity >=0.8.18;
 
-library RepositoryLibrary {
+library DepositingLibrary {
     struct Key {
         ArticleKey[] articles;
         address[] institutions;
