@@ -75,7 +75,7 @@ abstract contract ViewHandler is DepositingGlobal {
 
     function Article(
         DepositingLibrary.ArticleKey[] memory articlesKey
-    ) public view returns (DelimitationLibrary.Article[] memory article) {
+    ) public view returns (DelimitationLibrary.Article[] memory articles) {
         DelimitationLibrary.Article[]
             memory result = new DelimitationLibrary.Article[](
                 articlesKey.length

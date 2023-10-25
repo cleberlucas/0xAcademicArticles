@@ -110,7 +110,7 @@ abstract contract InteractionHandler is
         }
     }
 
-    function RegisterArticle(
+    function PostArticle(
         DelimitationLibrary.ArticleType articleType,
         string memory title,
         string memory summary,
@@ -183,7 +183,7 @@ abstract contract InteractionHandler is
         );
     }
 
-    function UnregisterArticle(
+    function RemoveArticle(
         uint256 sequence,
         DelimitationLibrary.ArticleType articleType
     )
