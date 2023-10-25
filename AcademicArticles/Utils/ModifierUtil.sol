@@ -3,7 +3,7 @@ import "../Globals/DepositingGlobal.sol";
 
 pragma solidity >=0.8.19;
 
-contract ModifierHelpper is DepositingGlobal {
+contract ModifierUtil is DepositingGlobal {
     function RequireHelpper(
         bool _require,
         string memory messageError

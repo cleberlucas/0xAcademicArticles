@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/DepositingLibrary.sol";
 import "../Librarys/ErrorMessageLibrary.sol";
-import "../Helppers/ModifierHelpper.sol";
+import "../Utils/ModifierUtil.sol";
 import "../Globals/DepositingGlobal.sol";
 
 pragma solidity >=0.8.21;
 
-abstract contract ModifierBase is DepositingGlobal, ModifierHelpper {
+abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
     
     modifier IsOwner() {
         RequireHelpper(OWNER == msg.sender, ErrorMessageLibrary.OwnerAction);
