@@ -6,7 +6,7 @@ import "../Globals/DepositingGlobal.sol";
 
 pragma solidity >=0.8.18;
 
-contract InteractionHandler is
+abstract contract InteractionHandler is
     DepositingGlobal,
     ModifierBase,
     EventBase

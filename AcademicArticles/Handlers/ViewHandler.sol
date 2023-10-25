@@ -6,7 +6,7 @@ import "../Globals/DepositingGlobal.sol";
 
 pragma solidity >=0.8.18;
 
-contract ViewHandler is DepositingGlobal {
+abstract contract ViewHandler is DepositingGlobal {
     function ArticlesKey()
         public
         view
