@@ -11,9 +11,9 @@ abstract contract DepositingGlobal {
     }
 
     address internal immutable OWNER;
-    DepositingLibrary.Key keyShared;
-    mapping(address authenticator => address institution) internal authenticatorInstitutionShared;
-    mapping(address institution => DelimitationLibrary.Institution) internal institutionProfileShared;
-    mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => uint256 sequence)) internal sequenceShared;
-    mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => mapping(uint256 sequence => DelimitationLibrary.Article))) internal articleShared;
+    DepositingLibrary.Key _key;
+    mapping(address authenticator => address institution) internal _authenticators;
+    mapping(address institution => DelimitationLibrary.Institution) internal _institutions;
+    mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => uint256 sequence)) internal _sequences;
+    mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => mapping(uint256 sequence => DelimitationLibrary.Article))) internal _articles;
 }

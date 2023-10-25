@@ -11,14 +11,14 @@ contract ModifierHelpper is DepositingGlobal {
         require(_require, messageError);
     }
 
-    function IsArticleRegisteredHelpper(
+    function IsArticlePostedHelpper(
         DepositingLibrary.ArticleKey memory articleKey
     ) public view returns (bool registered) {
-        for (uint256 i = 0; i < keyShared.articles.length; i++)
+        for (uint256 i = 0; i < _key.articles.length; i++)
             if (
-                keyShared.articles[i].poster == articleKey.poster &&
-                keyShared.articles[i].articleType == articleKey.articleType &&
-                keyShared.articles[i].sequence == articleKey.sequence
+                _key.articles[i].poster == articleKey.poster &&
+                _key.articles[i].articleType == articleKey.articleType &&
+                _key.articles[i].sequence == articleKey.sequence
             ) return true;
 
         return false;

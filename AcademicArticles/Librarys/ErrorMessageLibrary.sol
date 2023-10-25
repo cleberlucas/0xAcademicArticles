@@ -11,8 +11,8 @@ library ErrorMessageLibrary {
     string public constant InstitutionFound = "Institution was found!";
     string public constant InstitutionNotFound = "Institution was not found!";
     string public constant AuthenticatorNotFound = "Authenticator was not found!";
-    string public constant AuthenticatorInstitutionFound = "Authenticator institution was found!";
-    string public constant AuthenticatorInstitutionNotFound = "Authenticator institution was not found!";
+    string public constant AuthenticatorBindedFound = "Authenticator binded was found!";
+    string public constant AuthenticatorBindedNotFound = "Authenticator binded was not found!";
 
     function ArticleInArticlesNotFound(uint256 index) public pure returns(string memory message){
         return string.concat("The article in the index (", index.toString(),")  was not found!");

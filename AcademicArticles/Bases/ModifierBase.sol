@@ -13,24 +13,24 @@ abstract contract ModifierBase is DepositingGlobal, ModifierHelpper {
         _;
     }
 
-    modifier IsArticlesRegistered(DepositingLibrary.ArticleKey[] memory articlesKey) {
+    modifier IsArticlesPosted(DepositingLibrary.ArticleKey[] memory articlesKey) {
         for (uint256 i = 0; i < articlesKey.length; i++) {
-            RequireHelpper(IsArticleRegisteredHelpper(articlesKey[i]), ErrorMessageLibrary.ArticleInArticlesNotFound(i));
+            RequireHelpper(IsArticlePostedHelpper(articlesKey[i]), ErrorMessageLibrary.ArticleInArticlesNotFound(i));
         }
         _;
     }
 
-    modifier IsArticleRegistered(
+    modifier IsArticlePosted(
         DepositingLibrary.ArticleKey memory articleKey
     ) {
-        RequireHelpper(IsArticleRegisteredHelpper(articleKey), ErrorMessageLibrary.ArticleNotFound);
+        RequireHelpper(IsArticlePostedHelpper(articleKey), ErrorMessageLibrary.ArticleNotFound);
         _;
     }
 
     modifier IsNotArticlesAuthenticated(DepositingLibrary.ArticleKey[] memory articlesKey) {
         for (uint256 i = 0; i < articlesKey.length; i++) {
             RequireHelpper(
-                articleShared[articlesKey[i].poster][articlesKey[i].articleType][articlesKey[i].sequence].authenticator == address(0),
+                _articles[articlesKey[i].poster][articlesKey[i].articleType][articlesKey[i].sequence].authenticator == address(0),
                 ErrorMessageLibrary.ArticleInArticlesIsAuthenticated(i)
             );
         }
@@ -40,8 +40,8 @@ abstract contract ModifierBase is DepositingGlobal, ModifierHelpper {
     modifier IsInstitutionRegistered(address institutionKey, bool registered) {
         bool result;
 
-        for (uint256 i = 0; i < keyShared.institutions.length; i++) {
-            if (keyShared.institutions[i] == institutionKey) {
+        for (uint256 i = 0; i < _key.institutions.length; i++) {
+            if (_key.institutions[i] == institutionKey) {
                 result = true;
                 break;
             }
@@ -57,8 +57,8 @@ abstract contract ModifierBase is DepositingGlobal, ModifierHelpper {
     ) {
         bool result;
 
-        for (uint256 i = 0; i < keyShared.authenticators.length; i++)
-            if (keyShared.authenticators[i] == authenticatorKey) {
+        for (uint256 i = 0; i < _key.authenticators.length; i++)
+            if (_key.authenticators[i] == authenticatorKey) {
                 result = true;
                 break ;
             }
@@ -67,8 +67,8 @@ abstract contract ModifierBase is DepositingGlobal, ModifierHelpper {
         _;
     }
 
-    modifier IsAuthenticatorInstitutionRegistered(address authenticatorKey, address institutionKey, bool registered) {
-        RequireHelpper((authenticatorInstitutionShared[authenticatorKey] == institutionKey) == registered, registered ? ErrorMessageLibrary.AuthenticatorInstitutionNotFound : ErrorMessageLibrary.AuthenticatorInstitutionFound);
+    modifier IsAuthenticatorBinded(address authenticatorKey, address institutionKey, bool registered) {
+        RequireHelpper((_authenticators[authenticatorKey] == institutionKey) == registered, registered ? ErrorMessageLibrary.AuthenticatorBindedNotFound : ErrorMessageLibrary.AuthenticatorBindedFound);
         _;
     }
 

@@ -12,7 +12,7 @@ contract ViewHandler is DepositingGlobal {
         view
         returns (DepositingLibrary.ArticleKey[] memory articlesKey)
     {
-        return keyShared.articles;
+        return _key.articles;
     }
 
     function ArticlesKey(
@@ -24,8 +24,8 @@ contract ViewHandler is DepositingGlobal {
                 startIndex - endIndex + 1
             );
 
-        for (uint256 i = 0; i < keyShared.articles.length; i++) {
-            result[i] = keyShared.articles[endIndex + i];
+        for (uint256 i = 0; i < _key.articles.length; i++) {
+            result[i] = _key.articles[endIndex + i];
         }
 
         return result;
@@ -36,7 +36,7 @@ contract ViewHandler is DepositingGlobal {
         view
         returns (address[] memory institutionsKey)
     {
-        return keyShared.institutions;
+        return _key.institutions;
     }
 
     function InstitutionsKey(
@@ -45,8 +45,8 @@ contract ViewHandler is DepositingGlobal {
     ) public view returns (address[] memory institutionsKey) {
         address[] memory result = new address[](startIndex - endIndex + 1);
 
-        for (uint256 i = 0; i < keyShared.institutions.length; i++) {
-            result[i] = keyShared.institutions[endIndex + i];
+        for (uint256 i = 0; i < _key.institutions.length; i++) {
+            result[i] = _key.institutions[endIndex + i];
         }
 
         return result;
@@ -57,7 +57,7 @@ contract ViewHandler is DepositingGlobal {
         view
         returns (address[] memory authenticatorsKey)
     {
-        return keyShared.authenticators;
+        return _key.authenticators;
     }
 
     function AuthenticatorsKey(
@@ -66,8 +66,8 @@ contract ViewHandler is DepositingGlobal {
     ) public view returns (address[] memory authenticatorsKey) {
         address[] memory result = new address[](startIndex - endIndex + 1);
 
-        for (uint256 i = 0; i < keyShared.authenticators.length; i++) {
-            result[i] = keyShared.authenticators[endIndex + i];
+        for (uint256 i = 0; i < _key.authenticators.length; i++) {
+            result[i] = _key.authenticators[endIndex + i];
         }
 
         return result;
@@ -82,7 +82,7 @@ contract ViewHandler is DepositingGlobal {
             );
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = articleShared[articlesKey[i].poster][
+            result[i] = _articles[articlesKey[i].poster][
                 articlesKey[i].articleType
             ][articlesKey[i].sequence];
         }
@@ -103,7 +103,25 @@ contract ViewHandler is DepositingGlobal {
             );
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = institutionProfileShared[institutionsKey[i]];
+            result[i] = _institutions[institutionsKey[i]];
+        }
+        return result;
+    }
+
+    function Authenticators(
+        address[] memory authenticatorsKey
+    )
+        public
+        view
+        returns (address[] memory institutions)
+    {
+        address[]
+            memory result = new address[](
+                authenticatorsKey.length
+            );
+
+        for (uint256 i = 0; i < result.length; i++) {
+            result[i] = _authenticators[authenticatorsKey[i]];
         }
         return result;
     }

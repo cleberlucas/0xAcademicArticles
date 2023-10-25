@@ -15,8 +15,8 @@ contract InteractionHandler is
         address institutionKey,
         DelimitationLibrary.Institution memory institution
     ) public payable IsOwner IsInstitutionRegistered(institutionKey, false) {
-        institutionProfileShared[institutionKey] = institution;
-        keyShared.institutions.push(institutionKey);
+        _institutions[institutionKey] = institution;
+        _key.institutions.push(institutionKey);
         emit InstitutionRegistered(institutionKey);
     }
 
@@ -24,65 +24,65 @@ contract InteractionHandler is
         address institutionKey,
         DelimitationLibrary.Institution memory institution
     ) public payable IsOwner IsInstitutionRegistered(institutionKey, true) {
-        institutionProfileShared[institutionKey] = institution;
+        _institutions[institutionKey] = institution;
         emit InstitutionRegistered(institutionKey);
     }
 
     function UnregisterInstitution(
         address institutionKey
     ) public payable IsOwner IsInstitutionRegistered(institutionKey, true) {
-        delete institutionProfileShared[institutionKey];
+        delete _institutions[institutionKey];
 
-        for (uint256 i = 0; i < keyShared.institutions.length; i++) {
-            if (keyShared.institutions[i] == institutionKey) {
-                keyShared.institutions[i] = keyShared.institutions[
-                    keyShared.institutions.length - 1
+        for (uint256 i = 0; i < _key.institutions.length; i++) {
+            if (_key.institutions[i] == institutionKey) {
+                _key.institutions[i] = _key.institutions[
+                    _key.institutions.length - 1
                 ];
-                keyShared.institutions.pop();
+                _key.institutions.pop();
             }
         }
 
         emit InstitutionUnregistered(institutionKey);
     }
 
-    function RegisterAuthenticator(
+    function BindAuthenticator(
         address authenticatorKey
     )
         public
         payable
         IsInstitutionRegistered(msg.sender, true)
-        IsAuthenticatorInstitutionRegistered(
+        IsAuthenticatorBinded(
             authenticatorKey,
             msg.sender,
             false
         )
     {
-        authenticatorInstitutionShared[authenticatorKey] = msg.sender;
-        keyShared.authenticators.push(authenticatorKey);
+        _authenticators[authenticatorKey] = msg.sender;
+        _key.authenticators.push(authenticatorKey);
 
-        emit AuthenticatorRegistered(authenticatorKey, msg.sender);
+        emit AuthenticatorBinded(authenticatorKey, msg.sender);
     }
 
-    function UnregisterAuthenticator(
+    function UnBindAuthenticator(
         address authenticatorKey
     )
         public
         payable
         IsInstitutionRegistered(msg.sender, true)
-        IsAuthenticatorInstitutionRegistered(authenticatorKey, msg.sender, true)
+        IsAuthenticatorBinded(authenticatorKey, msg.sender, true)
     {
-        delete authenticatorInstitutionShared[authenticatorKey];
+        delete _authenticators[authenticatorKey];
 
-        for (uint256 i = 0; i < keyShared.authenticators.length; i++) {
-            if (keyShared.authenticators[i] == authenticatorKey) {
-                keyShared.authenticators[i] = keyShared.authenticators[
-                    keyShared.authenticators.length - 1
+        for (uint256 i = 0; i < _key.authenticators.length; i++) {
+            if (_key.authenticators[i] == authenticatorKey) {
+                _key.authenticators[i] = _key.authenticators[
+                    _key.authenticators.length - 1
                 ];
-                keyShared.authenticators.pop();
+                _key.authenticators.pop();
             }
         }
 
-        emit AuthenticatorUnregistered(authenticatorKey, msg.sender);
+        emit AuthenticatorUnbinded(authenticatorKey, msg.sender);
     }
 
     function AuthenticateArticle(
@@ -91,11 +91,11 @@ contract InteractionHandler is
         public
         payable
         IsAuthenticatorRegistered(msg.sender)
-        IsArticlesRegistered(articlesKey)
+        IsArticlesPosted(articlesKey)
         IsNotArticlesAuthenticated(articlesKey)
     {
         for (uint256 i = 0; i < articlesKey.length; i++) {
-            articleShared[articlesKey[i].poster][articlesKey[i].articleType][
+            _articles[articlesKey[i].poster][articlesKey[i].articleType][
                 articlesKey[i].sequence
             ].authenticator = msg.sender;
 
@@ -121,9 +121,9 @@ contract InteractionHandler is
         DelimitationLibrary.AcademicDegree academicDegree,
         int year
     ) public payable {
-        uint256 sequence = sequenceShared[msg.sender][articleType];
+        uint256 sequence = _sequences[msg.sender][articleType];
 
-        articleShared[msg.sender][articleType][sequence] = DelimitationLibrary
+        _articles[msg.sender][articleType][sequence] = DelimitationLibrary
             .Article(
                 title,
                 summary,
@@ -136,13 +136,13 @@ contract InteractionHandler is
                 year
             );
 
-        keyShared.articles.push(
+        _key.articles.push(
             DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
         );
 
-        sequenceShared[msg.sender][articleType]++;
+        _sequences[msg.sender][articleType]++;
 
-        emit ArticleRegistered(
+        emit ArticlePosted(
             DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
         );
     }
@@ -161,11 +161,11 @@ contract InteractionHandler is
     )
         public
         payable
-        IsArticleRegistered(
+        IsArticlePosted(
             DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
         )
     {
-        articleShared[msg.sender][articleType][sequence] = DelimitationLibrary
+        _articles[msg.sender][articleType][sequence] = DelimitationLibrary
             .Article(
                 title,
                 summary,
@@ -189,26 +189,26 @@ contract InteractionHandler is
     )
         public
         payable
-        IsArticleRegistered(
+        IsArticlePosted(
             DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
         )
     {
-        delete articleShared[msg.sender][articleType][sequence];
+        delete _articles[msg.sender][articleType][sequence];
 
-        for (uint256 i = 0; i < keyShared.articles.length; i++) {
+        for (uint256 i = 0; i < _key.articles.length; i++) {
             if (
-                keyShared.articles[i].poster == msg.sender &&
-                keyShared.articles[i].articleType == articleType &&
-                keyShared.articles[i].sequence == sequence
+                _key.articles[i].poster == msg.sender &&
+                _key.articles[i].articleType == articleType &&
+                _key.articles[i].sequence == sequence
             ) {
-                keyShared.articles[i] = keyShared.articles[
-                    keyShared.articles.length - 1
+                _key.articles[i] = _key.articles[
+                    _key.articles.length - 1
                 ];
-                keyShared.articles.pop();
+                _key.articles.pop();
             }
         }
 
-        emit ArticleUnregistered(
+        emit ArticleRemoved(
             DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
         );
     }

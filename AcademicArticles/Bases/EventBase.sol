@@ -10,21 +10,21 @@ abstract contract EventBase {
 
     event InstitutionUnregistered(address indexed institution);
 
-    event AuthenticatorRegistered(
+    event AuthenticatorBinded(
         address indexed authenticator,
         address indexed institution
     );
 
-    event AuthenticatorUnregistered(
+    event AuthenticatorUnbinded(
         address indexed authenticator,
         address indexed institution
     );
 
-    event ArticleRegistered(DepositingLibrary.ArticleKey indexed article);
+    event ArticlePosted(DepositingLibrary.ArticleKey indexed article);
 
     event ArticleEdited(DepositingLibrary.ArticleKey indexed article);
 
-    event ArticleUnregistered(DepositingLibrary.ArticleKey indexed article);
+    event ArticleRemoved(DepositingLibrary.ArticleKey indexed article);
 
     event ArticleAuthenticated(
         DepositingLibrary.ArticleKey indexed article,
