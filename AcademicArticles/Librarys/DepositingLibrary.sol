@@ -13,6 +13,6 @@ library DepositingLibrary {
     struct ArticleKey {
         address poster;
         DelimitationLibrary.ArticleType articleType;
-        uint256 sequence;
+        uint256 sequenceArticleType;
     }
 }

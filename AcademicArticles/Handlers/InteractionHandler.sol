@@ -14,7 +14,7 @@ abstract contract InteractionHandler is
     function RegisterInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    ) public payable IsOwner IsInstitutionRegistered(institutionKey, false) {
+    ) public payable IsOwner IsInstitutionRegistered(institutionKey, false, ErrorMessageLibrary.InstitutionRegistered) {
         _institutions[institutionKey] = institution;
         _key.institutions.push(institutionKey);
         emit InstitutionRegistered(institutionKey);
@@ -23,14 +23,14 @@ abstract contract InteractionHandler is
     function EditInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true) {
+    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true, ErrorMessageLibrary.InstitutionWasNotRegistered) {
         _institutions[institutionKey] = institution;
         emit InstitutionRegistered(institutionKey);
     }
 
     function UnregisterInstitution(
         address institutionKey
-    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true) {
+    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true, ErrorMessageLibrary.InstitutionWasNotRegistered) {
         delete _institutions[institutionKey];
 
         for (uint256 i = 0; i < _key.institutions.length; i++) {
@@ -50,14 +50,14 @@ abstract contract InteractionHandler is
     )
         public
         payable
-        IsInstitutionRegistered(msg.sender, true)
-        IsAuthenticatorBinded(
+        IsInstitution
+        IsAuthenticatorBindedInIntituition(
             authenticatorKey,
-            msg.sender,
-            false
+            false,
+            ErrorMessageLibrary.AuthenticatorBindedInInstitution
         )
     {
-        _authenticators[authenticatorKey] = msg.sender;
+        _bindedAuthenticators[authenticatorKey] = msg.sender;
         _key.authenticators.push(authenticatorKey);
 
         emit AuthenticatorBinded(authenticatorKey, msg.sender);
@@ -68,10 +68,10 @@ abstract contract InteractionHandler is
     )
         public
         payable
-        IsInstitutionRegistered(msg.sender, true)
-        IsAuthenticatorBinded(authenticatorKey, msg.sender, true)
+        IsInstitution
+        IsAuthenticatorBindedInIntituition(authenticatorKey, true, ErrorMessageLibrary.AuthenticatorWasNotBindedInInstitution)
     {
-        delete _authenticators[authenticatorKey];
+        delete _bindedAuthenticators[authenticatorKey];
 
         for (uint256 i = 0; i < _key.authenticators.length; i++) {
             if (_key.authenticators[i] == authenticatorKey) {
@@ -86,120 +86,84 @@ abstract contract InteractionHandler is
     }
 
     function AuthenticateArticle(
-        DepositingLibrary.ArticleKey[] memory articlesKey
+        DepositingLibrary.ArticleKey memory articleKey
     )
         public
         payable
-        IsAuthenticatorRegistered(msg.sender)
-        IsArticlesPosted(articlesKey)
-        IsNotArticlesAuthenticated(articlesKey)
+        IsBindedAuthenticator
+        IsArticlePosted(articleKey)
+        IsNotArticleAuthenticated(articleKey)
     {
-        for (uint256 i = 0; i < articlesKey.length; i++) {
-            _articles[articlesKey[i].poster][articlesKey[i].articleType][
-                articlesKey[i].sequence
-            ].authenticator = msg.sender;
 
-            emit ArticleAuthenticated(
-                DepositingLibrary.ArticleKey(
-                    articlesKey[i].poster,
-                    articlesKey[i].articleType,
-                    articlesKey[i].sequence
-                ),
-                msg.sender
-            );
-        }
+        _authenticatedArticles[articleKey.poster][articleKey.articleType][
+            articleKey.sequenceArticleType
+        ] = msg.sender;
+
+        emit ArticleAuthenticated(
+            DepositingLibrary.ArticleKey(
+                articleKey.poster,
+                articleKey.articleType,
+                articleKey.sequenceArticleType
+            ),
+            msg.sender
+        );
+        
     }
 
     function PostArticle(
         DelimitationLibrary.ArticleType articleType,
-        string memory title,
-        string memory summary,
-        string memory course,
-        string memory institution,
-        DelimitationLibrary.Contributors memory contributors,
-        DelimitationLibrary.Document memory document,
-        DelimitationLibrary.AcademicDegree academicDegree,
-        int year
+        DelimitationLibrary.Article memory article
     ) public payable {
-        uint256 sequence = _sequences[msg.sender][articleType];
+        uint256 sequenceArticleType = _sequenceArticleTypes[msg.sender][articleType];
 
-        _articles[msg.sender][articleType][sequence] = DelimitationLibrary
-            .Article(
-                title,
-                summary,
-                course,
-                institution,
-                address(0),
-                contributors,
-                document,
-                academicDegree,
-                year
-            );
+        _articles[msg.sender][articleType][sequenceArticleType] = article;
 
         _key.articles.push(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
+            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
         );
 
-        _sequences[msg.sender][articleType]++;
+        _sequenceArticleTypes[msg.sender][articleType]++;
 
         emit ArticlePosted(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
+            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
         );
     }
 
     function EditedArticle(
-        uint256 sequence,
+        uint256 sequenceArticleType,
         DelimitationLibrary.ArticleType articleType,
-        string memory title,
-        string memory summary,
-        string memory course,
-        string memory institution,
-        DelimitationLibrary.Contributors memory contributors,
-        DelimitationLibrary.Document memory document,
-        DelimitationLibrary.AcademicDegree academicDegree,
-        int year
+        DelimitationLibrary.Article memory article
     )
         public
         payable
         IsArticlePosted(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
+            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
         )
     {
-        _articles[msg.sender][articleType][sequence] = DelimitationLibrary
-            .Article(
-                title,
-                summary,
-                course,
-                institution,
-                address(0),
-                contributors,
-                document,
-                academicDegree,
-                year
-            );
+        _articles[msg.sender][articleType][sequenceArticleType] = article;
 
         emit ArticleEdited(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
+            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
         );
     }
 
     function RemoveArticle(
-        uint256 sequence,
+        uint256 sequenceArticleType,
         DelimitationLibrary.ArticleType articleType
     )
         public
         payable
         IsArticlePosted(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
+            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
         )
     {
-        delete _articles[msg.sender][articleType][sequence];
+        delete _articles[msg.sender][articleType][sequenceArticleType];
 
         for (uint256 i = 0; i < _key.articles.length; i++) {
             if (
                 _key.articles[i].poster == msg.sender &&
                 _key.articles[i].articleType == articleType &&
-                _key.articles[i].sequence == sequence
+                _key.articles[i].sequenceArticleType == sequenceArticleType
             ) {
                 _key.articles[i] = _key.articles[
                     _key.articles.length - 1
@@ -209,7 +173,7 @@ abstract contract InteractionHandler is
         }
 
         emit ArticleRemoved(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequence)
+            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
         );
     }
 }

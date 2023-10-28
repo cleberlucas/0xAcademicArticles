@@ -17,7 +17,7 @@ library DelimitationLibrary {
         string summary;
         string course;
         string institution;
-        address authenticator;
+        string additional;
         Contributors contributors;
         Document document;
         AcademicDegree academicDegree;
@@ -40,7 +40,8 @@ library DelimitationLibrary {
         ScientificArticle,
         These,
         Monograph,
-        Dissertation
+        Dissertation,
+        Others
     }
 
     enum AcademicDegree {

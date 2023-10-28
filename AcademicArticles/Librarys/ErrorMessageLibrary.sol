@@ -1,24 +1,17 @@
 // SPDX-License-Identifier: AFL-3.0
-import "@openzeppelin/contracts/utils/Strings.sol";
-
 pragma solidity >=0.8.18;
 
 library ErrorMessageLibrary {
-    using Strings for uint256;
-
     string public constant OwnerAction = "Only the creator performs this action!";
+    string public constant InstitutionAction = "Only the institution performs this action!";
+    string public constant BindedAuthenticatorAction = "Only the autenticator binded performs this action!";
+
     string public constant ArticleNotFound = "The article was not found!";
-    string public constant InstitutionFound = "Institution was found!";
-    string public constant InstitutionNotFound = "Institution was not found!";
-    string public constant AuthenticatorNotFound = "Authenticator was not found!";
-    string public constant AuthenticatorBindedFound = "Authenticator binded was found!";
-    string public constant AuthenticatorBindedNotFound = "Authenticator binded was not found!";
+    string public constant ArticleAuthenticated = "The article has already been authenticated!";
+    
+    string public constant InstitutionRegistered = "Institution has already been registered!";
+    string public constant InstitutionWasNotRegistered = "Institution was not registered!";
 
-    function ArticleInArticlesNotFound(uint256 index) public pure returns(string memory message){
-        return string.concat("The article in the index (", index.toString(),")  was not found!");
-    }
-
-    function ArticleInArticlesIsAuthenticated(uint256 index) public pure returns(string memory message){
-        return string.concat("An authenticated article was found in the index (", index.toString(),")!");
-    }
+    string public constant AuthenticatorBindedInInstitution = "Authenticator has already been binded in institution!";
+    string public constant AuthenticatorWasNotBindedInInstitution = "Authenticator was not binded in institution!";
 }

@@ -84,7 +84,7 @@ abstract contract ViewHandler is DepositingGlobal {
         for (uint256 i = 0; i < result.length; i++) {
             result[i] = _articles[articlesKey[i].poster][
                 articlesKey[i].articleType
-            ][articlesKey[i].sequence];
+            ][articlesKey[i].sequenceArticleType];
         }
 
         return result;
@@ -108,12 +108,12 @@ abstract contract ViewHandler is DepositingGlobal {
         return result;
     }
 
-    function Authenticators(
+    function BindedAuthenticators(
         address[] memory authenticatorsKey
     )
         public
         view
-        returns (address[] memory institutions)
+        returns (address[] memory institutionsKey)
     {
         address[]
             memory result = new address[](
@@ -121,8 +121,29 @@ abstract contract ViewHandler is DepositingGlobal {
             );
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _authenticators[authenticatorsKey[i]];
+            result[i] = _bindedAuthenticators[authenticatorsKey[i]];
         }
+        return result;
+    }
+
+    function AuthenticatedArticles(
+        DepositingLibrary.ArticleKey[] memory articlesKey
+    )
+        public
+        view
+        returns (address[] memory authenticatorsKeys)
+    {
+        address[]
+            memory result = new address[](
+                articlesKey.length
+            );
+
+        for (uint256 i = 0; i < result.length; i++) {
+            result[i] = _authenticatedArticles[articlesKey[i].poster][
+                articlesKey[i].articleType
+            ][articlesKey[i].sequenceArticleType];
+        }
+
         return result;
     }
 }
