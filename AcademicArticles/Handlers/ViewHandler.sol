@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/DelimitationLibrary.sol";
-import "../Librarys/DepositingLibrary.sol";
-import "../Globals/DepositingGlobal.sol";
+import "../Librarys/RepositoryLibrary.sol";
+import "../Extensions/RepositoryExtension.sol";
 
 pragma solidity >= 0.8.22;
 
-abstract contract ViewHandler is DepositingGlobal {
+abstract contract ViewHandler is RepositoryExtension {
     function ArticlesKey()
         public
         view
-        returns (DepositingLibrary.ArticleKey[] memory articlesKey)
+        returns (RepositoryLibrary.ArticleKey[] memory articlesKey)
     {
         return _key.articles;
     }
@@ -17,9 +17,9 @@ abstract contract ViewHandler is DepositingGlobal {
     function ArticlesKey(
         uint256 startIndex,
         uint256 endIndex
-    ) public view returns (DepositingLibrary.ArticleKey[] memory articlesKey) {
-        DepositingLibrary.ArticleKey[]
-            memory result = new DepositingLibrary.ArticleKey[](
+    ) public view returns (RepositoryLibrary.ArticleKey[] memory articlesKey) {
+        RepositoryLibrary.ArticleKey[]
+            memory result = new RepositoryLibrary.ArticleKey[](
                 startIndex - endIndex + 1
             );
 
@@ -73,7 +73,7 @@ abstract contract ViewHandler is DepositingGlobal {
     }
 
     function Article(
-        DepositingLibrary.ArticleKey[] memory articlesKey
+        RepositoryLibrary.ArticleKey[] memory articlesKey
     ) public view returns (DelimitationLibrary.Article[] memory articles) {
         DelimitationLibrary.Article[]
             memory result = new DelimitationLibrary.Article[](
@@ -81,7 +81,7 @@ abstract contract ViewHandler is DepositingGlobal {
             );
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _articles[articlesKey[i].poster][
+            result[i] = _data.articles[articlesKey[i].poster][
                 articlesKey[i].articleType
             ][articlesKey[i].sequenceArticleType];
         }
@@ -102,7 +102,7 @@ abstract contract ViewHandler is DepositingGlobal {
             );
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _institutions[institutionsKey[i]];
+            result[i] = _data.institutions[institutionsKey[i]];
         }
         return result;
     }
@@ -113,18 +113,18 @@ abstract contract ViewHandler is DepositingGlobal {
         address[] memory result = new address[](authenticatorsKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _bindingIntitutionAuthenticators[authenticatorsKey[i]];
+            result[i] = _data.bindingIntitutionAuthenticators[authenticatorsKey[i]];
         }
         return result;
     }
 
     function InstitutionAuthenticatedArticles(
-        DepositingLibrary.ArticleKey[] memory articlesKey
+        RepositoryLibrary.ArticleKey[] memory articlesKey
     ) public view returns (address[] memory authenticatorsKeys) {
         address[] memory result = new address[](articlesKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _institutionAuthenticatedArticles[articlesKey[i].poster][
+            result[i] = _data.institutionAuthenticatedArticles[articlesKey[i].poster][
                 articlesKey[i].articleType
             ][articlesKey[i].sequenceArticleType];
         }

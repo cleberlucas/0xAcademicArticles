@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AFL-3.0
-import "../Librarys/DepositingLibrary.sol";
+import "../Librarys/RepositoryLibrary.sol";
 
 pragma solidity >= 0.8.22;
 
-abstract contract EventBase {
+abstract contract EventExtension {
     event InstitutionRegistered(address indexed institution);
 
     event InstitutionEdited(address indexed institution);
@@ -20,19 +20,19 @@ abstract contract EventBase {
         address indexed institution
     );
 
-    event ArticlePosted(DepositingLibrary.ArticleKey indexed article);
+    event ArticlePosted(RepositoryLibrary.ArticleKey indexed article);
 
-    event ArticleEdited(DepositingLibrary.ArticleKey indexed article);
+    event ArticleEdited(RepositoryLibrary.ArticleKey indexed article);
 
-    event ArticleRemoved(DepositingLibrary.ArticleKey indexed article);
+    event ArticleRemoved(RepositoryLibrary.ArticleKey indexed article);
 
     event ArticleAuthenticated(
-        DepositingLibrary.ArticleKey indexed article,
+        RepositoryLibrary.ArticleKey indexed article,
         address authenticator
     );
 
     event ArticleDisauthenticate(
-        DepositingLibrary.ArticleKey indexed article,
+        RepositoryLibrary.ArticleKey indexed article,
         address authenticator
     );
 }

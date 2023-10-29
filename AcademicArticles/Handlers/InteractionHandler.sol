@@ -1,21 +1,21 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/DelimitationLibrary.sol";
-import "../Bases/ModifierBase.sol";
-import "../Bases/EventBase.sol";
-import "../Globals/DepositingGlobal.sol";
+import "../Extensions/ModifierExtension.sol";
+import "../Extensions/EventExtension.sol";
+import "../Extensions/RepositoryExtension.sol";
 
 pragma solidity >=0.8.22;
 
 abstract contract InteractionHandler is
-    DepositingGlobal,
-    ModifierBase,
-    EventBase
+    RepositoryExtension,
+    ModifierExtension,
+    EventExtension
 {
     function RegisterInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
     ) public payable IsOwner {
-        _institutions[institutionKey] = institution;
+        _data.institutions[institutionKey] = institution;
         _key.institutions.push(institutionKey);
         emit InstitutionRegistered(institutionKey);
     }
@@ -24,14 +24,14 @@ abstract contract InteractionHandler is
         address institutionKey,
         DelimitationLibrary.Institution memory institution
     ) public payable IsOwner {
-        _institutions[institutionKey] = institution;
+        _data.institutions[institutionKey] = institution;
         emit InstitutionRegistered(institutionKey);
     }
 
     function UnregisterInstitution(
         address institutionKey
     ) public payable IsOwner {
-        delete _institutions[institutionKey];
+        delete _data.institutions[institutionKey];
 
         for (uint256 i = 0; i < _key.institutions.length; i++) {
             if (_key.institutions[i] == institutionKey) {
@@ -55,10 +55,10 @@ abstract contract InteractionHandler is
         IsAuthenticatorBindedInIntituition(
             authenticatorKey,
             false,
-            ErrorMessageLibrary.AuthenticatorBindedInInstitution
+            ErrorMessageLibrary.AuthenticatorAlreadyBindedInInstitution
         )
     {
-        _bindingIntitutionAuthenticators[authenticatorKey] = msg.sender;
+        _data.bindingIntitutionAuthenticators[authenticatorKey] = msg.sender;
         _key.authenticators.push(authenticatorKey);
 
         emit AuthenticatorBinded(authenticatorKey, msg.sender);
@@ -76,7 +76,7 @@ abstract contract InteractionHandler is
             ErrorMessageLibrary.AuthenticatorWasNotBindedInInstitution
         )
     {
-        delete _bindingIntitutionAuthenticators[authenticatorKey];
+        delete _data.bindingIntitutionAuthenticators[authenticatorKey];
 
         for (uint256 i = 0; i < _key.authenticators.length; i++) {
             if (_key.authenticators[i] == authenticatorKey) {
@@ -91,7 +91,7 @@ abstract contract InteractionHandler is
     }
 
     function AuthenticateArticle(
-        DepositingLibrary.ArticleKey memory articleKey
+        RepositoryLibrary.ArticleKey memory articleKey
     )
         public
         payable
@@ -100,18 +100,19 @@ abstract contract InteractionHandler is
         IsArticleAuthenticated(
             articleKey,
             false,
-            ErrorMessageLibrary.ArticleAuthenticated
+            ErrorMessageLibrary.ArticleAlreadyAuthenticated
         )
     {
-        _institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
-            articleKey.sequenceArticleType
-        ] = _bindingIntitutionAuthenticators[msg.sender];
+        _data.institutionAuthenticatedArticles[articleKey.poster][
+            articleKey.articleType
+        ][articleKey.sequenceArticleType] = _data
+            .bindingIntitutionAuthenticators[msg.sender];
 
         emit ArticleAuthenticated(articleKey, msg.sender);
     }
 
     function DisauthenticateArticle(
-        DepositingLibrary.ArticleKey memory articleKey
+        RepositoryLibrary.ArticleKey memory articleKey
     )
         public
         payable
@@ -123,80 +124,86 @@ abstract contract InteractionHandler is
             ErrorMessageLibrary.ArticleNotAuthenticated
         )
     {
-        _institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
-            articleKey.sequenceArticleType
-        ] = address(0);
+        delete _data.institutionAuthenticatedArticles[articleKey.poster][
+            articleKey.articleType
+        ][articleKey.sequenceArticleType];
 
         emit ArticleDisauthenticate(articleKey, msg.sender);
     }
 
     function PostArticle(
-        DelimitationLibrary.ArticleType articleType,
+        DelimitationLibrary.ArticleType articleTypeKey,
         DelimitationLibrary.Article memory article
     ) public payable {
-        uint256 sequenceArticleType = _sequenceArticleTypes[msg.sender][
-            articleType
+        uint256 sequenceArticleType = _data.sequenceArticleTypes[msg.sender][
+            articleTypeKey
         ];
 
-        DepositingLibrary.ArticleKey memory articleKey = DepositingLibrary
-            .ArticleKey(msg.sender, articleType, sequenceArticleType);
+        RepositoryLibrary.ArticleKey memory articleKey = RepositoryLibrary
+            .ArticleKey(msg.sender, articleTypeKey, sequenceArticleType);
 
-        _articles[msg.sender][articleType][sequenceArticleType] = article;
+        _data.articles[msg.sender][articleTypeKey][
+            sequenceArticleType
+        ] = article;
 
         _key.articles.push(articleKey);
 
-        _sequenceArticleTypes[msg.sender][articleType]++;
+        _data.sequenceArticleTypes[msg.sender][articleTypeKey]++;
 
         emit ArticlePosted(articleKey);
     }
 
     function EditArticle(
-        uint256 sequenceArticleType,
-        DelimitationLibrary.ArticleType articleType,
+        uint256 sequenceArticleTypeKey,
+        DelimitationLibrary.ArticleType articleTypeKey,
         DelimitationLibrary.Article memory article
     )
         public
         payable
         IsArticlePosted(
-            DepositingLibrary.ArticleKey(
+            RepositoryLibrary.ArticleKey(
                 msg.sender,
-                articleType,
-                sequenceArticleType
+                articleTypeKey,
+                sequenceArticleTypeKey
             )
         )
     {
-        _articles[msg.sender][articleType][sequenceArticleType] = article;
+        _data.articles[msg.sender][articleTypeKey][
+            sequenceArticleTypeKey
+        ] = article;
 
         emit ArticleEdited(
-            DepositingLibrary.ArticleKey(
+            RepositoryLibrary.ArticleKey(
                 msg.sender,
-                articleType,
-                sequenceArticleType
+                articleTypeKey,
+                sequenceArticleTypeKey
             )
         );
     }
 
     function RemoveArticle(
-        uint256 sequenceArticleType,
-        DelimitationLibrary.ArticleType articleType
+        uint256 sequenceArticleTypeKey,
+        DelimitationLibrary.ArticleType articleTypeKey
     )
         public
         payable
         IsArticlePosted(
-            DepositingLibrary.ArticleKey(
+            RepositoryLibrary.ArticleKey(
                 msg.sender,
-                articleType,
-                sequenceArticleType
+                articleTypeKey,
+                sequenceArticleTypeKey
             )
         )
     {
-        delete _articles[msg.sender][articleType][sequenceArticleType];
+        delete _data.articles[msg.sender][articleTypeKey][
+            sequenceArticleTypeKey
+        ];
 
         for (uint256 i = 0; i < _key.articles.length; i++) {
             if (
                 _key.articles[i].poster == msg.sender &&
-                _key.articles[i].articleType == articleType &&
-                _key.articles[i].sequenceArticleType == sequenceArticleType
+                _key.articles[i].articleType == articleTypeKey &&
+                _key.articles[i].sequenceArticleType == sequenceArticleTypeKey
             ) {
                 _key.articles[i] = _key.articles[_key.articles.length - 1];
                 _key.articles.pop();
@@ -204,10 +211,10 @@ abstract contract InteractionHandler is
         }
 
         emit ArticleRemoved(
-            DepositingLibrary.ArticleKey(
+            RepositoryLibrary.ArticleKey(
                 msg.sender,
-                articleType,
-                sequenceArticleType
+                articleTypeKey,
+                sequenceArticleTypeKey
             )
         );
     }

@@ -13,12 +13,12 @@ library ErrorMessageLibrary {
         "This address is not valid";
 
     string public constant ArticleNotPosted = "The article was not posted!";
-    string public constant ArticleAuthenticated =
+    string public constant ArticleAlreadyAuthenticated =
         "The article has already been authenticated!";
     string public constant ArticleNotAuthenticated =
         "The article was not authenticated!";
 
-    string public constant AuthenticatorBindedInInstitution =
+    string public constant AuthenticatorAlreadyBindedInInstitution =
         "Authenticator has already been binded in institution!";
     string public constant AuthenticatorWasNotBindedInInstitution =
         "Authenticator was not binded in institution!";

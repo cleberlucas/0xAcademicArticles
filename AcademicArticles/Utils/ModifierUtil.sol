@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AFL-3.0
-import "../Globals/DepositingGlobal.sol";
+import "../Extensions/RepositoryExtension.sol";
 
 pragma solidity >=0.8.19;
 
-abstract contract ModifierUtil is DepositingGlobal {
+abstract contract ModifierUtil is RepositoryExtension {
     function Require(
         bool _require,
         string memory messageOnError

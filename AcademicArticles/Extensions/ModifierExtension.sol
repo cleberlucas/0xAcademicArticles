@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AFL-3.0
-import "../Librarys/DepositingLibrary.sol";
+import "../Librarys/RepositoryLibrary.sol";
 import "../Librarys/ErrorMessageLibrary.sol";
 import "../Utils/ModifierUtil.sol";
-import "../Globals/DepositingGlobal.sol";
+import "../Extensions/RepositoryExtension.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
+abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
     modifier IsOwner() {
         Require(OWNER == msg.sender, ErrorMessageLibrary.OwnerAction);
         _;
@@ -53,25 +53,25 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
         string memory messageOnError
     ) {
         Require(
-            (_bindingIntitutionAuthenticators[authenticatorKey] == msg.sender) == binded,
+            (_data.bindingIntitutionAuthenticators[authenticatorKey] == msg.sender) == binded,
             messageOnError
         );
         _;
     }
 
     modifier IsSameInstitutionBinded(
-        DepositingLibrary.ArticleKey memory articleKey
+        RepositoryLibrary.ArticleKey memory articleKey
     ) {
         Require(
-            _institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
+            _data.institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
                 articleKey.sequenceArticleType
-            ] == _bindingIntitutionAuthenticators[msg.sender],
+            ] == _data.bindingIntitutionAuthenticators[msg.sender],
             ErrorMessageLibrary.AuthenticatorNotBelongInstitutionBinded
         );
         _;
     }
 
-    modifier IsArticlePosted(DepositingLibrary.ArticleKey memory articleKey) {
+    modifier IsArticlePosted(RepositoryLibrary.ArticleKey memory articleKey) {
         bool result;
 
         for (uint256 i = 0; i < _key.articles.length; i++)
@@ -90,11 +90,11 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
     }
 
     modifier IsArticleAuthenticated(
-        DepositingLibrary.ArticleKey memory articleKey,
+        RepositoryLibrary.ArticleKey memory articleKey,
         bool authenticated,
         string memory messageOnError
     ) {
-        bool result = _institutionAuthenticatedArticles[articleKey.poster][
+        bool result = _data.institutionAuthenticatedArticles[articleKey.poster][
             articleKey.articleType
         ][articleKey.sequenceArticleType] != address(0);
 
