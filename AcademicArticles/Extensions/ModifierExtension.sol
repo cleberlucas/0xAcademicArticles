@@ -47,6 +47,20 @@ abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
         _;
     }
 
+    modifier IsInstitutionRegistered(address institutionKey, bool registered, string memory messageOnError) {
+        bool result;
+
+        for (uint256 i = 0; i < _key.institutions.length; i++) {
+            if (_key.institutions[i] == institutionKey) {
+                result = true;
+                break;
+            }
+        }
+
+        Require(registered ? result : !result, messageOnError);
+        _;
+    }
+
     modifier IsAuthenticatorBindedInIntituition(
         address authenticatorKey,
         bool binded,

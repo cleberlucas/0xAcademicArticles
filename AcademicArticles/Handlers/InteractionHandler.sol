@@ -14,7 +14,7 @@ abstract contract InteractionHandler is
     function RegisterInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    ) public payable IsOwner {
+    ) public payable IsOwner IsInstitutionRegistered(institutionKey, false, ErrorMessageLibrary.InstitutionRegistered) {
         _data.institutions[institutionKey] = institution;
         _key.institutions.push(institutionKey);
         emit InstitutionRegistered(institutionKey);
@@ -23,14 +23,14 @@ abstract contract InteractionHandler is
     function EditInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    ) public payable IsOwner {
+    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true, ErrorMessageLibrary.InstitutionWasNotRegistered) {
         _data.institutions[institutionKey] = institution;
         emit InstitutionRegistered(institutionKey);
     }
 
     function UnregisterInstitution(
         address institutionKey
-    ) public payable IsOwner {
+    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true, ErrorMessageLibrary.InstitutionWasNotRegistered) {
         delete _data.institutions[institutionKey];
 
         for (uint256 i = 0; i < _key.institutions.length; i++) {
@@ -147,6 +147,7 @@ abstract contract InteractionHandler is
         ] = article;
 
         _key.articles.push(articleKey);
+        _key.articles[_key.articles.length - 1] = _key.articles[0];
 
         _data.sequenceArticleTypes[msg.sender][articleTypeKey]++;
 
