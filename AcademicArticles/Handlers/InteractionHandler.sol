@@ -58,7 +58,7 @@ abstract contract InteractionHandler is
             ErrorMessageLibrary.AuthenticatorAlreadyBindedInInstitution
         )
     {
-        _data.bindingIntitutionAuthenticators[authenticatorKey] = msg.sender;
+        _data.bindingAuthenticators[authenticatorKey] = msg.sender;
         _key.authenticators.push(authenticatorKey);
 
         emit AuthenticatorBinded(authenticatorKey, msg.sender);
@@ -76,7 +76,7 @@ abstract contract InteractionHandler is
             ErrorMessageLibrary.AuthenticatorWasNotBindedInInstitution
         )
     {
-        delete _data.bindingIntitutionAuthenticators[authenticatorKey];
+        delete _data.bindingAuthenticators[authenticatorKey];
 
         for (uint256 i = 0; i < _key.authenticators.length; i++) {
             if (_key.authenticators[i] == authenticatorKey) {
@@ -106,7 +106,7 @@ abstract contract InteractionHandler is
         _data.institutionAuthenticatedArticles[articleKey.poster][
             articleKey.articleType
         ][articleKey.sequenceArticleType] = _data
-            .bindingIntitutionAuthenticators[msg.sender];
+            .bindingAuthenticators[msg.sender];
 
         emit ArticleAuthenticated(articleKey, msg.sender);
     }
@@ -147,7 +147,6 @@ abstract contract InteractionHandler is
         ] = article;
 
         _key.articles.push(articleKey);
-        _key.articles[_key.articles.length - 1] = _key.articles[0];
 
         _data.sequenceArticleTypes[msg.sender][articleTypeKey]++;
 

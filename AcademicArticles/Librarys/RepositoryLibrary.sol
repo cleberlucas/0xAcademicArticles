@@ -5,7 +5,7 @@ pragma solidity >=0.8.22;
 
 library RepositoryLibrary {
     struct Data {
-        mapping(address authenticator => address institution) bindingIntitutionAuthenticators;
+        mapping(address authenticator => address institution) bindingAuthenticators;
         mapping(address institution => DelimitationLibrary.Institution) institutions;
         mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => uint256 sequence)) sequenceArticleTypes;
         mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => mapping(uint256 sequence => DelimitationLibrary.Article))) articles;

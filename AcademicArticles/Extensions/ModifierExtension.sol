@@ -67,7 +67,7 @@ abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
         string memory messageOnError
     ) {
         Require(
-            (_data.bindingIntitutionAuthenticators[authenticatorKey] == msg.sender) == binded,
+            (_data.bindingAuthenticators[authenticatorKey] == msg.sender) == binded,
             messageOnError
         );
         _;
@@ -79,7 +79,7 @@ abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
         Require(
             _data.institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
                 articleKey.sequenceArticleType
-            ] == _data.bindingIntitutionAuthenticators[msg.sender],
+            ] == _data.bindingAuthenticators[msg.sender],
             ErrorMessageLibrary.AuthenticatorNotBelongInstitutionBinded
         );
         _;

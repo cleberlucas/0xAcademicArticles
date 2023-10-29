@@ -16,20 +16,28 @@ abstract contract ViewHandler is RepositoryExtension {
 
     function ArticlesKey(
         uint256 startIndex,
-        uint256 endIndex
+        uint256 endIndex,
+        bool reverse
     ) public view returns (RepositoryLibrary.ArticleKey[] memory articlesKey) {
         RepositoryLibrary.ArticleKey[]
             memory result = new RepositoryLibrary.ArticleKey[](
                 (endIndex - startIndex) + 1
             );
 
-        for (uint256 i = 0; i < result.length; i++){
-            if (startIndex + i < _key.articles.length) 
-                result[i] = _key.articles[startIndex + i];
-            else
-                break;
+        if (reverse) {
+            for (uint256 i = 0; i < result.length; i++) {
+                if (startIndex + i < _key.articles.length)
+                    result[i] = _key.articles[_key.articles.length - i - 1];
+                else break;
+            }
+        } else {
+            for (uint256 i = 0; i < result.length; i++) {
+                if (startIndex + i < _key.articles.length)
+                    result[i] = _key.articles[startIndex + i];
+                else break;
+            }
         }
-          
+
         return result;
     }
 
@@ -98,13 +106,13 @@ abstract contract ViewHandler is RepositoryExtension {
         return result;
     }
 
-    function BindingIntitutionAuthenticators(
+    function bindingAuthenticators(
         address[] memory authenticatorsKey
     ) public view returns (address[] memory institutionsKey) {
         address[] memory result = new address[](authenticatorsKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _data.bindingIntitutionAuthenticators[
+            result[i] = _data.bindingAuthenticators[
                 authenticatorsKey[i]
             ];
         }
