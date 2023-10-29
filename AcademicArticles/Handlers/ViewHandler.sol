@@ -23,10 +23,13 @@ abstract contract ViewHandler is RepositoryExtension {
                 (endIndex - startIndex) + 1
             );
 
-        for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _key.articles[startIndex + i];
+        for (uint256 i = 0; i < result.length; i++){
+            if (startIndex + i < _key.articles.length) 
+                result[i] = _key.articles[startIndex + i];
+            else
+                break;
         }
-
+          
         return result;
     }
 
