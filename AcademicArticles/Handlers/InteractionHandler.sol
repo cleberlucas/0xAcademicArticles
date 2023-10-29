@@ -4,7 +4,7 @@ import "../Bases/ModifierBase.sol";
 import "../Bases/EventBase.sol";
 import "../Globals/DepositingGlobal.sol";
 
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.22;
 
 abstract contract InteractionHandler is
     DepositingGlobal,
@@ -14,16 +14,7 @@ abstract contract InteractionHandler is
     function RegisterInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    )
-        public
-        payable
-        IsOwner
-        IsInstitutionRegistered(
-            institutionKey,
-            false,
-            ErrorMessageLibrary.InstitutionRegistered
-        )
-    {
+    ) public payable IsOwner {
         _institutions[institutionKey] = institution;
         _key.institutions.push(institutionKey);
         emit InstitutionRegistered(institutionKey);
@@ -32,32 +23,14 @@ abstract contract InteractionHandler is
     function EditInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    )
-        public
-        payable
-        IsOwner
-        IsInstitutionRegistered(
-            institutionKey,
-            true,
-            ErrorMessageLibrary.InstitutionWasNotRegistered
-        )
-    {
+    ) public payable IsOwner {
         _institutions[institutionKey] = institution;
         emit InstitutionRegistered(institutionKey);
     }
 
     function UnregisterInstitution(
         address institutionKey
-    )
-        public
-        payable
-        IsOwner
-        IsInstitutionRegistered(
-            institutionKey,
-            true,
-            ErrorMessageLibrary.InstitutionWasNotRegistered
-        )
-    {
+    ) public payable IsOwner {
         delete _institutions[institutionKey];
 
         for (uint256 i = 0; i < _key.institutions.length; i++) {
@@ -78,19 +51,20 @@ abstract contract InteractionHandler is
         public
         payable
         IsInstitution
+        IsValidAddress(authenticatorKey)
         IsAuthenticatorBindedInIntituition(
             authenticatorKey,
             false,
             ErrorMessageLibrary.AuthenticatorBindedInInstitution
         )
     {
-        _bindedAuthenticators[authenticatorKey] = msg.sender;
+        _bindingIntitutionAuthenticators[authenticatorKey] = msg.sender;
         _key.authenticators.push(authenticatorKey);
 
         emit AuthenticatorBinded(authenticatorKey, msg.sender);
     }
 
-    function UnBindAuthenticator(
+    function UnbindAuthenticator(
         address authenticatorKey
     )
         public
@@ -102,7 +76,7 @@ abstract contract InteractionHandler is
             ErrorMessageLibrary.AuthenticatorWasNotBindedInInstitution
         )
     {
-        delete _bindedAuthenticators[authenticatorKey];
+        delete _bindingIntitutionAuthenticators[authenticatorKey];
 
         for (uint256 i = 0; i < _key.authenticators.length; i++) {
             if (_key.authenticators[i] == authenticatorKey) {
@@ -121,22 +95,39 @@ abstract contract InteractionHandler is
     )
         public
         payable
-        IsBindedAuthenticator
+        IsAuthenticator
         IsArticlePosted(articleKey)
-        IsNotArticleAuthenticated(articleKey)
+        IsArticleAuthenticated(
+            articleKey,
+            false,
+            ErrorMessageLibrary.ArticleAuthenticated
+        )
     {
-        _authenticatedArticles[articleKey.poster][articleKey.articleType][
+        _institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
             articleKey.sequenceArticleType
-        ] = msg.sender;
+        ] = _bindingIntitutionAuthenticators[msg.sender];
 
-        emit ArticleAuthenticated(
-            DepositingLibrary.ArticleKey(
-                articleKey.poster,
-                articleKey.articleType,
-                articleKey.sequenceArticleType
-            ),
-            msg.sender
-        );
+        emit ArticleAuthenticated(articleKey, msg.sender);
+    }
+
+    function DisauthenticateArticle(
+        DepositingLibrary.ArticleKey memory articleKey
+    )
+        public
+        payable
+        IsAuthenticator
+        IsSameInstitutionBinded(articleKey)
+        IsArticleAuthenticated(
+            articleKey,
+            true,
+            ErrorMessageLibrary.ArticleNotAuthenticated
+        )
+    {
+        _institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
+            articleKey.sequenceArticleType
+        ] = address(0);
+
+        emit ArticleDisauthenticate(articleKey, msg.sender);
     }
 
     function PostArticle(
@@ -147,28 +138,19 @@ abstract contract InteractionHandler is
             articleType
         ];
 
+        DepositingLibrary.ArticleKey memory articleKey = DepositingLibrary
+            .ArticleKey(msg.sender, articleType, sequenceArticleType);
+
         _articles[msg.sender][articleType][sequenceArticleType] = article;
 
-        _key.articles.push(
-            DepositingLibrary.ArticleKey(
-                msg.sender,
-                articleType,
-                sequenceArticleType
-            )
-        );
+        _key.articles.push(articleKey);
 
         _sequenceArticleTypes[msg.sender][articleType]++;
 
-        emit ArticlePosted(
-            DepositingLibrary.ArticleKey(
-                msg.sender,
-                articleType,
-                sequenceArticleType
-            )
-        );
+        emit ArticlePosted(articleKey);
     }
 
-    function EditedArticle(
+    function EditArticle(
         uint256 sequenceArticleType,
         DelimitationLibrary.ArticleType articleType,
         DelimitationLibrary.Article memory article

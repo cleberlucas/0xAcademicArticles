@@ -4,7 +4,7 @@ import "../Librarys/ErrorMessageLibrary.sol";
 import "../Utils/ModifierUtil.sol";
 import "../Globals/DepositingGlobal.sol";
 
-pragma solidity ^0.8.0;
+pragma solidity >=0.8.22;
 
 abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
     modifier IsOwner() {
@@ -26,7 +26,7 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
         _;
     }
 
-    modifier IsBindedAuthenticator() {
+    modifier IsAuthenticator() {
         bool result;
 
         for (uint256 i = 0; i < _key.authenticators.length; i++)
@@ -35,37 +35,38 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
                 break;
             }
 
-        Require(result, ErrorMessageLibrary.BindedAuthenticatorAction);
+        Require(result, ErrorMessageLibrary.AuthenticatorAction);
         _;
     }
 
-    modifier IsInstitutionRegistered(
-        address institutionKey,
-        bool registered,
-        string memory messageOnError
-    ) {
-        bool result;
-
-        for (uint256 i = 0; i < _key.institutions.length; i++) {
-            if (_key.institutions[i] == institutionKey) {
-                result = true;
-                break;
-            }
-        }
-
-        Require(registered ? result : !result, messageOnError);
+    modifier IsValidAddress(address validateAddress) {
+        Require(
+            validateAddress != address(0),
+            ErrorMessageLibrary.NotValidAddress
+        );
         _;
     }
 
     modifier IsAuthenticatorBindedInIntituition(
         address authenticatorKey,
-        bool registered,
+        bool binded,
         string memory messageOnError
     ) {
         Require(
-            (_bindedAuthenticators[authenticatorKey] == msg.sender) ==
-                registered,
+            (_bindingIntitutionAuthenticators[authenticatorKey] == msg.sender) == binded,
             messageOnError
+        );
+        _;
+    }
+
+    modifier IsSameInstitutionBinded(
+        DepositingLibrary.ArticleKey memory articleKey
+    ) {
+        Require(
+            _institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
+                articleKey.sequenceArticleType
+            ] == _bindingIntitutionAuthenticators[msg.sender],
+            ErrorMessageLibrary.AuthenticatorNotBelongInstitutionBinded
         );
         _;
     }
@@ -84,19 +85,20 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
                 break;
             }
 
-        Require(result, ErrorMessageLibrary.ArticleNotFound);
+        Require(result, ErrorMessageLibrary.ArticleNotPosted);
         _;
     }
 
-    modifier IsNotArticleAuthenticated(
-        DepositingLibrary.ArticleKey memory articleKey
+    modifier IsArticleAuthenticated(
+        DepositingLibrary.ArticleKey memory articleKey,
+        bool authenticated,
+        string memory messageOnError
     ) {
-        Require(
-            _authenticatedArticles[articleKey.poster][articleKey.articleType][
-                articleKey.sequenceArticleType
-            ] == address(0),
-            ErrorMessageLibrary.ArticleAuthenticated
-        );
+        bool result = _institutionAuthenticatedArticles[articleKey.poster][
+            articleKey.articleType
+        ][articleKey.sequenceArticleType] != address(0);
+
+        Require(authenticated ? result : !result, messageOnError);
         _;
     }
 }

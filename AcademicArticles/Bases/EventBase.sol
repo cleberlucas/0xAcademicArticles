@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/DepositingLibrary.sol";
 
-pragma solidity ^0.8.0;
+pragma solidity >= 0.8.22;
 
 abstract contract EventBase {
     event InstitutionRegistered(address indexed institution);
@@ -27,6 +27,11 @@ abstract contract EventBase {
     event ArticleRemoved(DepositingLibrary.ArticleKey indexed article);
 
     event ArticleAuthenticated(
+        DepositingLibrary.ArticleKey indexed article,
+        address authenticator
+    );
+
+    event ArticleDisauthenticate(
         DepositingLibrary.ArticleKey indexed article,
         address authenticator
     );

@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: AFL-3.0
-
 import "../Librarys/DelimitationLibrary.sol";
 import "../Librarys/DepositingLibrary.sol";
 import "../Globals/DepositingGlobal.sol";
 
-pragma solidity ^0.8.0;
+pragma solidity >= 0.8.22;
 
 abstract contract ViewHandler is DepositingGlobal {
     function ArticlesKey()
@@ -108,24 +107,24 @@ abstract contract ViewHandler is DepositingGlobal {
         return result;
     }
 
-    function BindedAuthenticators(
+    function BindingIntitutionAuthenticators(
         address[] memory authenticatorsKey
     ) public view returns (address[] memory institutionsKey) {
         address[] memory result = new address[](authenticatorsKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _bindedAuthenticators[authenticatorsKey[i]];
+            result[i] = _bindingIntitutionAuthenticators[authenticatorsKey[i]];
         }
         return result;
     }
 
-    function AuthenticatedArticles(
+    function InstitutionAuthenticatedArticles(
         DepositingLibrary.ArticleKey[] memory articlesKey
     ) public view returns (address[] memory authenticatorsKeys) {
         address[] memory result = new address[](articlesKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _authenticatedArticles[articlesKey[i].poster][
+            result[i] = _institutionAuthenticatedArticles[articlesKey[i].poster][
                 articlesKey[i].articleType
             ][articlesKey[i].sequenceArticleType];
         }
