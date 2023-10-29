@@ -4,10 +4,9 @@ import "../Librarys/ErrorMessageLibrary.sol";
 import "../Utils/ModifierUtil.sol";
 import "../Globals/DepositingGlobal.sol";
 
-pragma solidity >=0.8.21;
+pragma solidity ^0.8.0;
 
 abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
-    
     modifier IsOwner() {
         Require(OWNER == msg.sender, ErrorMessageLibrary.OwnerAction);
         _;
@@ -27,21 +26,24 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
         _;
     }
 
-    modifier IsBindedAuthenticator(
-    ) {
+    modifier IsBindedAuthenticator() {
         bool result;
 
         for (uint256 i = 0; i < _key.authenticators.length; i++)
             if (_key.authenticators[i] == msg.sender) {
                 result = true;
-                break ;
+                break;
             }
 
         Require(result, ErrorMessageLibrary.BindedAuthenticatorAction);
         _;
     }
 
-    modifier IsInstitutionRegistered(address institutionKey, bool registered, string memory messageOnError) {
+    modifier IsInstitutionRegistered(
+        address institutionKey,
+        bool registered,
+        string memory messageOnError
+    ) {
         bool result;
 
         for (uint256 i = 0; i < _key.institutions.length; i++) {
@@ -54,22 +56,29 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
         Require(registered ? result : !result, messageOnError);
         _;
     }
-    
-    modifier IsAuthenticatorBindedInIntituition(address authenticatorKey, bool registered, string memory messageOnError) {
-        Require((_bindedAuthenticators[authenticatorKey] ==  msg.sender) == registered, messageOnError);
+
+    modifier IsAuthenticatorBindedInIntituition(
+        address authenticatorKey,
+        bool registered,
+        string memory messageOnError
+    ) {
+        Require(
+            (_bindedAuthenticators[authenticatorKey] == msg.sender) ==
+                registered,
+            messageOnError
+        );
         _;
     }
 
-    modifier IsArticlePosted(
-        DepositingLibrary.ArticleKey memory articleKey
-    ) {
+    modifier IsArticlePosted(DepositingLibrary.ArticleKey memory articleKey) {
         bool result;
-        
-        for (uint256 i = 0; i < _key.articles.length; i++) 
+
+        for (uint256 i = 0; i < _key.articles.length; i++)
             if (
                 _key.articles[i].poster == articleKey.poster &&
                 _key.articles[i].articleType == articleKey.articleType &&
-                _key.articles[i].sequenceArticleType == articleKey.sequenceArticleType
+                _key.articles[i].sequenceArticleType ==
+                articleKey.sequenceArticleType
             ) {
                 result = true;
                 break;
@@ -79,12 +88,15 @@ abstract contract ModifierBase is DepositingGlobal, ModifierUtil {
         _;
     }
 
-    modifier IsNotArticleAuthenticated(DepositingLibrary.ArticleKey memory articleKey) {
+    modifier IsNotArticleAuthenticated(
+        DepositingLibrary.ArticleKey memory articleKey
+    ) {
         Require(
-            _authenticatedArticles[articleKey.poster][articleKey.articleType][articleKey.sequenceArticleType] == address(0),
+            _authenticatedArticles[articleKey.poster][articleKey.articleType][
+                articleKey.sequenceArticleType
+            ] == address(0),
             ErrorMessageLibrary.ArticleAuthenticated
-        );       
+        );
         _;
     }
-
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AFL-3.0
 import "./DelimitationLibrary.sol";
 
-pragma solidity >=0.8.18;
+pragma solidity ^0.8.0;
 
 library DepositingLibrary {
     struct Key {

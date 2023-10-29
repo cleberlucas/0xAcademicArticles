@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/DepositingLibrary.sol";
 
-pragma solidity >=0.8.18;
+pragma solidity ^0.8.0;
 
 abstract contract EventBase {
     event InstitutionRegistered(address indexed institution);

@@ -4,7 +4,7 @@ import "../Bases/ModifierBase.sol";
 import "../Bases/EventBase.sol";
 import "../Globals/DepositingGlobal.sol";
 
-pragma solidity >=0.8.18;
+pragma solidity ^0.8.0;
 
 abstract contract InteractionHandler is
     DepositingGlobal,
@@ -14,7 +14,16 @@ abstract contract InteractionHandler is
     function RegisterInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    ) public payable IsOwner IsInstitutionRegistered(institutionKey, false, ErrorMessageLibrary.InstitutionRegistered) {
+    )
+        public
+        payable
+        IsOwner
+        IsInstitutionRegistered(
+            institutionKey,
+            false,
+            ErrorMessageLibrary.InstitutionRegistered
+        )
+    {
         _institutions[institutionKey] = institution;
         _key.institutions.push(institutionKey);
         emit InstitutionRegistered(institutionKey);
@@ -23,14 +32,32 @@ abstract contract InteractionHandler is
     function EditInstitution(
         address institutionKey,
         DelimitationLibrary.Institution memory institution
-    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true, ErrorMessageLibrary.InstitutionWasNotRegistered) {
+    )
+        public
+        payable
+        IsOwner
+        IsInstitutionRegistered(
+            institutionKey,
+            true,
+            ErrorMessageLibrary.InstitutionWasNotRegistered
+        )
+    {
         _institutions[institutionKey] = institution;
         emit InstitutionRegistered(institutionKey);
     }
 
     function UnregisterInstitution(
         address institutionKey
-    ) public payable IsOwner IsInstitutionRegistered(institutionKey, true, ErrorMessageLibrary.InstitutionWasNotRegistered) {
+    )
+        public
+        payable
+        IsOwner
+        IsInstitutionRegistered(
+            institutionKey,
+            true,
+            ErrorMessageLibrary.InstitutionWasNotRegistered
+        )
+    {
         delete _institutions[institutionKey];
 
         for (uint256 i = 0; i < _key.institutions.length; i++) {
@@ -69,7 +96,11 @@ abstract contract InteractionHandler is
         public
         payable
         IsInstitution
-        IsAuthenticatorBindedInIntituition(authenticatorKey, true, ErrorMessageLibrary.AuthenticatorWasNotBindedInInstitution)
+        IsAuthenticatorBindedInIntituition(
+            authenticatorKey,
+            true,
+            ErrorMessageLibrary.AuthenticatorWasNotBindedInInstitution
+        )
     {
         delete _bindedAuthenticators[authenticatorKey];
 
@@ -94,7 +125,6 @@ abstract contract InteractionHandler is
         IsArticlePosted(articleKey)
         IsNotArticleAuthenticated(articleKey)
     {
-
         _authenticatedArticles[articleKey.poster][articleKey.articleType][
             articleKey.sequenceArticleType
         ] = msg.sender;
@@ -107,25 +137,34 @@ abstract contract InteractionHandler is
             ),
             msg.sender
         );
-        
     }
 
     function PostArticle(
         DelimitationLibrary.ArticleType articleType,
         DelimitationLibrary.Article memory article
     ) public payable {
-        uint256 sequenceArticleType = _sequenceArticleTypes[msg.sender][articleType];
+        uint256 sequenceArticleType = _sequenceArticleTypes[msg.sender][
+            articleType
+        ];
 
         _articles[msg.sender][articleType][sequenceArticleType] = article;
 
         _key.articles.push(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
+            DepositingLibrary.ArticleKey(
+                msg.sender,
+                articleType,
+                sequenceArticleType
+            )
         );
 
         _sequenceArticleTypes[msg.sender][articleType]++;
 
         emit ArticlePosted(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
+            DepositingLibrary.ArticleKey(
+                msg.sender,
+                articleType,
+                sequenceArticleType
+            )
         );
     }
 
@@ -137,13 +176,21 @@ abstract contract InteractionHandler is
         public
         payable
         IsArticlePosted(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
+            DepositingLibrary.ArticleKey(
+                msg.sender,
+                articleType,
+                sequenceArticleType
+            )
         )
     {
         _articles[msg.sender][articleType][sequenceArticleType] = article;
 
         emit ArticleEdited(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
+            DepositingLibrary.ArticleKey(
+                msg.sender,
+                articleType,
+                sequenceArticleType
+            )
         );
     }
 
@@ -154,7 +201,11 @@ abstract contract InteractionHandler is
         public
         payable
         IsArticlePosted(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
+            DepositingLibrary.ArticleKey(
+                msg.sender,
+                articleType,
+                sequenceArticleType
+            )
         )
     {
         delete _articles[msg.sender][articleType][sequenceArticleType];
@@ -165,15 +216,17 @@ abstract contract InteractionHandler is
                 _key.articles[i].articleType == articleType &&
                 _key.articles[i].sequenceArticleType == sequenceArticleType
             ) {
-                _key.articles[i] = _key.articles[
-                    _key.articles.length - 1
-                ];
+                _key.articles[i] = _key.articles[_key.articles.length - 1];
                 _key.articles.pop();
             }
         }
 
         emit ArticleRemoved(
-            DepositingLibrary.ArticleKey(msg.sender, articleType, sequenceArticleType)
+            DepositingLibrary.ArticleKey(
+                msg.sender,
+                articleType,
+                sequenceArticleType
+            )
         );
     }
 }

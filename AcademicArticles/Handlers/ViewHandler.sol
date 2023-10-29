@@ -4,7 +4,7 @@ import "../Librarys/DelimitationLibrary.sol";
 import "../Librarys/DepositingLibrary.sol";
 import "../Globals/DepositingGlobal.sol";
 
-pragma solidity >=0.8.18;
+pragma solidity ^0.8.0;
 
 abstract contract ViewHandler is DepositingGlobal {
     function ArticlesKey()
@@ -110,15 +110,8 @@ abstract contract ViewHandler is DepositingGlobal {
 
     function BindedAuthenticators(
         address[] memory authenticatorsKey
-    )
-        public
-        view
-        returns (address[] memory institutionsKey)
-    {
-        address[]
-            memory result = new address[](
-                authenticatorsKey.length
-            );
+    ) public view returns (address[] memory institutionsKey) {
+        address[] memory result = new address[](authenticatorsKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
             result[i] = _bindedAuthenticators[authenticatorsKey[i]];
@@ -128,15 +121,8 @@ abstract contract ViewHandler is DepositingGlobal {
 
     function AuthenticatedArticles(
         DepositingLibrary.ArticleKey[] memory articlesKey
-    )
-        public
-        view
-        returns (address[] memory authenticatorsKeys)
-    {
-        address[]
-            memory result = new address[](
-                articlesKey.length
-            );
+    ) public view returns (address[] memory authenticatorsKeys) {
+        address[] memory result = new address[](articlesKey.length);
 
         for (uint256 i = 0; i < result.length; i++) {
             result[i] = _authenticatedArticles[articlesKey[i].poster][
