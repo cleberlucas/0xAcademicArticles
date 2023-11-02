@@ -51,11 +51,11 @@ abstract contract ViewHandler is RepositoryExtension {
     }
 
     function ArticleContents(bytes32[] memory hashIdentifiers) 
-    public view returns (DelimitationLibrary.Article[] memory posters) {
-        posters = new DelimitationLibrary.Article[](hashIdentifiers.length);
+    public view returns (DelimitationLibrary.Article[] memory contents) {
+        contents = new DelimitationLibrary.Article[](hashIdentifiers.length);
 
-        for (uint256 i = 0; i < posters.length; i++)
-            posters[i] = _article.content[hashIdentifiers[i]];
+        for (uint256 i = 0; i < contents.length; i++)
+            contents[i] = _article.content[hashIdentifiers[i]];
     }
 
     function InstitutionAccounts()
