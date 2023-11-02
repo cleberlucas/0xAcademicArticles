@@ -8,111 +8,59 @@ pragma solidity >=0.8.22;
 
 abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
     modifier IsOwner() {
-        Require(OWNER == msg.sender, ErrorMessageLibrary.OwnerAction);
+        Require(OWNER == msg.sender, ErrorMessageLibrary.OWNER_ACTION);
         _;
     }
 
     modifier IsInstitution() {
-        bool result;
-
-        for (uint256 i = 0; i < _key.institutions.length; i++) {
-            if (_key.institutions[i] == msg.sender) {
-                result = true;
-                break;
-            }
-        }
-
-        Require(result, ErrorMessageLibrary.InstitutionAction);
+        Require(_institution.owner[msg.sender] != address(0), ErrorMessageLibrary.INSTITUTION_ACTION);
         _;
     }
 
     modifier IsAuthenticator() {
-        bool result;
-
-        for (uint256 i = 0; i < _key.authenticators.length; i++)
-            if (_key.authenticators[i] == msg.sender) {
-                result = true;
-                break;
-            }
-
-        Require(result, ErrorMessageLibrary.AuthenticatorAction);
+         Require(_authenticator.institution[msg.sender] != address(0), ErrorMessageLibrary.AUTHENTICATOR_ACTION);
         _;
     }
 
     modifier IsValidAddress(address validateAddress) {
-        Require(
-            validateAddress != address(0),
-            ErrorMessageLibrary.NotValidAddress
+        Require(validateAddress != address(0), ErrorMessageLibrary.NOT_VALID_ADDRESS);
+        _;
+    }
+
+    modifier IsInstitutionRegistered(address account, bool registered, string memory messageOnError) {
+        Require( (_institution.owner[account] != address(0)) == registered, messageOnError);
+        _;
+    }
+
+    modifier IsAuthenticatorBindedInInstitution(address account, bool binded, string memory messageOnError) 
+    {
+        Require((_authenticator.institution[account] == msg.sender) == binded, messageOnError);
+        _;
+    }
+
+    modifier IsSameInstitutionBindedArticle(bytes32 hashIdentifier)
+    {
+        Require( 
+            _authenticator.institution[_article.authenticator[hashIdentifier]] == _authenticator.institution[msg.sender],   
+            ErrorMessageLibrary.AUTHENTICATOR_NOT_BELONG_INSTITUTION_BINDED
         );
         _;
     }
 
-    modifier IsInstitutionRegistered(address institutionKey, bool registered, string memory messageOnError) {
-        bool result;
-
-        for (uint256 i = 0; i < _key.institutions.length; i++) {
-            if (_key.institutions[i] == institutionKey) {
-                result = true;
-                break;
-            }
-        }
-
-        Require(registered ? result : !result, messageOnError);
+    modifier IsArticlePosted(bytes32 hashIdentifier, bool posted, string memory messageOnError) {     
+        Require((_article.poster[hashIdentifier] != address(0)) == posted, messageOnError);
         _;
     }
 
-    modifier IsAuthenticatorBindedInIntituition(
-        address authenticatorKey,
-        bool binded,
-        string memory messageOnError
-    ) {
-        Require(
-            (_data.bindingAuthenticators[authenticatorKey] == msg.sender) == binded,
-            messageOnError
-        );
+    modifier IsArticleAuthenticated(bytes32 hashIdentifier,bool authenticated, string memory messageOnError) 
+    {
+        Require((_article.poster[hashIdentifier] != address(0)) == authenticated, messageOnError);
         _;
     }
 
-    modifier IsSameInstitutionBinded(
-        RepositoryLibrary.ArticleKey memory articleKey
-    ) {
-        Require(
-            _data.institutionAuthenticatedArticles[articleKey.poster][articleKey.articleType][
-                articleKey.sequenceArticleType
-            ] == _data.bindingAuthenticators[msg.sender],
-            ErrorMessageLibrary.AuthenticatorNotBelongInstitutionBinded
-        );
-        _;
-    }
-
-    modifier IsArticlePosted(RepositoryLibrary.ArticleKey memory articleKey) {
-        bool result;
-
-        for (uint256 i = 0; i < _key.articles.length; i++)
-            if (
-                _key.articles[i].poster == articleKey.poster &&
-                _key.articles[i].articleType == articleKey.articleType &&
-                _key.articles[i].sequenceArticleType ==
-                articleKey.sequenceArticleType
-            ) {
-                result = true;
-                break;
-            }
-
-        Require(result, ErrorMessageLibrary.ArticleNotPosted);
-        _;
-    }
-
-    modifier IsArticleAuthenticated(
-        RepositoryLibrary.ArticleKey memory articleKey,
-        bool authenticated,
-        string memory messageOnError
-    ) {
-        bool result = _data.institutionAuthenticatedArticles[articleKey.poster][
-            articleKey.articleType
-        ][articleKey.sequenceArticleType] != address(0);
-
-        Require(authenticated ? result : !result, messageOnError);
+    modifier IsArticleMy(bytes32 hashIdentifier) 
+    {
+        Require(_article.poster[hashIdentifier] == msg.sender, ErrorMessageLibrary.ARTICLE_NOT_YOURS);
         _;
     }
 }

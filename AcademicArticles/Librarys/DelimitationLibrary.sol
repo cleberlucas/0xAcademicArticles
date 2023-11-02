@@ -18,6 +18,7 @@ library DelimitationLibrary {
         string course;
         string institution;
         string additional;
+        ArticleType articleType;
         Contributors contributors;
         Document document;
         AcademicDegree academicDegree;

@@ -3,24 +3,22 @@ import "./DelimitationLibrary.sol";
 
 pragma solidity >=0.8.22;
 
-library RepositoryLibrary {
-    struct Data {
-        mapping(address authenticator => address institution) bindingAuthenticators;
-        mapping(address institution => DelimitationLibrary.Institution) institutions;
-        mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => uint256 sequence)) sequenceArticleTypes;
-        mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => mapping(uint256 sequence => DelimitationLibrary.Article))) articles;
-        mapping(address poster => mapping(DelimitationLibrary.ArticleType articleType => mapping(uint256 sequence => address institution))) institutionAuthenticatedArticles;
+library RepositoryLibrary {  
+    struct Article {
+        bytes32[] hashIdentifiers;
+        mapping(bytes32 hashIdentifier => address) poster;
+        mapping(bytes32 hashIdentifier => address) authenticator;
+        mapping(bytes32 hashIdentifier => DelimitationLibrary.Article) content; 
     }
 
-    struct Key {
-        ArticleKey[] articles;
-        address[] institutions;
-        address[] authenticators;
+    struct Institution {
+        address[] accounts;
+        mapping(address account => address) owner;
+        mapping(address account => DelimitationLibrary.Institution) content;
     }
 
-    struct ArticleKey {
-        address poster;
-        DelimitationLibrary.ArticleType articleType;
-        uint256 sequenceArticleType;
+    struct Authenticator {
+        mapping(address institution => address[]) accounts;
+        mapping(address account => address) institution;
     }
 }

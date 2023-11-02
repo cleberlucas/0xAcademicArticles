@@ -6,116 +6,96 @@ import "../Extensions/RepositoryExtension.sol";
 pragma solidity >=0.8.22;
 
 abstract contract ViewHandler is RepositoryExtension {
-    function ArticlesKey()
-        public
-        view
-        returns (RepositoryLibrary.ArticleKey[] memory articlesKey)
-    {
-        return _key.articles;
+    
+    function ArticleHashIdentifiers()
+    public view
+    returns (bytes32[] memory hashIdentifiers){
+        hashIdentifiers = _article.hashIdentifiers;
     }
 
-    function ArticlesKey(
-        uint256 startIndex,
-        uint256 endIndex,
-        bool reverse
-    ) public view returns (RepositoryLibrary.ArticleKey[] memory articlesKey) {
-        RepositoryLibrary.ArticleKey[]
-            memory result = new RepositoryLibrary.ArticleKey[](
-                (endIndex - startIndex) + 1
-            );
+    function ArticleHashIdentifiers(uint256 startIndex, uint256 endIndex, bool reverse) 
+    public view 
+    returns (bytes32[] memory hashIdentifiers) {
+
+        hashIdentifiers = new bytes32[](endIndex - startIndex + 1);
 
         if (reverse) {
-            for (uint256 i = 0; i < result.length; i++) {
-                if (startIndex + i < _key.articles.length)
-                    result[i] = _key.articles[_key.articles.length - i - 1];
+            for (uint256 i = 0; i < hashIdentifiers.length; i++) {
+                if (startIndex + i < _article.hashIdentifiers.length)
+                    hashIdentifiers[i] = _article.hashIdentifiers[_article.hashIdentifiers.length - i - 1];
                 else break;
             }
         } else {
-            for (uint256 i = 0; i < result.length; i++) {
-                if (startIndex + i < _key.articles.length)
-                    result[i] = _key.articles[startIndex + i];
+            for (uint256 i = 0; i < hashIdentifiers.length; i++) {
+                if (startIndex + i < _article.hashIdentifiers.length)
+                    hashIdentifiers[i] = _article.hashIdentifiers[startIndex + i];
                 else break;
             }
         }
-
-        return result;
     }
 
-    function InstitutionsKey()
-        public
-        view
-        returns (address[] memory institutionsKey)
+    function ArticlePosters(bytes32[] memory hashIdentifiers) 
+    public view returns (address[] memory posters) {
+        posters = new address[](hashIdentifiers.length);
+
+        for (uint256 i = 0; i < posters.length; i++)
+            posters[i] = _article.poster[hashIdentifiers[i]];
+    }
+
+    function ArticleAuthenticators(bytes32[] memory hashIdentifiers) 
+    public view returns (address[] memory authenticators) {
+        authenticators = new address[](hashIdentifiers.length);
+
+        for (uint256 i = 0; i < authenticators.length; i++)
+            authenticators[i] = _article.authenticator[hashIdentifiers[i]];
+    }
+
+    function ArticleContents(bytes32[] memory hashIdentifiers) 
+    public view returns (DelimitationLibrary.Article[] memory posters) {
+        posters = new DelimitationLibrary.Article[](hashIdentifiers.length);
+
+        for (uint256 i = 0; i < posters.length; i++)
+            posters[i] = _article.content[hashIdentifiers[i]];
+    }
+
+    function InstitutionAccounts()
+    public view
+    returns (address[] memory accounts)
     {
-        return _key.institutions;
+        accounts = _institution.accounts;
     }
 
-    function AuthenticatorsKey()
-        public
-        view
-        returns (address[] memory authenticatorsKey)
-    {
-        return _key.authenticators;
+    function InstitutionOwners(address[] memory accounts) 
+    public view 
+    returns (address[] memory owners) {
+        owners = new address[](accounts.length);
+
+        for (uint256 i = 0; i < owners.length; i++)
+            owners[i] = _institution.owner[accounts[i]];
     }
 
-    function Article(
-        RepositoryLibrary.ArticleKey[] memory articlesKey
-    ) public view returns (DelimitationLibrary.Article[] memory articles) {
-        DelimitationLibrary.Article[]
-            memory result = new DelimitationLibrary.Article[](
-                articlesKey.length
-            );
+    function InstitutionContents(address[] memory accounts) 
+    public view 
+    returns (DelimitationLibrary.Institution[] memory contents) {
+        contents = new DelimitationLibrary.Institution[](accounts.length);
 
-        for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _data.articles[articlesKey[i].poster][
-                articlesKey[i].articleType
-            ][articlesKey[i].sequenceArticleType];
-        }
-
-        return result;
+        for (uint256 i = 0; i < contents.length; i++)
+            contents[i] = _institution.content[accounts[i]];
     }
 
-    function Institutions(
-        address[] memory institutionsKey
-    )
-        public
-        view
-        returns (DelimitationLibrary.Institution[] memory institutions)
-    {
-        DelimitationLibrary.Institution[]
-            memory result = new DelimitationLibrary.Institution[](
-                institutionsKey.length
-            );
-
-        for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _data.institutions[institutionsKey[i]];
-        }
-        return result;
+    function AuthenticatorAccounts(address institution)
+    public view
+    returns (address[] memory accounts) {
+        accounts = _authenticator.accounts[institution];
     }
 
-    function InstitutionAuthenticatedArticles(
-        RepositoryLibrary.ArticleKey[] memory articlesKey
-    ) public view returns (address[] memory authenticatorsKeys) {
-        address[] memory result = new address[](articlesKey.length);
+    function AuthenticatorInstitutions(address[] memory accounts) 
+    public view 
+    returns (address[] memory institutions) {
+        institutions = new address[](accounts.length);
 
-        for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _data.institutionAuthenticatedArticles[
-                articlesKey[i].poster
-            ][articlesKey[i].articleType][articlesKey[i].sequenceArticleType];
-        }
-
-        return result;
+        for (uint256 i = 0; i < institutions.length; i++)
+            accounts[i] = _authenticator.institution[accounts[i]];
     }
 
-    function bindingAuthenticators(
-        address[] memory authenticatorsKey
-    ) public view returns (address[] memory institutionsKey) {
-        address[] memory result = new address[](authenticatorsKey.length);
-
-        for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _data.bindingAuthenticators[
-                authenticatorsKey[i]
-            ];
-        }
-        return result;
-    }
 }

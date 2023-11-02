@@ -1,38 +1,26 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/RepositoryLibrary.sol";
 
-pragma solidity >= 0.8.22;
+pragma solidity >=0.8.22;
 
 abstract contract EventExtension {
-    event InstitutionRegistered(address indexed institution);
+    event InstitutionRegistered(address indexed account);
 
-    event InstitutionEdited(address indexed institution);
+    event InstitutionEdited(address indexed account);
 
-    event InstitutionUnregistered(address indexed institution);
+    event InstitutionUnregistered(address indexed account);
 
-    event AuthenticatorBinded(
-        address indexed authenticator,
-        address indexed institution
-    );
+    event AuthenticatorBinded(address indexed account, address indexed institution);
 
-    event AuthenticatorUnbinded(
-        address indexed authenticator,
-        address indexed institution
-    );
+    event AuthenticatorUnbinded(address indexed account, address indexed institution);
 
-    event ArticlePosted(RepositoryLibrary.ArticleKey indexed article);
+    event ArticlePosted(bytes32 indexed hashIdentifier);
 
-    event ArticleEdited(RepositoryLibrary.ArticleKey indexed article);
+    event ArticleEdited(bytes32 indexed hashIdentifier);
 
-    event ArticleRemoved(RepositoryLibrary.ArticleKey indexed article);
+    event ArticleRemoved(bytes32 indexed hashIdentifier);
 
-    event ArticleAuthenticated(
-        RepositoryLibrary.ArticleKey indexed article,
-        address authenticator
-    );
+    event ArticleAuthenticated(bytes32 indexed hashIdentifier, address indexed authenticator);
 
-    event ArticleDisauthenticate(
-        RepositoryLibrary.ArticleKey indexed article,
-        address authenticator
-    );
+    event ArticleDisauthenticate(bytes32 indexed hashIdentifier, address indexed authenticator);
 }

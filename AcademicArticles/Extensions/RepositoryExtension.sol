@@ -11,6 +11,7 @@ abstract contract RepositoryExtension {
 
     address internal immutable OWNER;
 
-    RepositoryLibrary.Key _key;
-    RepositoryLibrary.Data _data;
+    RepositoryLibrary.Article _article;
+    RepositoryLibrary.Institution _institution;
+    RepositoryLibrary.Authenticator _authenticator;
 }
