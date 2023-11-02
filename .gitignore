@@ -11,3 +11,4 @@
 /test
 *.js
 AcademicArticles/.vscode/settings.json
+/build/contracts
