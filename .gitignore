@@ -12,3 +12,5 @@
 *.js
 AcademicArticles/.vscode/settings.json
 /build/contracts
+/AcademicArticles/.vs
+/AcademicArticles/bin

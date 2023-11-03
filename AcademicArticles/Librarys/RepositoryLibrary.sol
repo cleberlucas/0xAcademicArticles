@@ -7,7 +7,7 @@ library RepositoryLibrary {
     struct Article {
         bytes32[] hashIdentifiers;
         mapping(bytes32 hashIdentifier => address) poster;
-        mapping(bytes32 hashIdentifier => address) authenticator;
+        mapping(bytes32 hashIdentifier => address) institution;
         mapping(bytes32 hashIdentifier => DelimitationLibrary.Article) content; 
     }
 

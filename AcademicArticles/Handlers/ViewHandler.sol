@@ -42,12 +42,12 @@ abstract contract ViewHandler is RepositoryExtension {
             posters[i] = _article.poster[hashIdentifiers[i]];
     }
 
-    function ArticleAuthenticators(bytes32[] memory hashIdentifiers) 
-    public view returns (address[] memory authenticators) {
-        authenticators = new address[](hashIdentifiers.length);
+    function ArticleInstitutions(bytes32[] memory hashIdentifiers) 
+    public view returns (address[] memory institutions) {
+        institutions = new address[](hashIdentifiers.length);
 
-        for (uint256 i = 0; i < authenticators.length; i++)
-            authenticators[i] = _article.authenticator[hashIdentifiers[i]];
+        for (uint256 i = 0; i < institutions.length; i++)
+            institutions[i] = _article.institution[hashIdentifiers[i]];
     }
 
     function ArticleContents(bytes32[] memory hashIdentifiers) 

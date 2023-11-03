@@ -12,7 +12,9 @@ abstract contract InteractionHandler is
     EventExtension
 {
     function RegisterInstitution(address account, DelimitationLibrary.Institution memory content) 
-    public payable IsOwner IsInstitutionRegistered(account, false, ErrorMessageLibrary.INSTITUTION_REGISTERED) {
+    public payable
+    IsOwner 
+    IsInstitutionRegistered(account, false, ErrorMessageLibrary.INSTITUTION_REGISTERED) {
         _institution.accounts.push(account);
         _institution.owner[account] = msg.sender;
         _institution.content[account] = content;
@@ -20,92 +22,142 @@ abstract contract InteractionHandler is
     }
 
     function EditInstitution(address account, DelimitationLibrary.Institution memory content) 
-    public payable IsOwner IsInstitutionRegistered(account, true, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED) {
+    public payable 
+    IsOwner 
+    IsInstitutionRegistered(account, true, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED) {
         _institution.content[account] = content;
         emit InstitutionRegistered(account);
     }
 
-    function UnregisterInstitution(address account) 
-    public payable IsOwner IsInstitutionRegistered(account, true, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED) {
-        for (uint256 i = 0; i < _institution.accounts.length; i++)
-            if (_institution.accounts[i] == account) {
-                _institution.accounts[i] = _institution.accounts[_institution.accounts.length - 1];
-                _institution.accounts.pop();
-            }
+    function UnregisterInstitutions(address[] memory accounts) 
+    public payable 
+    IsOwner 
+    AreInstitutionRegistered(accounts) {
+
+        for (uint256 i = 0; i < accounts.length; i++) 
+
+            for (uint256 ii = 0; ii < _institution.accounts.length; ii++)
+
+                if (_institution.accounts[ii] == accounts[i]) {
+
+                    _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
+                    _institution.accounts.pop();
+
+                    delete _institution.owner[accounts[i]];
+                    delete _institution.content[accounts[i]];
+
+                    emit InstitutionUnregistered(accounts[i]);
+
+                    break;
+                }      
+    }
+
+    function BindAuthenticators(address[] memory accounts)
+    public payable 
+    IsInstitution 
+    AreValidAddress(accounts) 
+    AreAuthenticatorBindedInInstitution(accounts, false, ErrorMessageLibrary.AUTHENTICATOR_ALREADY_BINDED_IN_INSTITUTION){
         
-        delete _institution.owner[account];
-        delete _institution.content[account];
+        for (uint256 i = 0; i < accounts.length; i++) {
 
-        emit InstitutionUnregistered(account);
+            _authenticator.accounts[msg.sender].push(accounts[i]);
+            _authenticator.institution[accounts[i]] = msg.sender;
+
+            emit AuthenticatorBinded(accounts[i], msg.sender);
+        }
     }
 
-    function BindAuthenticator(address account)
-    public payable IsInstitution IsValidAddress(account) IsAuthenticatorBindedInInstitution(account, false, ErrorMessageLibrary.AUTHENTICATOR_ALREADY_BINDED_IN_INSTITUTION){
+    function UnbindAuthenticators(address[] memory accounts)
+    public payable 
+    IsInstitution 
+    AreAuthenticatorBindedInInstitution(accounts, true, ErrorMessageLibrary.AUTHENTICATOR_WAS_NOT_BINDED_IN_INSTITUTION){
+
+        for (uint256 i = 0; i < accounts.length; i++) 
+            for (uint256 ii = 0; ii < _authenticator.accounts[msg.sender].length; i++)
+                if (_authenticator.accounts[msg.sender][ii] == accounts[i]) {
+
+                    _authenticator.accounts[msg.sender][ii] = _authenticator.accounts[msg.sender][_authenticator.accounts[msg.sender].length - 1];
+                    _authenticator.accounts[msg.sender].pop();
+
+                    delete _authenticator.institution[accounts[i]];
+
+                    emit AuthenticatorUnbinded(accounts[i], msg.sender);
+
+                    break;
+                }    
+    }
+
+    function AuthenticateArticles(bytes32[] memory hashIdentifiers)
+    public payable 
+    IsAuthenticator
+    AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ARTICLE_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ARTICLE_ALREADY_AUTHENTICATED) {   
         
-        _authenticator.accounts[msg.sender].push(account);
-        _authenticator.institution[account] = msg.sender;
+        for (uint256 i = 0; i < hashIdentifiers.length; i++) 
+        {
+            _article.institution[hashIdentifiers[i]] = _authenticator.institution[msg.sender];
 
-        emit AuthenticatorBinded(account, msg.sender);
-    }
-
-    function UnbindAuthenticator(address account)
-    public payable IsInstitution IsAuthenticatorBindedInInstitution(account, true, ErrorMessageLibrary.AUTHENTICATOR_WAS_NOT_BINDED_IN_INSTITUTION){
-
-        for (uint256 i = 0; i < _authenticator.accounts[msg.sender].length; i++)
-            if (_authenticator.accounts[msg.sender][i] == account) {
-                _authenticator.accounts[msg.sender][i] = _authenticator.accounts[msg.sender][
-                    _authenticator.accounts[msg.sender].length - 1
-                ];
-                _authenticator.accounts[msg.sender].pop();
-            }
-
-        delete _authenticator.institution[account];
-
-        emit AuthenticatorUnbinded(account, msg.sender);
-    }
-
-    function AuthenticateArticle(bytes32 hashIdentifier)
-    public payable IsAuthenticator IsArticlePosted(hashIdentifier, true, ErrorMessageLibrary.ARTICLE_WAS_NOT_POSTED) IsArticleAuthenticated(hashIdentifier, false, ErrorMessageLibrary.ARTICLE_ALREADY_AUTHENTICATED){   
-        
-        _article.authenticator[hashIdentifier] = msg.sender;
-
-        emit ArticleAuthenticated(hashIdentifier, msg.sender);
-    }
-
-    function DisauthenticateArticle(bytes32 hashIdentifier)
-    public payable IsAuthenticator IsArticlePosted(hashIdentifier, true, ErrorMessageLibrary.ARTICLE_WAS_NOT_POSTED) IsArticleAuthenticated(hashIdentifier, true, ErrorMessageLibrary.ARTICLE_ALREADY_AUTHENTICATED){   
-    
-        delete _article.authenticator[hashIdentifier];
-
-        emit ArticleDisauthenticate(hashIdentifier, msg.sender);
-    }
-
-    function PostArticle(DelimitationLibrary.Article memory content) 
-    public payable IsArticlePosted(keccak256(abi.encode(content)), false, ErrorMessageLibrary.ARTICLE_ALREADY_POSTED) 
-    returns (bytes32 hashIdentifier) {
-
-        hashIdentifier = keccak256(abi.encode(content));
-
-        _article.hashIdentifiers.push(hashIdentifier);
-        _article.poster[hashIdentifier] = msg.sender;
-        _article.content[hashIdentifier] = content;
-
-        emit ArticlePosted(hashIdentifier);   
-    }
-
-    function RemoveArticle(bytes32 hashIdentifier)
-    public payable IsArticlePosted(hashIdentifier, true, ErrorMessageLibrary.ARTICLE_WAS_NOT_POSTED) IsArticleMy(hashIdentifier) {
-        
-        for (uint256 i = 0; i < _article.hashIdentifiers.length; i++) {
-            if (_article.hashIdentifiers[i] == hashIdentifier) {
-                _article.hashIdentifiers[i] = _article.hashIdentifiers[_article.hashIdentifiers.length - 1];
-                _article.hashIdentifiers.pop();
-            }
+            emit ArticleAuthenticated(hashIdentifiers[i], msg.sender);
         }
 
-        delete _article.poster[hashIdentifier];
-        delete _article.content[hashIdentifier];
-
-        emit ArticleRemoved(hashIdentifier);
     }
+
+    function DisauthenticateArticles(bytes32[] memory hashIdentifiers)
+    public payable
+    IsAuthenticator
+    AreSameInstitutionBindedArticle(hashIdentifiers)
+    AreArticleAuthenticated(hashIdentifiers, true, ErrorMessageLibrary.ARTICLE_ALREADY_AUTHENTICATED) {   
+    
+        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
+            delete _article.institution[hashIdentifiers[i]];
+
+            emit ArticleDisauthenticate(hashIdentifiers[i], msg.sender);
+        }
+
+    }
+
+    function PostArticles(DelimitationLibrary.Article[] memory contents) 
+    public payable 
+    AreArticlePosted(HashIdentifiers(contents), false, ErrorMessageLibrary.ARTICLE_ALREADY_POSTED) 
+    returns (bytes32[] memory hashIdentifiers) {
+        hashIdentifiers = new bytes32[](contents.length);
+
+        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
+            hashIdentifiers[i] = keccak256(abi.encode(contents[i]));
+
+            _article.hashIdentifiers.push(hashIdentifiers[i]);
+            _article.poster[hashIdentifiers[i]] = msg.sender;
+            _article.content[hashIdentifiers[i]] = contents[i];
+
+            if (_authenticator.institution[msg.sender] != address(0)) 
+                _article.institution[hashIdentifiers[i]] = _authenticator.institution[msg.sender];
+
+            emit ArticlePosted(hashIdentifiers[i]);   
+        }
+    }
+
+    function RemoveArticles(bytes32[] memory hashIdentifiers)
+    public payable 
+    AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ARTICLE_WAS_NOT_POSTED) 
+    AreArticleMy(hashIdentifiers) {
+        
+        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
+            for (uint256 ii = 0; ii < _article.hashIdentifiers.length; ii++) {
+                if (_article.hashIdentifiers[ii] == hashIdentifiers[i]) {
+                    _article.hashIdentifiers[ii] = _article.hashIdentifiers[_article.hashIdentifiers.length - 1];
+                    _article.hashIdentifiers.pop();
+            
+                    delete _article.poster[hashIdentifiers[i]];
+                    delete _article.content[hashIdentifiers[i]];
+                    delete _article.institution[hashIdentifiers[i]];
+
+                    emit ArticleRemoved(hashIdentifiers[i]);
+
+                    break;
+                }
+            }
+
+        }
+    }
+
 }
