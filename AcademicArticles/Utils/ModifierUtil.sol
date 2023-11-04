@@ -5,20 +5,25 @@ import "../Librarys/ErrorMessageLibrary.sol";
 pragma solidity >=0.8.19;
 
 abstract contract ModifierUtil is RepositoryExtension {
-    function Require(
-        bool _require,
-        string memory messageOnError,
-        bool indexError,
-        uint256 index
-    ) internal pure {
-        require(_require, indexError? messageOnError : string.concat(messageOnError, ErrorMessageLibrary.ERROR_ON_INDEX, string(abi.encode(index))));
+
+    function Require(bool condition, string memory messageOnError) 
+    internal pure {
+        require(condition, messageOnError);
     }
 
-    function HashIdentifiers(DelimitationLibrary.Article[] memory content
-    ) internal pure returns (bytes32[] memory hashIdentifiers){
-        hashIdentifiers = new bytes32[](content.length);
+    function HashIdentifiers(DelimitationLibrary.Article[] memory contents)
+    internal pure 
+    returns (bytes32[] memory hashIdentifiers) {
+        hashIdentifiers = new bytes32[](contents.length);
 
-        for(uint256 i = 0; i < hashIdentifiers.length; i++)
-            hashIdentifiers[i] = keccak256(abi.encode(content));
+        for(uint256 i = 0; i < contents.length; i++)
+            hashIdentifiers[i] = keccak256(abi.encode(contents[i]));
     }
+
+    function Int256(uint256 value)
+    internal pure 
+    returns (int256){
+        return int256(value);
+    }
+    
 }

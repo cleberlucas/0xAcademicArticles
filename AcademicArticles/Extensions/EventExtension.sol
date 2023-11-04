@@ -16,8 +16,6 @@ abstract contract EventExtension {
 
     event ArticlePosted(bytes32 indexed hashIdentifier);
 
-    event ArticleEdited(bytes32 indexed hashIdentifier);
-
     event ArticleRemoved(bytes32 indexed hashIdentifier);
 
     event ArticleAuthenticated(bytes32 indexed hashIdentifier, address indexed authenticator);
