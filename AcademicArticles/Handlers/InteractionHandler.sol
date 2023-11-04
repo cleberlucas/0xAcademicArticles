@@ -6,11 +6,7 @@ import "../Extensions/RepositoryExtension.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract InteractionHandler is
-    RepositoryExtension,
-    ModifierExtension,
-    EventExtension
-{
+abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, EventExtension {
     function RegisterInstitution(address account, DelimitationLibrary.Institution memory content) 
     public payable
     IsOwner 
@@ -39,9 +35,7 @@ abstract contract InteractionHandler is
     AreInstitutionRegistered(accounts) {
 
         for (uint256 i = 0; i < accounts.length; i++) 
-
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++)
-
                 if (_institution.accounts[ii] == accounts[i]) {
 
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
@@ -63,7 +57,6 @@ abstract contract InteractionHandler is
     AreAuthenticatorBindedInInstitution(accounts, false, ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_ALREADY_BINDED_IN_INSTITUTION){
         
         for (uint256 i = 0; i < accounts.length; i++) {
-
             _authenticator.accounts[msg.sender].push(accounts[i]);
             _authenticator.institution[accounts[i]] = msg.sender;
 
@@ -77,9 +70,7 @@ abstract contract InteractionHandler is
     AreAuthenticatorBindedInInstitution(accounts, true, ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION){
 
         for (uint256 i = 0; i < accounts.length; i++) 
-
             for (uint256 ii = 0; ii < _authenticator.accounts[msg.sender].length; i++)
-
                 if (_authenticator.accounts[msg.sender][ii] == accounts[i]) {
 
                     _authenticator.accounts[msg.sender][ii] = _authenticator.accounts[msg.sender][_authenticator.accounts[msg.sender].length - 1];
@@ -100,7 +91,6 @@ abstract contract InteractionHandler is
     AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {   
         
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-
             _article.institution[hashIdentifiers[i]] = _authenticator.institution[msg.sender];
 
             emit ArticleAuthenticated(hashIdentifiers[i], msg.sender);
@@ -115,7 +105,6 @@ abstract contract InteractionHandler is
     AreArticleAuthenticated(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {   
     
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-
             delete _article.institution[hashIdentifiers[i]];
 
             emit ArticleDisauthenticate(hashIdentifiers[i], msg.sender);
@@ -131,7 +120,6 @@ abstract contract InteractionHandler is
         hashIdentifiers = new bytes32[](contents.length);
 
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-
             hashIdentifiers[i] = keccak256(abi.encode(contents[i]));
 
             _article.hashIdentifiers.push(hashIdentifiers[i]);
@@ -152,9 +140,7 @@ abstract contract InteractionHandler is
     AreArticleMy(hashIdentifiers) {
         
         for (uint256 i = 0; i < hashIdentifiers.length; i++) 
-
             for (uint256 ii = 0; ii < _article.hashIdentifiers.length; ii++)
-
                 if (_article.hashIdentifiers[ii] == hashIdentifiers[i]) {
 
                     _article.hashIdentifiers[ii] = _article.hashIdentifiers[_article.hashIdentifiers.length - 1];
