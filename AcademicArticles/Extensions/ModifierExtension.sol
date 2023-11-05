@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AFL-3.0
 import "../Librarys/RepositoryLibrary.sol";
 import "../Librarys/ErrorMessageLibrary.sol";
-import "../Utils/ModifierUtil.sol";
+import "../Utils.sol";
 import "../Extensions/RepositoryExtension.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
+abstract contract ModifierExtension is RepositoryExtension, Utils {
 
     modifier IsOwner() {
         Require(OWNER == msg.sender, ErrorMessageLibrary.OWNER_ACTION);
@@ -14,12 +14,12 @@ abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
     }
 
     modifier IsInstitution() {
-        Require(_institution.owner[msg.sender] == OWNER, ErrorMessageLibrary.INSTITUTION_ACTION);
+        Require(ExistInstitution(msg.sender), ErrorMessageLibrary.INSTITUTION_ACTION);
         _;
     }
 
     modifier IsAuthenticator() {
-         Require(_authenticator.institution[msg.sender] != address(0), ErrorMessageLibrary.AUTHENTICATOR_ACTION);
+        Require(SearchInstitutionOfAuthenticator(msg.sender) != address(0), ErrorMessageLibrary.AUTHENTICATOR_ACTION);
         _;
     }
 
@@ -30,25 +30,26 @@ abstract contract ModifierExtension is RepositoryExtension, ModifierUtil {
     }
 
     modifier IsInstitutionRegistered(address account, bool registered, string memory messageOnError) {
-        Require((_institution.owner[account] == OWNER) == registered, messageOnError);
+        Require(ExistInstitution(account) == registered, messageOnError);
         _;
     }
 
     modifier AreInstitutionRegistered(address[] memory accounts) {
         for (uint256 i = 0; i < accounts.length; i++) 
-            Require(_institution.owner[accounts[i]] == OWNER, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED);
+            Require(ExistInstitution(accounts[i]), ErrorMessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED);
         _;
     }
 
     modifier AreAuthenticatorBindedInInstitution(address[] memory accounts, bool binded, string memory messageOnError) {
-        for (uint256 i = 0; i < accounts.length; i++) 
-            Require((_authenticator.institution[accounts[i]] == msg.sender) == binded, messageOnError);
+        for (uint256 i = 0; i < _institution.accounts.length; i++) 
+                Require((SearchInstitutionOfAuthenticator(_institution.accounts[i]) == msg.sender) == binded, messageOnError);              
         _;
     }
 
-    modifier AreSameInstitutionBindedArticle(bytes32[] memory hashIdentifiers){
+    modifier AreSameInstitutionAuthenticatedArticle(bytes32[] memory hashIdentifiers){
+        bool result = true;
         for (uint256 i = 0; i < hashIdentifiers.length; i++) 
-            Require(_authenticator.institution[_article.institution[hashIdentifiers[i]]] == _authenticator.institution[msg.sender], ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_NOT_BELONG_INSTITUTION_BINDED);
+           Require(_article.institution[hashIdentifiers[i]] == SearchInstitutionOfAuthenticator(msg.sender), ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_NOT_BELONG_INSTITUTION_BINDED);
         _;
     }
 

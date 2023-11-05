@@ -13,7 +13,6 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     IsInstitutionRegistered(account, false, ErrorMessageLibrary.INSTITUTION_REGISTERED) {
 
         _institution.accounts.push(account);
-        _institution.owner[account] = msg.sender;
         _institution.content[account] = content;
 
         emit InstitutionRegistered(account);
@@ -41,9 +40,13 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
 
-                    delete _institution.owner[accounts[i]];
                     delete _institution.content[accounts[i]];
-
+                    delete _institution.authenticators[accounts[i]];
+      
+                    for (uint256 iii = 0; iii < _article.hashIdentifiers.length; iii++) 
+                        if (_article.institution[_article.hashIdentifiers[iii]] == accounts[i])
+                            _article.institution[_article.hashIdentifiers[iii]] = address(0);
+                        
                     emit InstitutionUnregistered(accounts[i]);
 
                     break;
@@ -57,8 +60,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreAuthenticatorBindedInInstitution(accounts, false, ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_ALREADY_BINDED_IN_INSTITUTION){
         
         for (uint256 i = 0; i < accounts.length; i++) {
-            _authenticator.accounts[msg.sender].push(accounts[i]);
-            _authenticator.institution[accounts[i]] = msg.sender;
+            _institution.authenticators[msg.sender].push(accounts[i]);
 
             emit AuthenticatorBinded(accounts[i], msg.sender);
         }
@@ -70,13 +72,11 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreAuthenticatorBindedInInstitution(accounts, true, ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION){
 
         for (uint256 i = 0; i < accounts.length; i++) 
-            for (uint256 ii = 0; ii < _authenticator.accounts[msg.sender].length; i++)
-                if (_authenticator.accounts[msg.sender][ii] == accounts[i]) {
+            for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++)
+                if (_institution.authenticators[msg.sender][ii] == accounts[i]) {
 
-                    _authenticator.accounts[msg.sender][ii] = _authenticator.accounts[msg.sender][_authenticator.accounts[msg.sender].length - 1];
-                    _authenticator.accounts[msg.sender].pop();
-
-                    delete _authenticator.institution[accounts[i]];
+                    _institution.authenticators[msg.sender][ii] = _institution.authenticators[msg.sender][_institution.authenticators[msg.sender].length - 1];
+                    _institution.authenticators[msg.sender].pop();
 
                     emit AuthenticatorUnbinded(accounts[i], msg.sender);
 
@@ -88,24 +88,22 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     public payable 
     IsAuthenticator
     AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {   
-        
+    AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            _article.institution[hashIdentifiers[i]] = _authenticator.institution[msg.sender];
+            _article.institution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
             emit ArticleAuthenticated(hashIdentifiers[i], msg.sender);
         }
-
     }
 
     function DisauthenticateArticles(bytes32[] memory hashIdentifiers)
     public payable
     IsAuthenticator
-    AreSameInstitutionBindedArticle(hashIdentifiers)
+    AreSameInstitutionAuthenticatedArticle(hashIdentifiers)
     AreArticleAuthenticated(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {   
     
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            delete _article.institution[hashIdentifiers[i]];
+            _article.institution[hashIdentifiers[i]] = address(0);
 
             emit ArticleDisauthenticate(hashIdentifiers[i], msg.sender);
         }
@@ -114,7 +112,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function PostArticles(DelimitationLibrary.Article[] memory contents) 
     public payable 
-    AreArticlePosted(HashIdentifiers(contents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) 
+    AreArticlePosted(ContentsToHashIdentifiers(contents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) 
     returns (bytes32[] memory hashIdentifiers) {
 
         hashIdentifiers = new bytes32[](contents.length);
@@ -126,9 +124,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             _article.poster[hashIdentifiers[i]] = msg.sender;
             _article.content[hashIdentifiers[i]] = contents[i];
 
-            if (_authenticator.institution[msg.sender] != address(0))
-
-                _article.institution[hashIdentifiers[i]] = _authenticator.institution[msg.sender];
+            if (SearchInstitutionOfAuthenticator(msg.sender) != address(0))
+                _article.institution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
             emit ArticlePosted(hashIdentifiers[i]);   
         }
@@ -146,9 +143,10 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     _article.hashIdentifiers[ii] = _article.hashIdentifiers[_article.hashIdentifiers.length - 1];
                     _article.hashIdentifiers.pop();
             
-                    delete _article.poster[hashIdentifiers[i]];
+                    _article.poster[hashIdentifiers[i]] = address(0);
+                    _article.institution[hashIdentifiers[i]] = address(0);
+
                     delete _article.content[hashIdentifiers[i]];
-                    delete _article.institution[hashIdentifiers[i]];
 
                     emit ArticleRemoved(hashIdentifiers[i]);
 

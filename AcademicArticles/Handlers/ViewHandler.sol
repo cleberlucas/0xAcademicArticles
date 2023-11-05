@@ -6,10 +6,9 @@ import "../Extensions/RepositoryExtension.sol";
 pragma solidity >=0.8.22;
 
 abstract contract ViewHandler is RepositoryExtension {
-    
     function ArticleHashIdentifiers()
-    public view
-    returns (bytes32[] memory hashIdentifiers){
+    public view 
+    returns (bytes32[] memory hashIdentifiers) {
 
         hashIdentifiers = _article.hashIdentifiers;
     }
@@ -65,16 +64,6 @@ abstract contract ViewHandler is RepositoryExtension {
         accounts = _institution.accounts;
     }
 
-    function InstitutionOwners(address[] memory accounts) 
-    public view 
-    returns (address[] memory owners) {
-
-        owners = new address[](accounts.length);
-
-        for (uint256 i = 0; i < owners.length; i++)
-            owners[i] = _institution.owner[accounts[i]];
-    }
-
     function InstitutionContents(address[] memory accounts) 
     public view 
     returns (DelimitationLibrary.Institution[] memory contents) {
@@ -86,22 +75,12 @@ abstract contract ViewHandler is RepositoryExtension {
             contents[i] = _institution.content[accounts[i]];
     }
 
-    function AuthenticatorAccounts(address institution)
-    public view
-    returns (address[] memory accounts) {
 
-        accounts = _authenticator.accounts[institution];
-    }
-
-    function AuthenticatorInstitutions(address[] memory accounts) 
+    function InstitutionAuthenticators( address institution) 
     public view 
-    returns (address[] memory institutions) {
+    returns (address[] memory authenticators) {
 
-        institutions = new address[](accounts.length);
-
-        for (uint256 i = 0; i < institutions.length; i++)
-
-            accounts[i] = _authenticator.institution[accounts[i]];
+        authenticators = _institution.authenticators[institution];
     }
 
 }

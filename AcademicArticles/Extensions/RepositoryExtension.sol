@@ -13,5 +13,4 @@ abstract contract RepositoryExtension {
 
     RepositoryLibrary.Article _article;
     RepositoryLibrary.Institution _institution;
-    RepositoryLibrary.Authenticator _authenticator;
 }
