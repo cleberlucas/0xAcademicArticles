@@ -40,9 +40,15 @@ abstract contract ModifierExtension is RepositoryExtension, Utils {
         _;
     }
 
-    modifier AreAuthenticatorBindedInInstitution(address[] memory accounts, bool binded, string memory messageOnError) {
+    modifier AreAuthenticatorBindedInInstitution(address[] memory accounts) {
         for (uint256 i = 0; i < _institution.accounts.length; i++) 
-                Require((SearchInstitutionOfAuthenticator(_institution.accounts[i]) == msg.sender) == binded, messageOnError);              
+            Require((SearchInstitutionOfAuthenticator(_institution.accounts[i]) == msg.sender), ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION);              
+        _;
+    }
+
+    modifier AreAuthenticatorBindedNoAnyInstitution(address[] memory accounts) {
+        for (uint256 i = 0; i < _institution.accounts.length; i++) 
+            Require(SearchInstitutionOfAuthenticator(_institution.accounts[i]) == address(0), ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_ALREADY_BINDED_IN_INSTITUTION);              
         _;
     }
 

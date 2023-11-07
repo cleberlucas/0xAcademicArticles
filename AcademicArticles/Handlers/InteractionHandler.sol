@@ -57,7 +57,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     public payable 
     IsInstitution 
     AreValidAddress(accounts) 
-    AreAuthenticatorBindedInInstitution(accounts, false, ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_ALREADY_BINDED_IN_INSTITUTION){
+    AreAuthenticatorBindedNoAnyInstitution(accounts){
         
         for (uint256 i = 0; i < accounts.length; i++) {
             _institution.authenticators[msg.sender].push(accounts[i]);
@@ -69,7 +69,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function UnbindAuthenticators(address[] memory accounts)
     public payable 
     IsInstitution 
-    AreAuthenticatorBindedInInstitution(accounts, true, ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION){
+    AreAuthenticatorBindedInInstitution(accounts){
 
         for (uint256 i = 0; i < accounts.length; i++) 
             for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++)
