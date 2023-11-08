@@ -12,6 +12,7 @@ library ErrorMessageLibrary {
     string public constant ONE_OF_ARTICLES_ALREADY_POSTED = "One of the articles has already been posted";
     string public constant ONE_OF_ARTICLES_WAS_NOT_POSTED = "One of the articles was not posted";
     string public constant ONE_OF_ARTICLES_ALREADY_AUTHENTICATED = "One of the articles has already been authenticated";
+    string public constant ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED = "One of the articles was not been authenticated";
     string public constant ONE_OF_ARTICLES_NOT_YOURS = "One of the articles is not yours ";
     string public constant ONE_OF_AUTHENTICATORS_ALREADY_BINDED_IN_INSTITUTION = "One of the authenticators has already been binded in institution";
     string public constant ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION = "One of the authenticators was not binded in institution ";

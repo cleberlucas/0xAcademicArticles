@@ -96,12 +96,13 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         }
     }
 
-    function DisauthenticateArticles(bytes32[] memory hashIdentifiers)
+    function UnauthenticateArticles(bytes32[] memory hashIdentifiers)
     public payable
     IsAuthenticator
-    AreSameInstitutionAuthenticatedArticle(hashIdentifiers)
-    AreArticleAuthenticated(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {   
-    
+    AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
+    AreSameInstitutionAuthenticatedArticle(hashIdentifiers) {
+        
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
             _article.institution[hashIdentifiers[i]] = address(0);
 
