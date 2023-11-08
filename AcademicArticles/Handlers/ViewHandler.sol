@@ -6,14 +6,14 @@ import "../Extensions/RepositoryExtension.sol";
 pragma solidity >=0.8.22;
 
 abstract contract ViewHandler is RepositoryExtension {
-    function ArticleHashIdentifiers()
+    function ArticlesHashIdentifiers()
     public view 
     returns (bytes32[] memory hashIdentifiers) {
 
         hashIdentifiers = _article.hashIdentifiers;
     }
 
-    function ArticleHashIdentifiers(uint256 startIndex, uint256 endIndex, bool reverse) 
+    function ArticlesHashIdentifiers(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
     returns (bytes32[] memory hashIdentifiers) {
 
@@ -27,7 +27,7 @@ abstract contract ViewHandler is RepositoryExtension {
         }
     }
 
-    function ArticlePosters(bytes32[] memory hashIdentifiers) 
+    function ArticlesPosters(bytes32[] memory hashIdentifiers) 
     public view 
     returns (address[] memory posters) {
 
@@ -37,7 +37,7 @@ abstract contract ViewHandler is RepositoryExtension {
             posters[i] = _article.poster[hashIdentifiers[i]];
     }
 
-    function ArticleInstitutions(bytes32[] memory hashIdentifiers) 
+    function ArticlesInstitutions(bytes32[] memory hashIdentifiers) 
     public view 
     returns (address[] memory institutions) {
 
@@ -47,7 +47,7 @@ abstract contract ViewHandler is RepositoryExtension {
             institutions[i] = _article.institution[hashIdentifiers[i]];
     }
 
-    function ArticleContents(bytes32[] memory hashIdentifiers) 
+    function ArticlesContents(bytes32[] memory hashIdentifiers) 
     public view 
     returns (DelimitationLibrary.Article[] memory contents) {
 
@@ -57,30 +57,35 @@ abstract contract ViewHandler is RepositoryExtension {
             contents[i] = _article.content[hashIdentifiers[i]];
     }
 
-    function InstitutionAccounts()
+    function InstitutionsAccounts()
     public view
     returns (address[] memory accounts){
         
         accounts = _institution.accounts;
     }
 
-    function InstitutionContents(address[] memory accounts) 
+    function InstitutionsContents(address[] memory accounts) 
     public view 
     returns (DelimitationLibrary.Institution[] memory contents) {
 
         contents = new DelimitationLibrary.Institution[](accounts.length);
 
         for (uint256 i = 0; i < contents.length; i++)
-
             contents[i] = _institution.content[accounts[i]];
     }
 
 
-    function InstitutionAuthenticators( address institution) 
+    function InstitutionsAuthenticators(address[] memory institutions) 
     public view 
-    returns (address[] memory authenticators) {
+    returns (address[][] memory authenticators) {
 
-        authenticators = _institution.authenticators[institution];
+        authenticators = new address[][](institutions.length);
+
+        for (uint256 i = 0; i < authenticators.length; i++){
+            authenticators[i] = new address[](_institution.authenticators[institutions[i]].length);
+            for (uint256 ii = 0; ii < authenticators[i].length; ii++)
+                authenticators[i][ii] = _institution.authenticators[institutions[i]][ii];
+        }         
     }
 
 }
