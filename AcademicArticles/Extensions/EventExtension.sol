@@ -14,11 +14,11 @@ abstract contract EventExtension {
 
     event AuthenticatorUnbinded(address indexed account, address indexed institution);
 
+    event ArticleAuthenticated(bytes32 indexed hashIdentifier, address indexed authenticator);
+
+    event ArticleUnauthenticate(bytes32 indexed hashIdentifier, address indexed authenticator);
+
     event ArticlePosted(bytes32 indexed hashIdentifier);
 
     event ArticleRemoved(bytes32 indexed hashIdentifier);
-
-    event ArticleAuthenticated(bytes32 indexed hashIdentifier, address indexed authenticator);
-
-    event ArticleDisauthenticate(bytes32 indexed hashIdentifier, address indexed authenticator);
 }
