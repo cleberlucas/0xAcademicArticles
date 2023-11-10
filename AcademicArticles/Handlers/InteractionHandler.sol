@@ -106,7 +106,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
             _article.institution[hashIdentifiers[i]] = address(0);
 
-            emit ArticleDisauthenticate(hashIdentifiers[i], msg.sender);
+            emit ArticleUnauthenticate(hashIdentifiers[i], msg.sender);
         }
 
     }
