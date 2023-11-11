@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AFL-3.0
+// SPDX-License-Identifier: MIT
 import "../Librarys/DelimitationLibrary.sol";
 import "../Extensions/ModifierExtension.sol";
 import "../Extensions/EventExtension.sol";

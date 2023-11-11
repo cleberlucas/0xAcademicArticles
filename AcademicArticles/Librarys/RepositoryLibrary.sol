@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AFL-3.0
+// SPDX-License-Identifier: MIT
 import "./DelimitationLibrary.sol";
 
 pragma solidity >=0.8.22;

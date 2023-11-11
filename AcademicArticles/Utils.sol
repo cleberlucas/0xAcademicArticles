@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AFL-3.0
+// SPDX-License-Identifier: MIT
 import "./Extensions/RepositoryExtension.sol";
 import "./Librarys/ErrorMessageLibrary.sol";
 
