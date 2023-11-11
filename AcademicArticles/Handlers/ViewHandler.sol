@@ -6,13 +6,6 @@ import "../Extensions/RepositoryExtension.sol";
 pragma solidity >=0.8.22;
 
 abstract contract ViewHandler is RepositoryExtension {
-    function ArticlesHashIdentifiers()
-    public view 
-    returns (bytes32[] memory hashIdentifiers) {
-
-        hashIdentifiers = _article.hashIdentifiers;
-    }
-
     function ArticlesHashIdentifiers(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
     returns (bytes32[] memory hashIdentifiers) {
@@ -21,7 +14,7 @@ abstract contract ViewHandler is RepositoryExtension {
 
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
             if (startIndex + i < _article.hashIdentifiers.length)
-                hashIdentifiers[i] = _article.hashIdentifiers[(reverse ?  (_article.hashIdentifiers.length - i - 1)   : i)];       
+                hashIdentifiers[i] = _article.hashIdentifiers[(reverse ? (_article.hashIdentifiers.length - i - 1) : i)];       
             else 
                 break;
         }
@@ -57,11 +50,36 @@ abstract contract ViewHandler is RepositoryExtension {
             contents[i] = _article.content[hashIdentifiers[i]];
     }
 
-    function InstitutionsAccounts()
+    function InstitutionsAccounts(uint256 startIndex, uint256 endIndex, bool reverse)
     public view
     returns (address[] memory accounts){
-        
-        accounts = _institution.accounts;
+
+        accounts = new address[](endIndex - startIndex + 1);
+
+        for (uint256 i = 0; i < accounts.length; i++) {
+            if (startIndex + i < _institution.accounts.length)
+                accounts[i] = _institution.accounts[(reverse ? (_institution.accounts.length - i - 1) : i)];       
+            else 
+                break;
+        }
+    }
+
+    function InstitutionsAuthenticators(address[] memory institutions, uint256 startIndex, uint256 endIndex, bool reverse) 
+    public view 
+    returns (address[][] memory authenticators) {
+
+        authenticators = new address[][](institutions.length);
+
+        for (uint256 i = 0; i < authenticators.length; i++){
+            authenticators[i] = new address[](endIndex - startIndex + 1);
+
+            for (uint256 ii = 0; ii < authenticators[i].length; ii++)
+                if (startIndex + i < _institution.authenticators[institutions[i]].length)
+                    authenticators[i][ii] = _institution.authenticators[institutions[i]][(reverse ? (_institution.authenticators[institutions[i]].length - ii - 1) : ii)];       
+                else 
+                    break;
+                   
+        }         
     }
 
     function InstitutionsContents(address[] memory accounts) 
@@ -73,19 +91,4 @@ abstract contract ViewHandler is RepositoryExtension {
         for (uint256 i = 0; i < contents.length; i++)
             contents[i] = _institution.content[accounts[i]];
     }
-
-
-    function InstitutionsAuthenticators(address[] memory institutions) 
-    public view 
-    returns (address[][] memory authenticators) {
-
-        authenticators = new address[][](institutions.length);
-
-        for (uint256 i = 0; i < authenticators.length; i++){
-            authenticators[i] = new address[](_institution.authenticators[institutions[i]].length);
-            for (uint256 ii = 0; ii < authenticators[i].length; ii++)
-                authenticators[i][ii] = _institution.authenticators[institutions[i]][ii];
-        }         
-    }
-
 }

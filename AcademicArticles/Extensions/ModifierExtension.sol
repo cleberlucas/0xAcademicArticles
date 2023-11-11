@@ -23,9 +23,9 @@ abstract contract ModifierExtension is RepositoryExtension, Utils {
         _;
     }
 
-    modifier AreValidAddress(address[] memory validateAddresses) {
-        for (uint256 i = 0; i < validateAddresses.length; i++) 
-            Require(validateAddresses[i] != address(0), ErrorMessageLibrary.ONE_OF_NOT_VALID_ADDRESSES);
+    modifier AreNotEmptyAddress(address[] memory addresses) {
+        for (uint256 i = 0; i < addresses.length; i++) 
+            Require(addresses[i] != address(0), ErrorMessageLibrary.ONE_OF_ADDRESSES_IS_EMPTY);
         _;
     }
 

@@ -13,7 +13,7 @@ library RepositoryLibrary {
 
     struct Institution {
         address[] accounts;
-        mapping(address account => DelimitationLibrary.Institution) content;
         mapping(address account => address[]) authenticators;
+        mapping(address account => DelimitationLibrary.Institution) content;
     }
 }

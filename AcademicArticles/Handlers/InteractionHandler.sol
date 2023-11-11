@@ -10,7 +10,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function RegisterInstitution(address account, DelimitationLibrary.Institution memory content) 
     public payable
     IsOwner 
-    IsInstitutionRegistered(account, false, ErrorMessageLibrary.INSTITUTION_REGISTERED) {
+    IsInstitutionRegistered(account, false, ErrorMessageLibrary.INSTITUTION_ALREADY_REGISTERED) {
 
         _institution.accounts.push(account);
         _institution.content[account] = content;
@@ -56,7 +56,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function BindAuthenticators(address[] memory accounts)
     public payable 
     IsInstitution 
-    AreValidAddress(accounts) 
+    AreNotEmptyAddress(accounts) 
     AreAuthenticatorBindedNoAnyInstitution(accounts){
         
         for (uint256 i = 0; i < accounts.length; i++) {

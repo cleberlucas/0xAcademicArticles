@@ -5,10 +5,10 @@ library ErrorMessageLibrary {
     string public constant OWNER_ACTION = "owner-action";
     string public constant INSTITUTION_ACTION = "institution-action";
     string public constant AUTHENTICATOR_ACTION = "authenticator-action";
-    string public constant INSTITUTION_REGISTERED = "institution-registered";
+    string public constant INSTITUTION_ALREADY_REGISTERED = "institution-already-registered";
     string public constant INSTITUTION_WAS_NOT_REGISTERED = "institution-was-not-registered";
     string public constant ONE_OF_INSTITUTION_WAS_NOT_REGISTERED = "one-of-institution-was-not-registered";
-    string public constant ONE_OF_NOT_VALID_ADDRESSES = "one-of-not-valid-addresses";
+    string public constant ONE_OF_ADDRESSES_IS_EMPTY = "one-of-addresses-is-empty";
     string public constant ONE_OF_ARTICLES_ALREADY_POSTED = "one-of-articles-already-posted";
     string public constant ONE_OF_ARTICLES_WAS_NOT_POSTED = "one-of-articles-was-not-posted";
     string public constant ONE_OF_ARTICLES_ALREADY_AUTHENTICATED = "one-of-articles-already-authenticated";
