@@ -22,7 +22,7 @@ library DelimitationLibrary {
         Contributors contributors;
         Document document;
         AcademicDegree academicDegree;
-        int year;
+        int yearPresentation;
     }
 
     struct Contributors {
@@ -42,13 +42,14 @@ library DelimitationLibrary {
         These,
         Monograph,
         Dissertation,
+        ResearchProject,
         Others
     }
 
     enum AcademicDegree {
         Technologist,
-        Bachelor,
         BachelorEducation,
+        Bachelor,
         Specialization,
         Master,
         Doctorate
