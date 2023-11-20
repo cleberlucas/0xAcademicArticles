@@ -124,9 +124,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             _article.hashIdentifiers.push(hashIdentifiers[i]);
             _article.poster[hashIdentifiers[i]] = msg.sender;
             _article.content[hashIdentifiers[i]] = contents[i];
-
-            if (SearchInstitutionOfAuthenticator(msg.sender) != address(0))
-                _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
+            _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
             emit ArticlePosted(hashIdentifiers[i]);   
         }
