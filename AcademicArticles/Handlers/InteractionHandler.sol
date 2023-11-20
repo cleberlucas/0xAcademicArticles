@@ -44,8 +44,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     delete _institution.authenticators[accounts[i]];
       
                     for (uint256 iii = 0; iii < _article.hashIdentifiers.length; iii++) 
-                        if (_article.institution[_article.hashIdentifiers[iii]] == accounts[i])
-                            _article.institution[_article.hashIdentifiers[iii]] = address(0);
+                        if (_article.authenticatingInstitution[_article.hashIdentifiers[iii]] == accounts[i])
+                            _article.authenticatingInstitution[_article.hashIdentifiers[iii]] = address(0);
                         
                     emit InstitutionUnregistered(accounts[i]);
 
@@ -90,7 +90,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            _article.institution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
+            _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
             emit ArticleAuthenticated(hashIdentifiers[i], msg.sender);
         }
@@ -104,7 +104,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreSameInstitutionAuthenticatedArticle(hashIdentifiers) {
         
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            _article.institution[hashIdentifiers[i]] = address(0);
+            _article.authenticatingInstitution[hashIdentifiers[i]] = address(0);
 
             emit ArticleUnauthenticate(hashIdentifiers[i], msg.sender);
         }
@@ -126,7 +126,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             _article.content[hashIdentifiers[i]] = contents[i];
 
             if (SearchInstitutionOfAuthenticator(msg.sender) != address(0))
-                _article.institution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
+                _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
             emit ArticlePosted(hashIdentifiers[i]);   
         }
@@ -145,7 +145,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     _article.hashIdentifiers.pop();
             
                     _article.poster[hashIdentifiers[i]] = address(0);
-                    _article.institution[hashIdentifiers[i]] = address(0);
+                    _article.authenticatingInstitution[hashIdentifiers[i]] = address(0);
 
                     delete _article.content[hashIdentifiers[i]];
 
