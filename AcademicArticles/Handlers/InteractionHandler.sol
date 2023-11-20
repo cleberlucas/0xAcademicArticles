@@ -62,7 +62,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         for (uint256 i = 0; i < accounts.length; i++) {
             _institution.authenticators[msg.sender].push(accounts[i]);
 
-            emit AuthenticatorBinded(accounts[i], msg.sender);
+            emit AuthenticatorBinded(accounts[i]);
         }
     }
 
@@ -78,7 +78,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     _institution.authenticators[msg.sender][ii] = _institution.authenticators[msg.sender][_institution.authenticators[msg.sender].length - 1];
                     _institution.authenticators[msg.sender].pop();
 
-                    emit AuthenticatorUnbinded(accounts[i], msg.sender);
+                    emit AuthenticatorUnbinded(accounts[i]);
 
                     break;
                 }    
@@ -92,7 +92,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
             _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
-            emit ArticleAuthenticated(hashIdentifiers[i], msg.sender);
+            emit ArticleAuthenticated(hashIdentifiers[i]);
         }
     }
 
@@ -106,7 +106,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
             _article.authenticatingInstitution[hashIdentifiers[i]] = address(0);
 
-            emit ArticleUnauthenticate(hashIdentifiers[i], msg.sender);
+            emit ArticleUnauthenticate(hashIdentifiers[i]);
         }
 
     }
