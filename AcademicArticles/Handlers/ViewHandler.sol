@@ -2,10 +2,11 @@
 import "../Librarys/DelimitationLibrary.sol";
 import "../Librarys/RepositoryLibrary.sol";
 import "../Extensions/RepositoryExtension.sol";
+import "../Utils.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract ViewHandler is RepositoryExtension {
+abstract contract ViewHandler is RepositoryExtension, Utils {
     function ArticlesHashIdentifiers(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
     returns (bytes32[] memory hashIdentifiers) {
@@ -81,7 +82,7 @@ abstract contract ViewHandler is RepositoryExtension {
                    
         }         
     }
-
+    
     function InstitutionsContents(address[] memory accounts) 
     public view 
     returns (DelimitationLibrary.Institution[] memory contents) {
@@ -91,4 +92,16 @@ abstract contract ViewHandler is RepositoryExtension {
         for (uint256 i = 0; i < contents.length; i++)
             contents[i] = _institution.content[accounts[i]];
     }
+
+    function AuthenticatorInstitutions(address[] memory accounts) 
+    public view 
+    returns (address[] memory institutions) {
+
+        institutions = new address[](accounts.length);
+
+        for (uint256 i = 0; i < institutions.length; i++)
+            institutions[i] = SearchInstitutionOfAuthenticator(accounts[i]);
+    }
 }
+
+
