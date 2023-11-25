@@ -89,6 +89,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     IsAuthenticator
     AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
+        
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
             _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
@@ -115,7 +116,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     public payable 
     AreArticlePosted(ContentsToHashIdentifiers(contents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) 
     returns (bytes32[] memory hashIdentifiers) {
-
+        
+        address authenticator;      
         hashIdentifiers = new bytes32[](contents.length);
 
         for (uint256 i = 0; i < hashIdentifiers.length; i++) {
@@ -124,9 +126,12 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             _article.hashIdentifiers.push(hashIdentifiers[i]);
             _article.poster[hashIdentifiers[i]] = msg.sender;
             _article.content[hashIdentifiers[i]] = contents[i];
-            _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
-            emit ArticlePosted(hashIdentifiers[i]);   
+            authenticator = SearchInstitutionOfAuthenticator(msg.sender);
+            _article.authenticatingInstitution[hashIdentifiers[i]] = authenticator;
+
+            emit ArticlePosted(hashIdentifiers[i]);
+            if (authenticator != address(0)) emit ArticleAuthenticated(hashIdentifiers[i]);
         }
     }
 
