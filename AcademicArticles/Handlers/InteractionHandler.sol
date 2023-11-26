@@ -7,152 +7,153 @@ import "../Extensions/RepositoryExtension.sol";
 pragma solidity >=0.8.22;
 
 abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, EventExtension {
-    function RegisterInstitution(address account, DelimitationLibrary.Institution memory content) 
+    function RegisterInstitution(address institutionAccount, DelimitationLibrary.Institution memory institutionContent) 
     public payable
-    IsOwner 
-    IsInstitutionRegistered(account, false, ErrorMessageLibrary.INSTITUTION_ALREADY_REGISTERED) {
+    IsOwner
+    IsNotEmptyAccount(institutionAccount)
+    IsInstitutionRegistered(institutionAccount, false, ErrorMessageLibrary.INSTITUTION_ALREADY_REGISTERED) {
 
-        _institution.accounts.push(account);
-        _institution.content[account] = content;
+        _institution.accounts.push(institutionAccount);
+        _institution.content[institutionAccount] = institutionContent;
 
-        emit InstitutionRegistered(account);
+        emit InstitutionRegistered(institutionAccount);
     }
 
-    function EditInstitution(address account, DelimitationLibrary.Institution memory content) 
+    function EditInstitution(address institutionAccount, DelimitationLibrary.Institution memory institutionContent) 
     public payable 
     IsOwner 
-    IsInstitutionRegistered(account, true, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED) {
+    IsInstitutionRegistered(institutionAccount, true, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED) {
 
-        _institution.content[account] = content;
+        _institution.content[institutionAccount] = institutionContent;
 
-        emit InstitutionRegistered(account);
+        emit InstitutionRegistered(institutionAccount);
     }
 
-    function UnregisterInstitutions(address[] memory accounts) 
+    function UnregisterInstitutions(address[] memory institutionAccounts) 
     public payable 
     IsOwner 
-    AreInstitutionRegistered(accounts) {
+    AreNotEmptyAccount(institutionAccounts)
+    AreInstitutionRegistered(institutionAccounts) {
 
-        for (uint256 i = 0; i < accounts.length; i++) 
+        for (uint256 i = 0; i < institutionAccounts.length; i++) 
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++)
-                if (_institution.accounts[ii] == accounts[i]) {
+                if (_institution.accounts[ii] == institutionAccounts[i]) {
 
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
 
-                    delete _institution.content[accounts[i]];
-                    delete _institution.authenticators[accounts[i]];
+                    delete _institution.content[institutionAccounts[i]];
+                    delete _institution.authenticators[institutionAccounts[i]];
       
-                    for (uint256 iii = 0; iii < _article.hashIdentifiers.length; iii++) 
-                        if (_article.authenticatingInstitution[_article.hashIdentifiers[iii]] == accounts[i])
-                            _article.authenticatingInstitution[_article.hashIdentifiers[iii]] = address(0);
+                    for (uint256 iii = 0; iii < _article.ids.length; iii++) 
+                        if (_article.authenticatingInstitution[_article.ids[iii]] == institutionAccounts[i])
+                            _article.authenticatingInstitution[_article.ids[iii]] = address(0);
                         
-                    emit InstitutionUnregistered(accounts[i]);
+                    emit InstitutionUnregistered(institutionAccounts[i]);
 
                     break;
                 }      
     }
 
-    function BindAuthenticators(address[] memory accounts)
+    function BindAuthenticators(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution 
-    AreNotEmptyAddress(accounts) 
-    AreAuthenticatorBindedNoAnyInstitution(accounts){
+    AreNotEmptyAccount(authenticatorAccounts) 
+    AreAuthenticatorBindedNoAnyInstitution(authenticatorAccounts){
         
-        for (uint256 i = 0; i < accounts.length; i++) {
-            _institution.authenticators[msg.sender].push(accounts[i]);
+        for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
+            _institution.authenticators[msg.sender].push(authenticatorAccounts[i]);
 
-            emit AuthenticatorBinded(accounts[i]);
+            emit AuthenticatorBinded(authenticatorAccounts[i]);
         }
     }
 
-    function UnbindAuthenticators(address[] memory accounts)
+    function UnbindAuthenticators(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution 
-    AreAuthenticatorBindedInInstitution(accounts){
+    AreAuthenticatorBindedInInstitution(authenticatorAccounts){
 
-        for (uint256 i = 0; i < accounts.length; i++) 
+        for (uint256 i = 0; i < authenticatorAccounts.length; i++) 
             for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++)
-                if (_institution.authenticators[msg.sender][ii] == accounts[i]) {
+                if (_institution.authenticators[msg.sender][ii] == authenticatorAccounts[i]) {
 
                     _institution.authenticators[msg.sender][ii] = _institution.authenticators[msg.sender][_institution.authenticators[msg.sender].length - 1];
                     _institution.authenticators[msg.sender].pop();
 
-                    emit AuthenticatorUnbinded(accounts[i]);
+                    emit AuthenticatorUnbinded(authenticatorAccounts[i]);
 
                     break;
                 }    
     }
 
-    function AuthenticateArticles(bytes32[] memory hashIdentifiers)
+    function AuthenticateArticles(bytes32[] memory articleIds)
     public payable 
     IsAuthenticator
-    AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(hashIdentifiers, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
+    AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(articleIds, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         
-        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            _article.authenticatingInstitution[hashIdentifiers[i]] = SearchInstitutionOfAuthenticator(msg.sender);
+        for (uint256 i = 0; i < articleIds.length; i++) {
+            _article.authenticatingInstitution[articleIds[i]] = SearchInstitutionOfAuthenticator(msg.sender);
 
-            emit ArticleAuthenticated(hashIdentifiers[i]);
+            emit ArticleAuthenticated(articleIds[i]);
         }
     }
 
-    function UnauthenticateArticles(bytes32[] memory hashIdentifiers)
+    function UnauthenticateArticles(bytes32[] memory articleIds)
     public payable
     IsAuthenticator
-    AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
-    AreSameInstitutionAuthenticatedArticle(hashIdentifiers) {
+    AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
+    AreSameInstitutionAuthenticatedArticle(articleIds) {
         
-        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            _article.authenticatingInstitution[hashIdentifiers[i]] = address(0);
+        for (uint256 i = 0; i < articleIds.length; i++) {
+            _article.authenticatingInstitution[articleIds[i]] = address(0);
 
-            emit ArticleUnauthenticate(hashIdentifiers[i]);
+            emit ArticleUnauthenticate(articleIds[i]);
         }
-
     }
 
-    function PostArticles(DelimitationLibrary.Article[] memory contents) 
+    function PostArticles(DelimitationLibrary.Article[] memory articleContents) 
     public payable 
-    AreArticlePosted(ContentsToHashIdentifiers(contents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) 
-    returns (bytes32[] memory hashIdentifiers) {
+    AreArticlePosted(ArticleContentsToKeccak256(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) 
+    returns (bytes32[] memory articleIds) {
         
         address authenticator;      
-        hashIdentifiers = new bytes32[](contents.length);
+        articleIds = new bytes32[](articleContents.length);
 
-        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            hashIdentifiers[i] = keccak256(abi.encode(contents[i]));
+        for (uint256 i = 0; i < articleIds.length; i++) {
+            articleIds[i] = keccak256(abi.encode(articleContents[i]));
 
-            _article.hashIdentifiers.push(hashIdentifiers[i]);
-            _article.poster[hashIdentifiers[i]] = msg.sender;
-            _article.content[hashIdentifiers[i]] = contents[i];
+            _article.ids.push(articleIds[i]);
+            _article.poster[articleIds[i]] = msg.sender;
+            _article.content[articleIds[i]] = articleContents[i];
 
             authenticator = SearchInstitutionOfAuthenticator(msg.sender);
-            _article.authenticatingInstitution[hashIdentifiers[i]] = authenticator;
+            _article.authenticatingInstitution[articleIds[i]] = authenticator;
 
-            emit ArticlePosted(hashIdentifiers[i]);
-            if (authenticator != address(0)) emit ArticleAuthenticated(hashIdentifiers[i]);
+            emit ArticlePosted(articleIds[i]);
+            if (authenticator != address(0)) emit ArticleAuthenticated(articleIds[i]);
         }
     }
 
-    function RemoveArticles(bytes32[] memory hashIdentifiers)
+    function RemoveArticles(bytes32[] memory articleIds)
     public payable 
-    AreArticlePosted(hashIdentifiers, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleMy(hashIdentifiers) {
+    AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleMy(articleIds) {
         
-        for (uint256 i = 0; i < hashIdentifiers.length; i++) 
-            for (uint256 ii = 0; ii < _article.hashIdentifiers.length; ii++)
-                if (_article.hashIdentifiers[ii] == hashIdentifiers[i]) {
+        for (uint256 i = 0; i < articleIds.length; i++) 
+            for (uint256 ii = 0; ii < _article.ids.length; ii++)
+                if (_article.ids[ii] == articleIds[i]) {
 
-                    _article.hashIdentifiers[ii] = _article.hashIdentifiers[_article.hashIdentifiers.length - 1];
-                    _article.hashIdentifiers.pop();
+                    _article.ids[ii] = _article.ids[_article.ids.length - 1];
+                    _article.ids.pop();
             
-                    _article.poster[hashIdentifiers[i]] = address(0);
-                    _article.authenticatingInstitution[hashIdentifiers[i]] = address(0);
+                    _article.poster[articleIds[i]] = address(0);
+                    _article.authenticatingInstitution[articleIds[i]] = address(0);
 
-                    delete _article.content[hashIdentifiers[i]];
+                    delete _article.content[articleIds[i]];
 
-                    emit ArticleRemoved(hashIdentifiers[i]);
+                    emit ArticleRemoved(articleIds[i]);
 
                     break;
                 }

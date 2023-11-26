@@ -4,21 +4,21 @@ import "../Librarys/RepositoryLibrary.sol";
 pragma solidity >=0.8.22;
 
 abstract contract EventExtension {
-    event InstitutionRegistered(address indexed account);
+    event InstitutionRegistered(address indexed institutionAccount);
 
-    event InstitutionEdited(address indexed account);
+    event InstitutionEdited(address indexed institutionAccount);
 
-    event InstitutionUnregistered(address indexed account);
+    event InstitutionUnregistered(address indexed institutionAccount);
 
-    event AuthenticatorBinded(address indexed account);
+    event AuthenticatorBinded(address indexed authenticatorAccount);
 
-    event AuthenticatorUnbinded(address indexed account);
+    event AuthenticatorUnbinded(address indexed authenticatorAccount);
 
-    event ArticleAuthenticated(bytes32 indexed hashIdentifier);
+    event ArticleAuthenticated(bytes32 indexed articleId);
 
-    event ArticleUnauthenticate(bytes32 indexed hashIdentifier);
+    event ArticleUnauthenticate(bytes32 indexed articleId);
 
-    event ArticlePosted(bytes32 indexed hashIdentifier);
+    event ArticlePosted(bytes32 indexed articleId);
 
-    event ArticleRemoved(bytes32 indexed hashIdentifier);
+    event ArticleRemoved(bytes32 indexed articleId);
 }

@@ -7,101 +7,93 @@ import "../Utils.sol";
 pragma solidity >=0.8.22;
 
 abstract contract ViewHandler is RepositoryExtension, Utils {
-    function ArticlesHashIdentifiers(uint256 startIndex, uint256 endIndex, bool reverse) 
+    function ArticleIds(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
-    returns (bytes32[] memory hashIdentifiers) {
+    returns (bytes32[] memory articleIds) {
 
-        hashIdentifiers = new bytes32[](endIndex - startIndex + 1);
+        articleIds = new bytes32[](endIndex - startIndex + 1);
 
-        for (uint256 i = 0; i < hashIdentifiers.length; i++) {
-            if (startIndex + i < _article.hashIdentifiers.length)
-                hashIdentifiers[i] = _article.hashIdentifiers[(reverse ? (_article.hashIdentifiers.length - i - 1) : i)];       
+        for (uint256 i = 0; i < articleIds.length; i++) {
+            if (startIndex + i < _article.ids.length)
+                articleIds[i] = _article.ids[(reverse ? (_article.ids.length - i - 1) : i)];       
             else 
                 break;
         }
     }
 
-    function ArticlesPosters(bytes32[] memory hashIdentifiers) 
+    function ArticlePosters(bytes32[] memory articleIds) 
     public view 
-    returns (address[] memory posters) {
+    returns (address[] memory articlePosters) {
 
-        posters = new address[](hashIdentifiers.length);
+        articlePosters = new address[](articleIds.length);
 
-        for (uint256 i = 0; i < posters.length; i++)
-            posters[i] = _article.poster[hashIdentifiers[i]];
+        for (uint256 i = 0; i < articlePosters.length; i++)
+            articlePosters[i] = _article.poster[articleIds[i]];
     }
 
-    function ArticlesAuthenticatingInstitutions(bytes32[] memory hashIdentifiers) 
+    function ArticleAuthenticatingInstitutions(bytes32[] memory articleIds) 
     public view 
-    returns (address[] memory institutions) {
+    returns (address[] memory articleAuthenticatingInstitutions) {
 
-        institutions = new address[](hashIdentifiers.length);
+        articleAuthenticatingInstitutions = new address[](articleIds.length);
 
-        for (uint256 i = 0; i < institutions.length; i++)
-            institutions[i] = _article.authenticatingInstitution[hashIdentifiers[i]];
+        for (uint256 i = 0; i < articleAuthenticatingInstitutions.length; i++)
+            articleAuthenticatingInstitutions[i] = _article.authenticatingInstitution[articleIds[i]];
     }
 
-    function ArticlesContents(bytes32[] memory hashIdentifiers) 
+    function ArticleContents(bytes32[] memory articleIds) 
     public view 
-    returns (DelimitationLibrary.Article[] memory contents) {
+    returns (DelimitationLibrary.Article[] memory articleContents) {
 
-        contents = new DelimitationLibrary.Article[](hashIdentifiers.length);
+        articleContents = new DelimitationLibrary.Article[](articleIds.length);
 
-        for (uint256 i = 0; i < contents.length; i++)
-            contents[i] = _article.content[hashIdentifiers[i]];
+        for (uint256 i = 0; i < articleContents.length; i++)
+            articleContents[i] = _article.content[articleIds[i]];
     }
 
-    function InstitutionsAccounts(uint256 startIndex, uint256 endIndex, bool reverse)
+    function InstitutionAccounts(uint256 startIndex, uint256 endIndex, bool reverse)
     public view
-    returns (address[] memory accounts){
+    returns (address[] memory institutionAccounts){
 
-        accounts = new address[](endIndex - startIndex + 1);
+        institutionAccounts = new address[](endIndex - startIndex + 1);
 
-        for (uint256 i = 0; i < accounts.length; i++) {
+        for (uint256 i = 0; i < institutionAccounts.length; i++) {
             if (startIndex + i < _institution.accounts.length)
-                accounts[i] = _institution.accounts[(reverse ? (_institution.accounts.length - i - 1) : i)];       
+                institutionAccounts[i] = _institution.accounts[(reverse ? (_institution.accounts.length - i - 1) : i)];       
             else 
                 break;
         }
     }
 
-    function InstitutionsAuthenticators(address[] memory institutions, uint256 startIndex, uint256 endIndex, bool reverse) 
+    function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
-    returns (address[][] memory authenticators) {
+    returns (address[][] memory institutionAuthenticators) {
 
-        authenticators = new address[][](institutions.length);
+        institutionAuthenticators = new address[][](institutionAccounts.length);
 
-        for (uint256 i = 0; i < authenticators.length; i++){
-            authenticators[i] = new address[](endIndex - startIndex + 1);
+        for (uint256 i = 0; i < institutionAuthenticators.length; i++){
+            institutionAuthenticators[i] = new address[](endIndex - startIndex + 1);
 
-            for (uint256 ii = 0; ii < authenticators[i].length; ii++)
-                if (startIndex + i < _institution.authenticators[institutions[i]].length)
-                    authenticators[i][ii] = _institution.authenticators[institutions[i]][(reverse ? (_institution.authenticators[institutions[i]].length - ii - 1) : ii)];       
+            for (uint256 ii = 0; ii < institutionAuthenticators[i].length; ii++)
+                if (startIndex + i < _institution.authenticators[institutionAccounts[i]].length)
+                    institutionAuthenticators[i][ii] = _institution.authenticators[institutionAccounts[i]][(reverse ? (_institution.authenticators[institutionAccounts[i]].length - ii - 1) : ii)];       
                 else 
                     break;
                    
         }         
     }
     
-    function InstitutionsContents(address[] memory accounts) 
+    function InstitutionContents(address[] memory institutionAccounts) 
     public view 
-    returns (DelimitationLibrary.Institution[] memory contents) {
+    returns (DelimitationLibrary.Institution[] memory institutionContents) {
 
-        contents = new DelimitationLibrary.Institution[](accounts.length);
+        institutionContents = new DelimitationLibrary.Institution[](institutionAccounts.length);
 
-        for (uint256 i = 0; i < contents.length; i++)
-            contents[i] = _institution.content[accounts[i]];
+        for (uint256 i = 0; i < institutionContents.length; i++)
+            institutionContents[i] = _institution.content[institutionAccounts[i]];
     }
 
-    function AuthenticatorInstitutions(address[] memory accounts) 
-    public view 
-    returns (address[] memory institutions) {
 
-        institutions = new address[](accounts.length);
-
-        for (uint256 i = 0; i < institutions.length; i++)
-            institutions[i] = SearchInstitutionOfAuthenticator(accounts[i]);
-    }
 }
 
 
