@@ -18,11 +18,11 @@ library DelimitationLibrary {
         string course;
         string institution;
         string additional;
+        int yearPresentation;
+        Document document;
         ArticleType articleType;
         Contributors contributors;
-        Document document;
         AcademicDegree academicDegree;
-        int yearPresentation;
     }
 
     struct Contributors {
@@ -37,21 +37,26 @@ library DelimitationLibrary {
     }
 
     enum ArticleType {
-        FinalProject,
-        ScientificArticle,
+        Others,
         These,
+        CaseStudy,
         Monograph,
+        FinalProject,
         Dissertation,
-        ResearchProject,
-        Others
+        ReviewArticle,
+        ScientificArticle,
+        TheoreticalArticles,
+        MethodologicalArticles
     }
 
     enum AcademicDegree {
-        Technologist,
-        BachelorEducation,
-        Bachelor,
-        Specialization,
+        Mba,
         Master,
-        Doctorate
+        Bachelor,
+        Doctorate,
+        Technologist,
+        PostDoctoral,
+        Specialization,    
+        BachelorEducation
     }
 }
