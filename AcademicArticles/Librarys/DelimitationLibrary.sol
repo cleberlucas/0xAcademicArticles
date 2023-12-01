@@ -19,10 +19,10 @@ library DelimitationLibrary {
         string institution;
         string additional;
         int yearPresentation;
-        Document document;
         ArticleType articleType;
-        Contributors contributors;
         AcademicDegree academicDegree;
+        Document document;
+        Contributors contributors;
     }
 
     struct Contributors {
