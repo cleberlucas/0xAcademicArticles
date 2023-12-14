@@ -82,18 +82,6 @@ abstract contract ViewHandler is RepositoryExtension, Utils {
                    
         }         
     }
-    
-    function InstitutionContents(address[] memory institutionAccounts) 
-    public view 
-    returns (DelimitationLibrary.Institution[] memory institutionContents) {
-
-        institutionContents = new DelimitationLibrary.Institution[](institutionAccounts.length);
-
-        for (uint256 i = 0; i < institutionContents.length; i++)
-            institutionContents[i] = _institution.content[institutionAccounts[i]];
-    }
-
-
 }
 
 

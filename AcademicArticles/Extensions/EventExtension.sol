@@ -6,8 +6,6 @@ pragma solidity >=0.8.22;
 abstract contract EventExtension {
     event InstitutionRegistered(address indexed institutionAccount);
 
-    event InstitutionEdited(address indexed institutionAccount);
-
     event InstitutionUnregistered(address indexed institutionAccount);
 
     event AuthenticatorBinded(address indexed authenticatorAccount);

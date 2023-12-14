@@ -23,11 +23,6 @@ abstract contract ModifierExtension is RepositoryExtension, Utils {
         _;
     }
 
-    modifier IsNotEmptyAccount(address account) {
-            Require(account != address(0), ErrorMessageLibrary.ACCOUNT_IS_EMPTY);
-        _;
-    }
-
     modifier AreNotEmptyAccount(address[] memory accounts) {
         for (uint256 i = 0; i < accounts.length; i++) 
             Require(accounts[i] != address(0), ErrorMessageLibrary.ONE_OF_ACCOUNTS_IS_EMPTY);
@@ -39,9 +34,9 @@ abstract contract ModifierExtension is RepositoryExtension, Utils {
         _;
     }
 
-    modifier AreInstitutionRegistered(address[] memory institutionAccounts) {
+    modifier AreInstitutionRegistered(address[] memory institutionAccounts, bool registered, string memory messageOnError) {
         for (uint256 i = 0; i < institutionAccounts.length; i++) 
-            Require(ExistInstitution(institutionAccounts[i]), ErrorMessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED);
+            Require(ExistInstitution(institutionAccounts[i]) == registered, messageOnError);
         _;
     }
 

@@ -7,42 +7,34 @@ import "../Extensions/RepositoryExtension.sol";
 pragma solidity >=0.8.22;
 
 abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, EventExtension {
-    function RegisterInstitution(address institutionAccount, DelimitationLibrary.Institution memory institutionContent) 
+    function RegisterInstitution(address[] memory institutionAccounts) 
     public payable
     IsOwner
-    IsNotEmptyAccount(institutionAccount)
-    IsInstitutionRegistered(institutionAccount, false, ErrorMessageLibrary.INSTITUTION_ALREADY_REGISTERED) {
+    AreNotEmptyAccount(institutionAccounts)
+    AreInstitutionRegistered(institutionAccounts, false, ErrorMessageLibrary.INSTITUTION_ALREADY_REGISTERED) {
 
-        _institution.accounts.push(institutionAccount);
-        _institution.content[institutionAccount] = institutionContent;
+        for (uint256 i = 0; i < institutionAccounts.length; i++) {
 
-        emit InstitutionRegistered(institutionAccount);
-    }
+            _institution.accounts.push(institutionAccounts[i]);
 
-    function EditInstitution(address institutionAccount, DelimitationLibrary.Institution memory institutionContent) 
-    public payable 
-    IsOwner 
-    IsInstitutionRegistered(institutionAccount, true, ErrorMessageLibrary.INSTITUTION_WAS_NOT_REGISTERED) {
-
-        _institution.content[institutionAccount] = institutionContent;
-
-        emit InstitutionRegistered(institutionAccount);
+            emit InstitutionRegistered(institutionAccounts[i]);
+        }
+       
     }
 
     function UnregisterInstitutions(address[] memory institutionAccounts) 
     public payable 
     IsOwner 
     AreNotEmptyAccount(institutionAccounts)
-    AreInstitutionRegistered(institutionAccounts) {
+    AreInstitutionRegistered(institutionAccounts, true, ErrorMessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
 
-        for (uint256 i = 0; i < institutionAccounts.length; i++) 
-            for (uint256 ii = 0; ii < _institution.accounts.length; ii++)
+        for (uint256 i = 0; i < institutionAccounts.length; i++) {
+            for (uint256 ii = 0; ii < _institution.accounts.length; ii++){
                 if (_institution.accounts[ii] == institutionAccounts[i]) {
 
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
-
-                    delete _institution.content[institutionAccounts[i]];
+                    
                     delete _institution.authenticators[institutionAccounts[i]];
       
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) 
@@ -52,7 +44,9 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     emit InstitutionUnregistered(institutionAccounts[i]);
 
                     break;
-                }      
+                } 
+            }
+        }              
     }
 
     function BindAuthenticators(address[] memory authenticatorAccounts)
