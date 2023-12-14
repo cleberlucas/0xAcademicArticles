@@ -29,18 +29,21 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreInstitutionRegistered(institutionAccounts, true, ErrorMessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
-            for (uint256 ii = 0; ii < _institution.accounts.length; ii++){
+            for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
                 if (_institution.accounts[ii] == institutionAccounts[i]) {
 
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
-                    
+
                     delete _institution.authenticators[institutionAccounts[i]];
       
-                    for (uint256 iii = 0; iii < _article.ids.length; iii++) 
-                        if (_article.authenticatingInstitution[_article.ids[iii]] == institutionAccounts[i])
+                    for (uint256 iii = 0; iii < _article.ids.length; iii++) {
+                        if (_article.authenticatingInstitution[_article.ids[iii]] == institutionAccounts[i]) {
                             _article.authenticatingInstitution[_article.ids[iii]] = address(0);
-                        
+                            emit ArticleUnauthenticate(_article.ids[iii]);
+                        }
+                    }
+
                     emit InstitutionUnregistered(institutionAccounts[i]);
 
                     break;
@@ -53,7 +56,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     public payable 
     IsInstitution 
     AreNotEmptyAccount(authenticatorAccounts) 
-    AreAuthenticatorBindedNoAnyInstitution(authenticatorAccounts){
+    AreAuthenticatorBindedNoAnyInstitution(authenticatorAccounts) {
         
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
             _institution.authenticators[msg.sender].push(authenticatorAccounts[i]);
@@ -65,10 +68,10 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function UnbindAuthenticators(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution 
-    AreAuthenticatorBindedInInstitution(authenticatorAccounts){
+    AreAuthenticatorBindedInInstitution(authenticatorAccounts) {
 
-        for (uint256 i = 0; i < authenticatorAccounts.length; i++) 
-            for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++)
+        for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
+            for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++) {
                 if (_institution.authenticators[msg.sender][ii] == authenticatorAccounts[i]) {
 
                     _institution.authenticators[msg.sender][ii] = _institution.authenticators[msg.sender][_institution.authenticators[msg.sender].length - 1];
@@ -77,7 +80,9 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     emit AuthenticatorUnbinded(authenticatorAccounts[i]);
 
                     break;
-                }    
+                }  
+            }
+        }             
     }
 
     function AuthenticateArticles(bytes32[] memory articleIds)
@@ -109,11 +114,9 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function PostArticles(DelimitationLibrary.Article[] memory articleContents) 
     public payable 
-    AreArticlePosted(ArticleContentsToKeccak256(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) 
-    returns (bytes32[] memory articleIds) {
-        
-        address authenticator;      
-        articleIds = new bytes32[](articleContents.length);
+    AreArticlePosted(ArticleContentsToKeccak256(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
+        bytes32[] memory articleIds = new bytes32[](articleContents.length);
+        address authenticatingInstitution;   
 
         for (uint256 i = 0; i < articleIds.length; i++) {
             articleIds[i] = keccak256(abi.encode(articleContents[i]));
@@ -122,11 +125,13 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             _article.poster[articleIds[i]] = msg.sender;
             _article.content[articleIds[i]] = articleContents[i];
 
-            authenticator = SearchInstitutionOfAuthenticator(msg.sender);
-            _article.authenticatingInstitution[articleIds[i]] = authenticator;
-
             emit ArticlePosted(articleIds[i]);
-            if (authenticator != address(0)) emit ArticleAuthenticated(articleIds[i]);
+
+            authenticatingInstitution = SearchInstitutionOfAuthenticator(msg.sender);
+            if (authenticatingInstitution != address(0))  {
+                _article.authenticatingInstitution[articleIds[i]] = authenticatingInstitution;
+                emit ArticleAuthenticated(articleIds[i]);
+            }
         }
     }
 
@@ -135,22 +140,26 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleMy(articleIds) {
         
-        for (uint256 i = 0; i < articleIds.length; i++) 
-            for (uint256 ii = 0; ii < _article.ids.length; ii++)
+        for (uint256 i = 0; i < articleIds.length; i++) {
+            for (uint256 ii = 0; ii < _article.ids.length; ii++) {
                 if (_article.ids[ii] == articleIds[i]) {
-
                     _article.ids[ii] = _article.ids[_article.ids.length - 1];
                     _article.ids.pop();
-            
-                    _article.poster[articleIds[i]] = address(0);
-                    _article.authenticatingInstitution[articleIds[i]] = address(0);
 
+                    _article.poster[articleIds[i]] = address(0);
+
+                    if (_article.authenticatingInstitution[articleIds[i]] != address(0)) {
+                        _article.authenticatingInstitution[articleIds[i]] = address(0);
+                    }
+                    
                     delete _article.content[articleIds[i]];
 
                     emit ArticleRemoved(articleIds[i]);
 
                     break;
                 }
+            }          
+        }      
     }
 
 }
