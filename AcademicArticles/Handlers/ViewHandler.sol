@@ -25,34 +25,34 @@ abstract contract ViewHandler is RepositoryExtension, Utils {
 
     function ArticlePoster(bytes32[] memory articleIds) 
     public view 
-    returns (address[] memory articlePosters) {
+    returns (address[] memory articlePoster) {
 
-        articlePosters = new address[](articleIds.length);
+        articlePoster = new address[](articleIds.length);
 
-        for (uint256 i = 0; i < articlePosters.length; i++) {
-            articlePosters[i] = _article.poster[articleIds[i]];
+        for (uint256 i = 0; i < articlePoster.length; i++) {
+            articlePoster[i] = _article.poster[articleIds[i]];
         }
     }
 
     function ArticleAuthenticatingInstitution(bytes32[] memory articleIds) 
     public view 
-    returns (address[] memory articleAuthenticatingInstitutions) {
+    returns (address[] memory articleAuthenticatingInstitution) {
 
-        articleAuthenticatingInstitutions = new address[](articleIds.length);
+        articleAuthenticatingInstitution = new address[](articleIds.length);
 
-        for (uint256 i = 0; i < articleAuthenticatingInstitutions.length; i++) {
-            articleAuthenticatingInstitutions[i] = _article.authenticatingInstitution[articleIds[i]];
+        for (uint256 i = 0; i < articleAuthenticatingInstitution.length; i++) {
+            articleAuthenticatingInstitution[i] = _article.authenticatingInstitution[articleIds[i]];
         }
     }
 
     function ArticleContent(bytes32[] memory articleIds) 
     public view 
-    returns (DelimitationLibrary.Article[] memory articleContents) {
+    returns (DelimitationLibrary.Article[] memory articleContent) {
 
-        articleContents = new DelimitationLibrary.Article[](articleIds.length);
+        articleContent = new DelimitationLibrary.Article[](articleIds.length);
 
-        for (uint256 i = 0; i < articleContents.length; i++) {
-            articleContents[i] = _article.content[articleIds[i]];
+        for (uint256 i = 0; i < articleContent.length; i++) {
+            articleContent[i] = _article.content[articleIds[i]];
         }   
     }
 
@@ -74,16 +74,16 @@ abstract contract ViewHandler is RepositoryExtension, Utils {
 
     function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
-    returns (address[][] memory institutionsAuthenticators) {
+    returns (address[][] memory institutionAuthenticators) {
 
-        institutionsAuthenticators = new address[][](institutionAccounts.length);
+        institutionAuthenticators = new address[][](institutionAccounts.length);
 
-        for (uint256 i = 0; i < institutionsAuthenticators.length; i++) {
-            institutionsAuthenticators[i] = new address[](endIndex - startIndex + 1);
+        for (uint256 i = 0; i < institutionAuthenticators.length; i++) {
+            institutionAuthenticators[i] = new address[](endIndex - startIndex + 1);
 
-            for (uint256 ii = 0; ii < institutionsAuthenticators[i].length; ii++) {
+            for (uint256 ii = 0; ii < institutionAuthenticators[i].length; ii++) {
                 if (startIndex + i < _institution.authenticators[institutionAccounts[i]].length) {
-                    institutionsAuthenticators[i][ii] = _institution.authenticators[institutionAccounts[i]][(reverse ? (_institution.authenticators[institutionAccounts[i]].length - ii - 1) : ii)];       
+                    institutionAuthenticators[i][ii] = _institution.authenticators[institutionAccounts[i]][(reverse ? (_institution.authenticators[institutionAccounts[i]].length - ii - 1) : ii)];       
                 }            
                 else {
                     break;

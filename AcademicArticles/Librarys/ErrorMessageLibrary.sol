@@ -5,8 +5,7 @@ library ErrorMessageLibrary {
     string public constant OWNER_ACTION = "owner-action";
     string public constant INSTITUTION_ACTION = "institution-action";
     string public constant AUTHENTICATOR_ACTION = "authenticator-action";
-    string public constant INSTITUTION_ALREADY_REGISTERED = "institution-already-registered";
-    string public constant INSTITUTION_WAS_NOT_REGISTERED = "institution-was-not-registered";
+    string public constant ONE_OF_INSTITUTION_ALREADY_REGISTERED = "one-of-institution-already-registered";
     string public constant ONE_OF_INSTITUTION_WAS_NOT_REGISTERED = "one-of-institution-was-not-registered";
     string public constant ONE_OF_ACCOUNTS_IS_EMPTY = "one-of-accounts-is-empty";
     string public constant ACCOUNT_IS_EMPTY = "account-is-empty";

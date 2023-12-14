@@ -11,10 +11,9 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     public payable
     IsOwner
     AreNotEmptyAccount(institutionAccounts)
-    AreInstitutionRegistered(institutionAccounts, false, ErrorMessageLibrary.INSTITUTION_ALREADY_REGISTERED) {
+    AreInstitutionRegistered(institutionAccounts, false, ErrorMessageLibrary.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
-
             _institution.accounts.push(institutionAccounts[i]);
 
             emit InstitutionRegistered(institutionAccounts[i]);
@@ -22,7 +21,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
        
     }
 
-    function UnregisterInstitutions(address[] memory institutionAccounts) 
+    function UnregisterInstitution(address[] memory institutionAccounts) 
     public payable 
     IsOwner 
     AreNotEmptyAccount(institutionAccounts)
@@ -31,7 +30,6 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
                 if (_institution.accounts[ii] == institutionAccounts[i]) {
-
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
 
@@ -40,7 +38,6 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) {
                         if (_article.authenticatingInstitution[_article.ids[iii]] == institutionAccounts[i]) {
                             _article.authenticatingInstitution[_article.ids[iii]] = address(0);
-                            emit ArticleUnauthenticate(_article.ids[iii]);
                         }
                     }
 
@@ -52,7 +49,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         }              
     }
 
-    function BindAuthenticators(address[] memory authenticatorAccounts)
+    function BindAuthenticator(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution 
     AreNotEmptyAccount(authenticatorAccounts) 
@@ -65,7 +62,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         }
     }
 
-    function UnbindAuthenticators(address[] memory authenticatorAccounts)
+    function UnbindAuthenticator(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution 
     AreAuthenticatorBindedInInstitution(authenticatorAccounts) {
@@ -73,7 +70,6 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
             for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++) {
                 if (_institution.authenticators[msg.sender][ii] == authenticatorAccounts[i]) {
-
                     _institution.authenticators[msg.sender][ii] = _institution.authenticators[msg.sender][_institution.authenticators[msg.sender].length - 1];
                     _institution.authenticators[msg.sender].pop();
 
@@ -85,20 +81,24 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         }             
     }
 
-    function AuthenticateArticles(bytes32[] memory articleIds)
+    function AuthenticateArticle(bytes32[] memory articleIds)
     public payable 
     IsAuthenticator
     AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleAuthenticated(articleIds, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         
+        address authenticatingInstitution;
+
         for (uint256 i = 0; i < articleIds.length; i++) {
-            _article.authenticatingInstitution[articleIds[i]] = SearchInstitutionOfAuthenticator(msg.sender);
+            authenticatingInstitution  = SearchInstitutionOfAuthenticator(msg.sender);
+
+            _article.authenticatingInstitution[articleIds[i]] = authenticatingInstitution;
 
             emit ArticleAuthenticated(articleIds[i]);
         }
     }
 
-    function UnauthenticateArticles(bytes32[] memory articleIds)
+    function UnauthenticateArticle(bytes32[] memory articleIds)
     public payable
     IsAuthenticator
     AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
@@ -112,7 +112,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         }
     }
 
-    function PostArticles(DelimitationLibrary.Article[] memory articleContents) 
+    function PostArticle(DelimitationLibrary.Article[] memory articleContents) 
     public payable 
     AreArticlePosted(ArticleContentsToKeccak256(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
         bytes32[] memory articleIds = new bytes32[](articleContents.length);
@@ -128,6 +128,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             emit ArticlePosted(articleIds[i]);
 
             authenticatingInstitution = SearchInstitutionOfAuthenticator(msg.sender);
+
             if (authenticatingInstitution != address(0))  {
                 _article.authenticatingInstitution[articleIds[i]] = authenticatingInstitution;
                 emit ArticleAuthenticated(articleIds[i]);
@@ -135,14 +136,14 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
         }
     }
 
-    function RemoveArticles(bytes32[] memory articleIds)
+    function RemoveArticle(bytes32[] memory articleIds)
     public payable 
     AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleMy(articleIds) {
         
         for (uint256 i = 0; i < articleIds.length; i++) {
             for (uint256 ii = 0; ii < _article.ids.length; ii++) {
-                if (_article.ids[ii] == articleIds[i]) {
+                if (_article.ids[ii] == articleIds[i]) {                 
                     _article.ids[ii] = _article.ids[_article.ids.length - 1];
                     _article.ids.pop();
 

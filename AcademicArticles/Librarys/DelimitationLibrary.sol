@@ -23,7 +23,7 @@ library DelimitationLibrary {
     }
 
     struct File {
-        string Url;
-        string[] Base64;
+        string url;
+        string[] base64;
     }
 }
