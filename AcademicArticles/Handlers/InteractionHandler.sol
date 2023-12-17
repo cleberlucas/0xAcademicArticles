@@ -23,8 +23,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function UnregisterInstitution(address[] memory institutionAccounts) 
     public payable 
-    IsOwner 
-    AreNotEmptyAccount(institutionAccounts)
+    IsOwner
     AreInstitutionRegistered(institutionAccounts, true, ErrorMessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
@@ -51,8 +50,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function BindAuthenticator(address[] memory authenticatorAccounts)
     public payable 
-    IsInstitution 
-    AreNotEmptyAccount(authenticatorAccounts) 
+    IsInstitution
     AreAuthenticatorBindedNoAnyInstitution(authenticatorAccounts) {
         
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
@@ -64,7 +62,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function UnbindAuthenticator(address[] memory authenticatorAccounts)
     public payable 
-    IsInstitution 
+    IsInstitution
     AreAuthenticatorBindedInInstitution(authenticatorAccounts) {
 
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
