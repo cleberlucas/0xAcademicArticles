@@ -6,13 +6,7 @@ pragma solidity >=0.8.19;
 
 abstract contract Utils is RepositoryExtension {
 
-    function Require(bool condition, string memory messageOnError)
-    internal pure {
-
-        require(condition, messageOnError);
-    }
-
-    function ArticleContentsToKeccak256(DelimitationLibrary.Article[] memory articleContents)
+    function ArticleIdFromArticleContents(DelimitationLibrary.Article[] memory articleContents)
     internal pure 
     returns (bytes32[] memory result) {
 
@@ -23,7 +17,7 @@ abstract contract Utils is RepositoryExtension {
         }
     }
 
-    function SearchInstitutionOfAuthenticator(address authenticatorAccount)
+    function InstitutionOfAuthenticator(address authenticatorAccount)
     internal view 
     returns (address result) {
 
@@ -41,10 +35,9 @@ abstract contract Utils is RepositoryExtension {
     returns (bool result) {
 
         for (uint256 i = 0; i < _institution.accounts.length; i++) {
-            if (_institution.accounts[i] == institutionAccount) return true;
+            if (_institution.accounts[i] == institutionAccount) {
+                return true;
+            }
         }
     }
-
-   
-    
 }

@@ -10,7 +10,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function RegisterInstitution(address[] memory institutionAccounts) 
     public payable
     IsOwner
-    AreNotEmptyAccount(institutionAccounts)
+    AreNotEmptyAccountEntrie(institutionAccounts)
+    AreNotDuplicatedAccountEntrie(institutionAccounts)
     AreInstitutionRegistered(institutionAccounts, false, ErrorMessageLibrary.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
@@ -51,6 +52,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function BindAuthenticator(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution
+    AreNotEmptyAccountEntrie(authenticatorAccounts)
+    AreNotDuplicatedAccountEntrie(authenticatorAccounts)
     AreAuthenticatorBindedNoAnyInstitution(authenticatorAccounts) {
         
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
@@ -82,13 +85,14 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function AuthenticateArticle(bytes32[] memory articleIds)
     public payable 
     IsAuthenticator
+    AreNotDuplicatedArticleEntrie(articleIds)
     AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleAuthenticated(articleIds, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         
         address institution;
 
         for (uint256 i = 0; i < articleIds.length; i++) {
-            institution  = SearchInstitutionOfAuthenticator(msg.sender);
+            institution  = InstitutionOfAuthenticator(msg.sender);
 
             _article.institution[articleIds[i]] = institution;
 
@@ -111,8 +115,9 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     }
 
     function PostArticle(DelimitationLibrary.Article[] memory articleContents) 
-    public payable 
-    AreArticlePosted(ArticleContentsToKeccak256(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
+    public payable
+    AreNotDuplicatedArticleEntrie(ArticleIdFromArticleContents(articleContents))
+    AreArticlePosted(ArticleIdFromArticleContents(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
         bytes32[] memory articleIds = new bytes32[](articleContents.length);
         address institution;   
 
@@ -125,7 +130,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
             emit ArticlePosted(articleIds[i]);
 
-            institution = SearchInstitutionOfAuthenticator(msg.sender);
+            institution = InstitutionOfAuthenticator(msg.sender);
 
             if (institution != address(0))  {
                 _article.institution[articleIds[i]] = institution;
