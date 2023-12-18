@@ -32,14 +32,14 @@ abstract contract ViewHandler is RepositoryExtension, Utils {
         }
     }
 
-    function ArticleAuthenticatingInstitution(bytes32[] memory articleIds) 
+    function ArticleInstitution(bytes32[] memory articleIds) 
     public view 
     returns (address[] memory result) {
 
         result = new address[](articleIds.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _article.authenticatingInstitution[articleIds[i]];
+            result[i] = _article.institution[articleIds[i]];
         }
     }
 

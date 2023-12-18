@@ -35,8 +35,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
                     delete _institution.authenticators[institutionAccounts[i]];
       
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) {
-                        if (_article.authenticatingInstitution[_article.ids[iii]] == institutionAccounts[i]) {
-                            _article.authenticatingInstitution[_article.ids[iii]] = address(0);
+                        if (_article.institution[_article.ids[iii]] == institutionAccounts[i]) {
+                            _article.institution[_article.ids[iii]] = address(0);
                         }
                     }
 
@@ -85,12 +85,12 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleAuthenticated(articleIds, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         
-        address authenticatingInstitution;
+        address institution;
 
         for (uint256 i = 0; i < articleIds.length; i++) {
-            authenticatingInstitution  = SearchInstitutionOfAuthenticator(msg.sender);
+            institution  = SearchInstitutionOfAuthenticator(msg.sender);
 
-            _article.authenticatingInstitution[articleIds[i]] = authenticatingInstitution;
+            _article.institution[articleIds[i]] = institution;
 
             emit ArticleAuthenticated(articleIds[i]);
         }
@@ -104,7 +104,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     AreSameInstitutionAuthenticatedArticle(articleIds) {
         
         for (uint256 i = 0; i < articleIds.length; i++) {
-            _article.authenticatingInstitution[articleIds[i]] = address(0);
+            _article.institution[articleIds[i]] = address(0);
 
             emit ArticleUnauthenticate(articleIds[i]);
         }
@@ -114,7 +114,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     public payable 
     AreArticlePosted(ArticleContentsToKeccak256(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
         bytes32[] memory articleIds = new bytes32[](articleContents.length);
-        address authenticatingInstitution;   
+        address institution;   
 
         for (uint256 i = 0; i < articleIds.length; i++) {
             articleIds[i] = keccak256(abi.encode(articleContents[i]));
@@ -125,10 +125,10 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
             emit ArticlePosted(articleIds[i]);
 
-            authenticatingInstitution = SearchInstitutionOfAuthenticator(msg.sender);
+            institution = SearchInstitutionOfAuthenticator(msg.sender);
 
-            if (authenticatingInstitution != address(0))  {
-                _article.authenticatingInstitution[articleIds[i]] = authenticatingInstitution;
+            if (institution != address(0))  {
+                _article.institution[articleIds[i]] = institution;
                 emit ArticleAuthenticated(articleIds[i]);
             }
         }
@@ -147,8 +147,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
                     _article.poster[articleIds[i]] = address(0);
 
-                    if (_article.authenticatingInstitution[articleIds[i]] != address(0)) {
-                        _article.authenticatingInstitution[articleIds[i]] = address(0);
+                    if (_article.institution[articleIds[i]] != address(0)) {
+                        _article.institution[articleIds[i]] = address(0);
                     }
                     
                     delete _article.content[articleIds[i]];
