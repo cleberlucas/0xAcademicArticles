@@ -53,7 +53,6 @@ abstract contract ModifierExtension is RepositoryExtension, Utils {
     }
 
     modifier AreSameInstitutionAuthenticatedArticle(bytes32[] memory articleIds){
-        bool result = true;
         for (uint256 i = 0; i < articleIds.length; i++) 
            Require(_article.authenticatingInstitution[articleIds[i]] == SearchInstitutionOfAuthenticator(msg.sender), ErrorMessageLibrary.ONE_OF_AUTHENTICATORS_NOT_BELONG_INSTITUTION_BINDED);
         _;
