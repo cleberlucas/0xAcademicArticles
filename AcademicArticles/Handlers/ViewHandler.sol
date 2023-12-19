@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: MIT
+
 import "../Complements/RepositoryComplement.sol";
 import "../Librarys/DelimitationLibrary.sol";
+import "../Interfaces/IViewHandler.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract ViewHandler is RepositoryComplement {
+contract ViewHandler is IViewHandler, RepositoryComplement {
     function ArticleIds(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
     returns (bytes32[] memory result, uint256 size) {

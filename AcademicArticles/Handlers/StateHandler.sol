@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
+
 import "../Complements/RepositoryComplement.sol";
 import "../Complements/ModifierComplement.sol";
 import "../Complements/UtilsComplement.sol";
 import "../Complements/EventComplement.sol";
 import "../Librarys/DelimitationLibrary.sol";
 import "../Librarys/MessageLibrary.sol";
+import "../Interfaces/IStateHandler.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract InteractionHandler is RepositoryComplement, UtilsComplement, ModifierComplement, EventComplement {
+contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, ModifierComplement, EventComplement {
     function RegisterInstitution(address[] memory institutionAccounts) 
     public payable
     IsOwner
