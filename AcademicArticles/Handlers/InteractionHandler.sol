@@ -1,18 +1,21 @@
 // SPDX-License-Identifier: MIT
+import "../Complements/RepositoryComplement.sol";
+import "../Complements/ModifierComplement.sol";
+import "../Complements/UtilsComplement.sol";
+import "../Complements/EventComplement.sol";
 import "../Librarys/DelimitationLibrary.sol";
-import "../Extensions/ModifierExtension.sol";
-import "../Extensions/EventExtension.sol";
-import "../Extensions/RepositoryExtension.sol";
+import "../Librarys/MessageLibrary.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, EventExtension {
+abstract contract InteractionHandler is RepositoryComplement, UtilsComplement, ModifierComplement, EventComplement {
     function RegisterInstitution(address[] memory institutionAccounts) 
     public payable
     IsOwner
     AreNotEmptyAccountEntrie(institutionAccounts)
     AreNotDuplicatedAccountEntrie(institutionAccounts)
-    AreInstitutionRegistered(institutionAccounts, false, ErrorMessageLibrary.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
+    AreNotAuthenticator(institutionAccounts)
+    AreInstitutionRegistered(institutionAccounts, false, MessageLibrary.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
             _institution.accounts.push(institutionAccounts[i]);
@@ -25,7 +28,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function UnregisterInstitution(address[] memory institutionAccounts) 
     public payable 
     IsOwner
-    AreInstitutionRegistered(institutionAccounts, true, ErrorMessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
+    AreInstitutionRegistered(institutionAccounts, true, MessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
@@ -54,7 +57,8 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     IsInstitution
     AreNotEmptyAccountEntrie(authenticatorAccounts)
     AreNotDuplicatedAccountEntrie(authenticatorAccounts)
-    AreAuthenticatorBindedNoAnyInstitution(authenticatorAccounts) {
+    AreNotInstitution(authenticatorAccounts)
+    AreNotBindedToAnInstitution(authenticatorAccounts) {
         
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
             _institution.authenticators[msg.sender].push(authenticatorAccounts[i]);
@@ -66,7 +70,7 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function UnbindAuthenticator(address[] memory authenticatorAccounts)
     public payable 
     IsInstitution
-    AreAuthenticatorBindedInInstitution(authenticatorAccounts) {
+    AreBindedInInstitution(authenticatorAccounts) {
 
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
             for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++) {
@@ -84,16 +88,21 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function AuthenticateArticle(bytes32[] memory articleIds)
     public payable 
-    IsAuthenticator
+    IsInstitutionOrAuthenticator
     AreNotDuplicatedArticleEntrie(articleIds)
-    AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(articleIds, false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
+    AreArticlePosted(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(articleIds, false, MessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         
         address institution;
+        
+        if (IsInstitution_(msg.sender)) {
+            institution = msg.sender;
+        }
+        else {
+            institution = InstitutionOfAuthenticator(msg.sender);
+        }
 
         for (uint256 i = 0; i < articleIds.length; i++) {
-            institution  = InstitutionOfAuthenticator(msg.sender);
-
             _article.institution[articleIds[i]] = institution;
 
             emit ArticleAuthenticated(articleIds[i]);
@@ -102,10 +111,10 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
 
     function UnauthenticateArticle(bytes32[] memory articleIds)
     public payable
-    IsAuthenticator
-    AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
-    AreSameInstitutionAuthenticatedArticle(articleIds) {
+    IsInstitutionOrAuthenticator
+    AreArticlePosted(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
+    AreArticleAuthenticatedByInstitution(articleIds) {
         
         for (uint256 i = 0; i < articleIds.length; i++) {
             _article.institution[articleIds[i]] = address(0);
@@ -117,9 +126,17 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
     function PostArticle(DelimitationLibrary.Article[] memory articleContents) 
     public payable
     AreNotDuplicatedArticleEntrie(ArticleIdFromArticleContents(articleContents))
-    AreArticlePosted(ArticleIdFromArticleContents(articleContents), false, ErrorMessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
+    AreArticlePosted(ArticleIdFromArticleContents(articleContents), false, MessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
+        
         bytes32[] memory articleIds = new bytes32[](articleContents.length);
-        address institution;   
+        address institution;
+        
+        if (IsInstitution_(msg.sender)) {
+            institution = msg.sender;
+        }
+        else {
+            institution = InstitutionOfAuthenticator(msg.sender);
+        }
 
         for (uint256 i = 0; i < articleIds.length; i++) {
             articleIds[i] = keccak256(abi.encode(articleContents[i]));
@@ -128,20 +145,17 @@ abstract contract InteractionHandler is RepositoryExtension, ModifierExtension, 
             _article.poster[articleIds[i]] = msg.sender;
             _article.content[articleIds[i]] = articleContents[i];
 
-            emit ArticlePosted(articleIds[i]);
-
-            institution = InstitutionOfAuthenticator(msg.sender);
-
-            if (institution != address(0))  {
+            if (institution != address(0)) {
                 _article.institution[articleIds[i]] = institution;
-                emit ArticleAuthenticated(articleIds[i]);
             }
+
+            emit ArticlePosted(articleIds[i]);
         }
     }
 
     function RemoveArticle(bytes32[] memory articleIds)
     public payable 
-    AreArticlePosted(articleIds, true, ErrorMessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticlePosted(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleMy(articleIds) {
         
         for (uint256 i = 0; i < articleIds.length; i++) {

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-import "./Extensions/RepositoryExtension.sol";
-import "./Librarys/ErrorMessageLibrary.sol";
+import "./RepositoryComplement.sol";
+import "../Librarys/DelimitationLibrary.sol";
 
 pragma solidity >=0.8.19;
 
-abstract contract Utils is RepositoryExtension {
+abstract contract UtilsComplement is RepositoryComplement {
 
     function ArticleIdFromArticleContents(DelimitationLibrary.Article[] memory articleContents)
     internal pure 
@@ -30,7 +30,7 @@ abstract contract Utils is RepositoryExtension {
          }
     }
 
-    function ExistInstitution(address institutionAccount)
+    function IsInstitution_(address institutionAccount)
     internal view 
     returns (bool result) {
 

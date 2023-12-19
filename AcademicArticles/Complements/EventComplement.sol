@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: MIT
-import "../Librarys/RepositoryLibrary.sol";
-
 pragma solidity >=0.8.22;
 
-abstract contract EventExtension {
+abstract contract EventComplement {
     event InstitutionRegistered(address indexed institutionAccount);
 
     event InstitutionUnregistered(address indexed institutionAccount);

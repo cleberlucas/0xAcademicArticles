@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
-import "../Librarys/DelimitationLibrary.sol";
 import "../Librarys/RepositoryLibrary.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract RepositoryExtension {
+abstract contract RepositoryComplement {
     constructor() {
         OWNER = msg.sender;
     }

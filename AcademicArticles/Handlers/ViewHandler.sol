@@ -1,17 +1,15 @@
 // SPDX-License-Identifier: MIT
+import "../Complements/RepositoryComplement.sol";
 import "../Librarys/DelimitationLibrary.sol";
-import "../Librarys/RepositoryLibrary.sol";
-import "../Extensions/RepositoryExtension.sol";
-import "../Utils.sol";
 
 pragma solidity >=0.8.22;
 
-abstract contract ViewHandler is RepositoryExtension, Utils {
+abstract contract ViewHandler is RepositoryComplement {
     function ArticleIds(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
     returns (bytes32[] memory result, uint256 size) {
 
-        size = _institution.accounts.length;
+        size = _article.ids.length;
         result = new bytes32[]((endIndex - startIndex + 1) > size ? size: (endIndex - startIndex + 1));
 
         for (uint256 i = 0; i < result.length; i++) {
@@ -73,17 +71,17 @@ abstract contract ViewHandler is RepositoryExtension, Utils {
     returns (address[][] memory result, uint256[] memory size) {
         
         result = new address[][](institutionAccounts.length);
-        size = new uint256[](institutionAccounts.length);
+        size = new uint256[](result.length);
 
         for (uint256 i = 0; i < result.length; i++) {
             size[i] = _institution.authenticators[institutionAccounts[i]].length;
             result[i] = new address[]((endIndex - startIndex + 1) > size[i] ? size[i]: (endIndex - startIndex + 1));
             
             for (uint256 ii = 0; ii < result[i].length; ii++) {
-                if (startIndex + i < _institution.authenticators[institutionAccounts[i]].length) {
+                if (startIndex + ii < _institution.authenticators[institutionAccounts[i]].length) {
                     result[i][ii] = _institution.authenticators[institutionAccounts[i]][(reverse ? (_institution.authenticators[institutionAccounts[i]].length - ii - 1) : ii)];       
                 }         
-            }                 
+            }                                
         }         
     }
 }

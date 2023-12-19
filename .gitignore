@@ -20,3 +20,5 @@ AcademicArticles/.vscode/settings.json
 /AcademicArticles/test
 /AcademicArticles/package-lock.json
 /AcademicArticles/package.json
+/build/main
+/main
