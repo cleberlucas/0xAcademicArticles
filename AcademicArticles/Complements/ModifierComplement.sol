@@ -34,9 +34,9 @@ abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
         _;
     }
 
-    modifier AreNotEmptyAccountEntrie(address[] memory institutionAccounts) {
-        for (uint256 i = 0; i < institutionAccounts.length; i++) 
-            require(institutionAccounts[i] != address(0), MessageLibrary.ONE_OF_ACCOUNTS_IS_EMPTY);
+    modifier AreNotEmptyAccountEntrie(address[] memory accounts) {
+        for (uint256 i = 0; i < accounts.length; i++) 
+            require(accounts[i] != address(0), MessageLibrary.ONE_OF_ACCOUNTS_IS_EMPTY);
         _;
     }
 
