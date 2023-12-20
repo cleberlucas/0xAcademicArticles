@@ -25,7 +25,7 @@ contract MainTestSuite {
         (bool success, ) = address(mainContract).call{value: 1}(abi.encodeWithSignature("RegisterInstitution(address[])", institutionAccounts));
         Assert.equal(success, true, "RegisterInstitution should succeed");
     }
-/*
+
     function testAuthenticateArticle() public {
         // Test the AuthenticateArticle function
         bytes32[] memory articleIds = new bytes32[](1);
@@ -57,5 +57,4 @@ contract MainTestSuite {
         Assert.equal(success, true, "UnbindAuthenticator should succeed");
     }
 
-    */
 }
