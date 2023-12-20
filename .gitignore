@@ -1,24 +1,4 @@
-﻿################################################################################
+################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
-/.vs
-/node_modules
-/package-lock.json
-/package.json
-/bin
-/contracts
-/migrations
-/test
-*.js
-AcademicArticles/.vscode/settings.json
-/build/contracts
-/AcademicArticles/.vs
-/AcademicArticles/bin
-/AcademicArticles/contracts
-/AcademicArticles/migrations
-/AcademicArticles/node_modules
-/AcademicArticles/test
-/AcademicArticles/package-lock.json
-/AcademicArticles/package.json
-/build/main
-/main
+/.deps
