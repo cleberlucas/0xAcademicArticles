@@ -3,7 +3,7 @@
 import "./RepositoryComplement.sol";
 import "../Librarys/DelimitationLibrary.sol";
 
-pragma solidity >=0.8.19;
+pragma solidity ^0.8.23;
 
 abstract contract UtilsComplement is RepositoryComplement {
 

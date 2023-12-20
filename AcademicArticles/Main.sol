@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 
+import "./Interfaces/IMain.sol";
 import "./Handlers/StateHandler.sol";
 import "./Handlers/ViewHandler.sol";
-import "./Interfaces/IMain.sol";
 
-pragma solidity >= 0.8.22;
+pragma solidity ^0.8.23;
 
-contract Main is IMain, ViewHandler, StateHandler {}
+contract Main is IMain, StateHandler, ViewHandler {}

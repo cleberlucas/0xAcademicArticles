@@ -2,7 +2,7 @@
 
 import "../Librarys/RepositoryLibrary.sol";
 
-pragma solidity >=0.8.22;
+pragma solidity ^0.8.23;
 
 abstract contract RepositoryComplement {
     constructor() {

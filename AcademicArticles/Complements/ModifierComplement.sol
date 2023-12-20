@@ -4,7 +4,7 @@ import "./RepositoryComplement.sol";
 import "./UtilsComplement.sol";
 import "../Librarys/MessageLibrary.sol";
 
-pragma solidity >=0.8.22;
+pragma solidity ^0.8.23;
 
 abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
 
