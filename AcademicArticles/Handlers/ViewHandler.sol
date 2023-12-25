@@ -12,7 +12,7 @@ contract ViewHandler is IViewHandler, RepositoryComplement {
     returns (bytes32[] memory result, uint256 size) {
 
         size = _article.ids.length;
-        result = new bytes32[]((endIndex - startIndex + 1) > size ? size: (endIndex - startIndex + 1));
+        result = new bytes32[](endIndex - startIndex + 1);
 
         for (uint256 i = 0; i < result.length; i++) {
             if (startIndex + i < _article.ids.length) {
@@ -59,7 +59,7 @@ contract ViewHandler is IViewHandler, RepositoryComplement {
     returns (address[] memory result, uint256 size){
 
         size = _institution.accounts.length;
-        result = new address[]((endIndex - startIndex + 1) > size ? size: (endIndex - startIndex + 1));
+        result = new address[](endIndex - startIndex + 1);
 
         for (uint256 i = 0; i < result.length; i++) {
             if (startIndex + i < _institution.accounts.length) {
@@ -77,7 +77,7 @@ contract ViewHandler is IViewHandler, RepositoryComplement {
 
         for (uint256 i = 0; i < result.length; i++) {
             size[i] = _institution.authenticators[institutionAccounts[i]].length;
-            result[i] = new address[]((endIndex - startIndex + 1) > size[i] ? size[i]: (endIndex - startIndex + 1));
+            result[i] = new address[](endIndex - startIndex + 1);
             
             for (uint256 ii = 0; ii < result[i].length; ii++) {
                 if (startIndex + ii < _institution.authenticators[institutionAccounts[i]].length) {
