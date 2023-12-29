@@ -8,9 +8,9 @@ pragma solidity ^0.8.23;
 contract Read is IRead, RepositoryExt {
     function ArticleIds(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
-    returns (bytes32[] memory result, uint256 size) {
+    returns (bytes32[] memory result, uint256 currentSize) {
 
-        size = _article.ids.length;
+        currentSize = _article.ids.length;
         result = new bytes32[](endIndex - startIndex + 1);
 
         for (uint256 i = 0; i < result.length; i++) {
@@ -55,9 +55,9 @@ contract Read is IRead, RepositoryExt {
 
     function InstitutionAccounts(uint256 startIndex, uint256 endIndex, bool reverse)
     public view
-    returns (address[] memory result, uint256 size){
+    returns (address[] memory result, uint256 currentSize){
 
-        size = _institution.accounts.length;
+        currentSize = _institution.accounts.length;
         result = new address[](endIndex - startIndex + 1);
 
         for (uint256 i = 0; i < result.length; i++) {
@@ -69,13 +69,13 @@ contract Read is IRead, RepositoryExt {
 
     function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
-    returns (address[][] memory result, uint256[] memory size) {
+    returns (address[][] memory result, uint256[] memory currentSize) {
         
         result = new address[][](institutionAccounts.length);
-        size = new uint256[](result.length);
+        currentSize = new uint256[](result.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            size[i] = _institution.authenticators[institutionAccounts[i]].length;
+            currentSize[i] = _institution.authenticators[institutionAccounts[i]].length;
             result[i] = new address[](endIndex - startIndex + 1);
             
             for (uint256 ii = 0; ii < result[i].length; ii++) {
