@@ -11,8 +11,8 @@ library DelimitationLibrary {
         string institution;
         string articleType;
         string academicDegree;
+        string documentUrl;
         int yearPresentation;
-        File document;
         Contributors contributors;
     }
 
@@ -22,8 +22,4 @@ library DelimitationLibrary {
         string[] examinationsBoard;
     }
 
-    struct File {
-        string url;
-        string[] base64;
-    }
 }
