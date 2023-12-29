@@ -1,43 +1,42 @@
 // SPDX-License-Identifier: MIT
 
-import "./RepositoryComplement.sol";
-import "./UtilsComplement.sol";
-import "../Librarys/MessageLibrary.sol";
+import "./UtilsExt.sol";
+import "./MessageLib.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
+abstract contract ModifierExt is RepositoryExt, UtilsExt {
 
     modifier IsOwner() {
-        require(OWNER == msg.sender, MessageLibrary.OWNER_ACTION);
+        require(OWNER == msg.sender, MessageLib.OWNER_ACTION);
         _;
     }
 
     modifier IsInstitution() {
-        require(IsInstitution_(msg.sender), MessageLibrary.INSTITUTION_ACTION);
+        require(IsInstitution_(msg.sender), MessageLib.INSTITUTION_ACTION);
         _;
     }
 
     modifier IsInstitutionOrAuthenticator() {
-        require(IsInstitution_(msg.sender) || InstitutionOfAuthenticator(msg.sender) != address(0), MessageLibrary.INSTITUTION_AUTHENTICATOR_ACTION);
+        require(IsInstitution_(msg.sender) || InstitutionOfAuthenticator(msg.sender) != address(0), MessageLib.INSTITUTION_AUTHENTICATOR_ACTION);
         _;
     }
 
     modifier AreNotInstitution(address[] memory accounts) {
         for (uint256 i = 0; i < accounts.length; i++) 
-            require(!IsInstitution_(accounts[i]), MessageLibrary.ONE_OF_ACCOUNTS_IS_A_INSTITUTION);
+            require(!IsInstitution_(accounts[i]), MessageLib.ONE_OF_ACCOUNTS_IS_A_INSTITUTION);
         _;
     }
 
     modifier AreNotAuthenticator(address[] memory accounts) {
         for (uint256 i = 0; i < accounts.length; i++) 
-            require(InstitutionOfAuthenticator(accounts[i]) == address(0), MessageLibrary.ONE_OF_ACCOUNTS_IS_A_AUTHENTICATOR);
+            require(InstitutionOfAuthenticator(accounts[i]) == address(0), MessageLib.ONE_OF_ACCOUNTS_IS_A_AUTHENTICATOR);
         _;
     }
 
     modifier AreNotEmptyAccountEntrie(address[] memory accounts) {
         for (uint256 i = 0; i < accounts.length; i++) 
-            require(accounts[i] != address(0), MessageLibrary.ONE_OF_ACCOUNTS_IS_EMPTY);
+            require(accounts[i] != address(0), MessageLib.ONE_OF_ACCOUNTS_IS_EMPTY);
         _;
     }
 
@@ -45,7 +44,7 @@ abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
         for (uint i = 0; i < accounts.length; i++) {
             for (uint j = i + 1; j < accounts.length; j++) {
                 if (accounts[i] == accounts[j]) {
-                    require(false, MessageLibrary.ONE_OF_ACCOUNTS_IS_DUPLICATED);
+                    require(false, MessageLib.ONE_OF_ACCOUNTS_IS_DUPLICATED);
                 }
             }
         }
@@ -56,7 +55,7 @@ abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
         for (uint i = 0; i < articleids.length; i++) {
             for (uint j = i + 1; j < articleids.length; j++) {
                 if (articleids[i] == articleids[j]) {
-                    require(false, MessageLibrary.ONE_OF_ARTICLES_IS_DUPLICATED);
+                    require(false, MessageLib.ONE_OF_ARTICLES_IS_DUPLICATED);
                 }
             }
         }
@@ -76,13 +75,13 @@ abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
 
     modifier AreBindedInInstitution(address[] memory authenticatorAccounts) {
         for (uint256 i = 0; i < authenticatorAccounts.length; i++)
-            require((InstitutionOfAuthenticator(authenticatorAccounts[i]) == msg.sender), MessageLibrary.ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION);              
+            require((InstitutionOfAuthenticator(authenticatorAccounts[i]) == msg.sender), MessageLib.ONE_OF_AUTHENTICATORS_WAS_NOT_BINDED_IN_INSTITUTION);              
         _;
     }
 
     modifier AreNotBindedToAnInstitution(address[] memory authenticatorAccounts) {
         for (uint256 i = 0; i < authenticatorAccounts.length; i++) 
-            require(InstitutionOfAuthenticator(authenticatorAccounts[i]) == address(0), MessageLibrary.ONE_OF_AUTHENTICATORS_ALREADY_BINDED_TO_AN_INSTITUTION);              
+            require(InstitutionOfAuthenticator(authenticatorAccounts[i]) == address(0), MessageLib.ONE_OF_AUTHENTICATORS_ALREADY_BINDED_TO_AN_INSTITUTION);              
         _;
     }
 
@@ -97,7 +96,7 @@ abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
         }
 
         for (uint256 i = 0; i < articleIds.length; i++) 
-           require(_article.institution[articleIds[i]] == institution, MessageLibrary.ONE_OF_THE_ARTICLES_WAS_NOT_AUTHENTICATED_BY_INSTITUTION);
+           require(_article.institution[articleIds[i]] == institution, MessageLib.ONE_OF_THE_ARTICLES_WAS_NOT_AUTHENTICATED_BY_INSTITUTION);
         _;
     }
 
@@ -115,7 +114,7 @@ abstract contract ModifierComplement is RepositoryComplement, UtilsComplement {
 
     modifier AreArticleMy(bytes32[] memory ArticleIds) {
         for (uint256 i = 0; i < ArticleIds.length; i++) 
-            require(_article.poster[ArticleIds[i]] == msg.sender,MessageLibrary.ONE_OF_ARTICLES_NOT_YOURS);
+            require(_article.poster[ArticleIds[i]] == msg.sender,MessageLib.ONE_OF_ARTICLES_NOT_YOURS);
         _;
     }
 }

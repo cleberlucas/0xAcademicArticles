@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-import "./RepositoryComplement.sol";
-import "../Librarys/DelimitationLibrary.sol";
+import "./RepositoryExt.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract UtilsComplement is RepositoryComplement {
+abstract contract UtilsExt is RepositoryExt {
 
-    function ArticleIdFromArticleContents(DelimitationLibrary.Article[] memory articleContents)
+    function ArticleIdFromArticleContents(DelimitationLib.Article[] memory articleContents)
     internal pure 
     returns (bytes32[] memory result) {
 

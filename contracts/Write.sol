@@ -1,23 +1,19 @@
 // SPDX-License-Identifier: MIT
 
-import "../Interfaces/IStateHandler.sol";
-import "../Complements/RepositoryComplement.sol";
-import "../Complements/UtilsComplement.sol";
-import "../Complements/ModifierComplement.sol";
-import "../Complements/EventComplement.sol";
-import "../Librarys/DelimitationLibrary.sol";
-import "../Librarys/MessageLibrary.sol";
+import "./IWrite.sol";
+import "./ModifierExt.sol";
+import "./LogExt.sol";
 
 pragma solidity ^0.8.23;
 
-contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, ModifierComplement, EventComplement {
+contract Write is IWrite, RepositoryExt, UtilsExt, ModifierExt, LogExt {
     function RegisterInstitution(address[] memory institutionAccounts) 
     public payable
     IsOwner
     AreNotEmptyAccountEntrie(institutionAccounts)
     AreNotDuplicatedAccountEntrie(institutionAccounts)
     AreNotAuthenticator(institutionAccounts)
-    AreInstitutionRegistered(institutionAccounts, false, MessageLibrary.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
+    AreInstitutionRegistered(institutionAccounts, false, MessageLib.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
             _institution.accounts.push(institutionAccounts[i]);
@@ -30,7 +26,7 @@ contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, M
     function UnregisterInstitution(address[] memory institutionAccounts) 
     public payable 
     IsOwner
-    AreInstitutionRegistered(institutionAccounts, true, MessageLibrary.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
+    AreInstitutionRegistered(institutionAccounts, true, MessageLib.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
 
         for (uint256 i = 0; i < institutionAccounts.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
@@ -92,8 +88,8 @@ contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, M
     public payable 
     IsInstitutionOrAuthenticator
     AreNotDuplicatedArticleEntrie(articleIds)
-    AreArticlePosted(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(articleIds, false, MessageLibrary.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
+    AreArticlePosted(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(articleIds, false, MessageLib.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
         
         address institution;
         
@@ -114,8 +110,8 @@ contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, M
     function UnauthenticateArticle(bytes32[] memory articleIds)
     public payable
     IsInstitutionOrAuthenticator
-    AreArticlePosted(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
+    AreArticlePosted(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticleAuthenticated(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
     AreArticleAuthenticatedByInstitution(articleIds) {
         
         for (uint256 i = 0; i < articleIds.length; i++) {
@@ -125,10 +121,10 @@ contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, M
         }
     }
 
-    function PostArticle(DelimitationLibrary.Article[] memory articleContents) 
+    function PostArticle(DelimitationLib.Article[] memory articleContents) 
     public payable
     AreNotDuplicatedArticleEntrie(ArticleIdFromArticleContents(articleContents))
-    AreArticlePosted(ArticleIdFromArticleContents(articleContents), false, MessageLibrary.ONE_OF_ARTICLES_ALREADY_POSTED) {          
+    AreArticlePosted(ArticleIdFromArticleContents(articleContents), false, MessageLib.ONE_OF_ARTICLES_ALREADY_POSTED) {          
         
         bytes32[] memory articleIds = new bytes32[](articleContents.length);
         address institution;
@@ -157,7 +153,7 @@ contract StateHandler is IStateHandler, RepositoryComplement, UtilsComplement, M
 
     function RemoveArticle(bytes32[] memory articleIds)
     public payable 
-    AreArticlePosted(articleIds, true, MessageLibrary.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
+    AreArticlePosted(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
     AreArticleMy(articleIds) {
         
         for (uint256 i = 0; i < articleIds.length; i++) {

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.23;
 
-library DelimitationLibrary {
+library DelimitationLib {
     struct Article {
         string title;
         string summary;

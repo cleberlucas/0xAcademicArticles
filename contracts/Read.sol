@@ -1,12 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-import "../Interfaces/IViewHandler.sol";
-import "../Complements/RepositoryComplement.sol";
-import "../Librarys/DelimitationLibrary.sol";
+import "./IRead.sol";
+import "./RepositoryExt.sol";
 
 pragma solidity ^0.8.23;
 
-contract ViewHandler is IViewHandler, RepositoryComplement {
+contract Read is IRead, RepositoryExt {
     function ArticleIds(uint256 startIndex, uint256 endIndex, bool reverse) 
     public view 
     returns (bytes32[] memory result, uint256 size) {
@@ -45,9 +44,9 @@ contract ViewHandler is IViewHandler, RepositoryComplement {
 
     function ArticleContent(bytes32[] memory articleIds) 
     public view 
-    returns (DelimitationLibrary.Article[] memory result) {
+    returns (DelimitationLib.Article[] memory result) {
 
-        result = new DelimitationLibrary.Article[](articleIds.length);
+        result = new DelimitationLib.Article[](articleIds.length);
 
         for (uint256 i = 0; i < result.length; i++) {
             result[i] = _article.content[articleIds[i]];
