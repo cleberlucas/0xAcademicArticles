@@ -18,8 +18,8 @@ library MessageLib {
     string public constant ONE_OF_ARTICLES_NOT_YOURS = "one-of-articles-not-yours";
     string public constant ONE_OF_AFFILIATES_WAS_NOT_EXIST = "one-of-affiliates-was-not-exist";
     string public constant ONE_OF_AFFILIATES_ALREADY_EXIST= "one-of-affiliates-already-exist";
+    string public constant ONE_OF_AFFILIATES_WAS_NOT_LINKED_IN_INSTITUTION = "one-of-affiliates-was-not-linked-in-institution";
     string public constant ONE_OF_INSTITUTIONS_WAS_NOT_EXIST = "one-of-institutions-was-not-exist";
     string public constant ONE_OF_INSTITUTIONS_ALREADY_EXIST= "one-of-institutions-already-exist";
-    string public constant ONE_OF_AFFILIATES_WAS_NOT_LINKED_IN_INSTITUTION = "one-of-affiliates-was-not-linked-in-institution";
     string public constant ONE_OF_THE_ARTICLES_WAS_NOT_VALIDATED_BY_INSTITUTION = "one-of-the-articles-was-not-validated-by-institution";
 }

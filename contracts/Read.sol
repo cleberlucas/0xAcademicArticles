@@ -71,8 +71,8 @@ contract Read is IRead, DataExt {
     public view 
     returns (address[][] memory result, uint256[] memory currentSize) {
         
+        currentSize = new uint256[](institutionsAccount.length);
         result = new address[][](institutionsAccount.length);
-        currentSize = new uint256[](result.length);
 
         for (uint256 i = 0; i < result.length; i++) {
             currentSize[i] = _institution.affiliates[institutionsAccount[i]].length;

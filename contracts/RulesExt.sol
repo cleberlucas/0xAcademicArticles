@@ -30,8 +30,8 @@ abstract contract RulesExt is DataExt, UtilsExt {
     }
 
     modifier AreNotDuplicatedAccountEntrie(address[] memory accounts) {
-        for (uint i = 0; i < accounts.length; i++) {
-            for (uint j = i + 1; j < accounts.length; j++) {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            for (uint256 j = i + 1; j < accounts.length; j++) {
                 require(accounts[i] != accounts[j], MessageLib.ONE_OF_ACCOUNTS_IS_DUPLICATED);
             }
         }
@@ -39,8 +39,8 @@ abstract contract RulesExt is DataExt, UtilsExt {
     }
 
     modifier AreNotDuplicatedArticleEntrie(bytes32[] memory articlesId) {
-        for (uint i = 0; i < articlesId.length; i++) {
-            for (uint j = i + 1; j < articlesId.length; j++) {
+        for (uint256 i = 0; i < articlesId.length; i++) {
+            for (uint256 j = i + 1; j < articlesId.length; j++) {
                 require(articlesId[i] != articlesId[j], MessageLib.ONE_OF_ARTICLES_IS_DUPLICATED);
             }
         }

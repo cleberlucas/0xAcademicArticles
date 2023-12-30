@@ -12,13 +12,9 @@ library ModelLib {
         string articleType;
         string academicDegree;
         string documentUrl;
-        int yearPresentation;
-        Contributors contributors;
-    }
-
-    struct Contributors {
         string[] authors;
         string[] advisors;
         string[] examinationsBoard;
+        int yearPresentation;
     }
 }
