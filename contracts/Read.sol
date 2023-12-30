@@ -6,7 +6,7 @@ import "./RepositoryExt.sol";
 pragma solidity ^0.8.23;
 
 contract Read is IRead, RepositoryExt {
-    function ArticleIds(uint256 startIndex, uint256 endIndex, bool reverse) 
+    function ArticleIds(uint256 startIndex, uint256 endIndex) 
     public view 
     returns (bytes32[] memory result, uint256 currentSize) {
 
@@ -15,7 +15,7 @@ contract Read is IRead, RepositoryExt {
 
         for (uint256 i = 0; i < result.length; i++) {
             if (startIndex + i < _article.ids.length) {
-                result[i] = _article.ids[(reverse ? (_article.ids.length - i - 1) : i)];  
+                result[i] = _article.ids[i];  
             }                        
         }
     }
@@ -53,7 +53,7 @@ contract Read is IRead, RepositoryExt {
         }   
     }
 
-    function InstitutionAccounts(uint256 startIndex, uint256 endIndex, bool reverse)
+    function InstitutionAccounts(uint256 startIndex, uint256 endIndex)
     public view
     returns (address[] memory result, uint256 currentSize){
 
@@ -62,12 +62,12 @@ contract Read is IRead, RepositoryExt {
 
         for (uint256 i = 0; i < result.length; i++) {
             if (startIndex + i < _institution.accounts.length) {
-                 result[i] = _institution.accounts[(reverse ? (_institution.accounts.length - i - 1) : i)];       
+                 result[i] = _institution.accounts[i];       
             }
         }
     }
 
-    function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex, bool reverse) 
+    function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex) 
     public view 
     returns (address[][] memory result, uint256[] memory currentSize) {
         
@@ -80,7 +80,7 @@ contract Read is IRead, RepositoryExt {
             
             for (uint256 ii = 0; ii < result[i].length; ii++) {
                 if (startIndex + ii < _institution.authenticators[institutionAccounts[i]].length) {
-                    result[i][ii] = _institution.authenticators[institutionAccounts[i]][(reverse ? (_institution.authenticators[institutionAccounts[i]].length - ii - 1) : ii)];       
+                    result[i][ii] = _institution.authenticators[institutionAccounts[i]][(ii)];       
                 }         
             }                                
         }         

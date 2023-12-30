@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-// Autor Cleber
+// Autor Cleber Lucas
 
 import "./IMain.sol";
 import "./Read.sol";
