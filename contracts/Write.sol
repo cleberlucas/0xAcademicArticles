@@ -28,37 +28,23 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     IsOwner
     AreInstitutionExist(institutionsAccount) {
 
-        bool haveAffiliates;
-
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
                 if (_institution.accounts[ii] == institutionsAccount[i]) {
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
 
-                    emit InstitutionUnregistered(institutionsAccount[i]);
-
-                    haveAffiliates = false;
-
-                    for (uint256 iii = 0; iii < _institution.affiliates[institutionsAccount[i]].length; iii++) {
-                        emit AffiliateUnlinked(_institution.affiliates[institutionsAccount[i]][iii]);
-                       
-                        if(!haveAffiliates) {
-                            haveAffiliates = true;
-                        }
-                    }
-
-                    if (haveAffiliates) {
+                    if (_institution.affiliates[institutionsAccount[i]].length > 0) {
                         delete _institution.affiliates[institutionsAccount[i]];
                     }
  
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) {
                         if (_article.validatingInstitution[_article.ids[iii]] == institutionsAccount[i]) {
                             _article.validatingInstitution[_article.ids[iii]] = address(0);
-
-                            emit ArticleInvalidated(_article.ids[iii]);
                         }
                     }
+
+                    emit InstitutionUnregistered(institutionsAccount[i]);
 
                     break;
                 } 
@@ -164,12 +150,11 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
             
             _article.content[articlesId[i]] = articleContents[i];
 
-            emit ArticlePublished(articlesId[i]);
-
             if (institution != address(0)) {
                 _article.validatingInstitution[articlesId[i]] = institution;
-                emit ArticleValidated(articlesId[i]);
             }
+
+            emit ArticlePublished(articlesId[i]);
         }
     }
 
