@@ -61,7 +61,7 @@ abstract contract RulesExt is DataExt, UtilsExt {
         _;
     }
 
-    modifier AreLinkedInInstitution(address[] memory affiliatesAccount) {
+    modifier AreAffiliateLinkedInInstitution(address[] memory affiliatesAccount) {
         for (uint256 i = 0; i < affiliatesAccount.length; i++) {
             require(InstitutionOfAffiliate(affiliatesAccount[i]) == msg.sender, MessageLib.ONE_OF_AFFILIATES_WAS_NOT_LINKED_IN_INSTITUTION);
         }
@@ -77,18 +77,22 @@ abstract contract RulesExt is DataExt, UtilsExt {
 
     modifier AreNotInstitutionExist(address[] memory institutionsAccount) {
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
-            require(!IsInstitution_(institutionsAccount[i]), MessageLib.ONE_OF_INSTITUTIONS_WAS_NOT_EXIST);
+            require(!IsInstitution_(institutionsAccount[i]), MessageLib.ONE_OF_INSTITUTIONS_ALREADY_EXIST);
         }
         _;
     }
 
     modifier AreAffiliateExist(address[] memory affiliatesAccount) {
-        require(InstitutionOfAffiliate(msg.sender) != address(0), MessageLib.ONE_OF_AFFILIATES_WAS_NOT_EXIST);
+        for (uint256 i = 0; i < affiliatesAccount.length; i++) {
+            require(InstitutionOfAffiliate(affiliatesAccount[i]) != address(0), MessageLib.ONE_OF_AFFILIATES_WAS_NOT_EXIST);
+        }
         _;
     }
 
     modifier AreNotAffiliateExist(address[] memory affiliatesAccount) {
-        require(InstitutionOfAffiliate(msg.sender) == address(0), MessageLib.ONE_OF_AFFILIATES_ALREADY_EXIST);
+          for (uint256 i = 0; i < affiliatesAccount.length; i++) {
+            require(InstitutionOfAffiliate(affiliatesAccount[i]) == address(0), MessageLib.ONE_OF_AFFILIATES_ALREADY_EXIST);
+        }
         _;
     }
 

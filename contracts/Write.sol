@@ -86,7 +86,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     public payable 
     IsInstitution
     AreAffiliateExist(affiliatesAccount)
-    AreLinkedInInstitution(affiliatesAccount) 
+    AreAffiliateLinkedInInstitution(affiliatesAccount) 
     {
 
         for (uint256 i = 0; i < affiliatesAccount.length; i++) {
