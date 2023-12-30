@@ -1,48 +1,64 @@
 // SPDX-License-Identifier: MIT
 
 import "./IWrite.sol";
-import "./ModifierExt.sol";
+import "./RulesExt.sol";
 import "./LogExt.sol";
 
 pragma solidity ^0.8.23;
 
-contract Write is IWrite, RepositoryExt, UtilsExt, ModifierExt, LogExt {
-    function RegisterInstitution(address[] memory institutionAccounts) 
+contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
+    function RegisterInstitutions(address[] memory institutionsAccount) 
     public payable
     IsOwner
-    AreNotEmptyAccountEntrie(institutionAccounts)
-    AreNotDuplicatedAccountEntrie(institutionAccounts)
-    AreNotAuthenticator(institutionAccounts)
-    AreInstitutionRegistered(institutionAccounts, false, MessageLib.ONE_OF_INSTITUTION_ALREADY_REGISTERED) {
+    AreNotEmptyAccountEntrie(institutionsAccount)
+    AreNotDuplicatedAccountEntrie(institutionsAccount)
+    AreNotAffiliation(institutionsAccount)
+    AreInstitutionNotRegistered(institutionsAccount) {
 
-        for (uint256 i = 0; i < institutionAccounts.length; i++) {
-            _institution.accounts.push(institutionAccounts[i]);
+        for (uint256 i = 0; i < institutionsAccount.length; i++) {
+            _institution.accounts.push(institutionsAccount[i]);
 
-            emit InstitutionRegistered(institutionAccounts[i]);
+            emit InstitutionRegistered(institutionsAccount[i]);
         }
        
     }
 
-    function UnregisterInstitution(address[] memory institutionAccounts) 
+    function UnregisterInstitutions(address[] memory institutionsAccount) 
     public payable 
     IsOwner
-    AreInstitutionRegistered(institutionAccounts, true, MessageLib.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED) {
+    AreInstitutionRegistered(institutionsAccount) {
 
-        for (uint256 i = 0; i < institutionAccounts.length; i++) {
+        bool haveAffiliations;
+
+        for (uint256 i = 0; i < institutionsAccount.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
-                if (_institution.accounts[ii] == institutionAccounts[i]) {
+                if (_institution.accounts[ii] == institutionsAccount[i]) {
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
 
-                    delete _institution.authenticators[institutionAccounts[i]];
-      
-                    for (uint256 iii = 0; iii < _article.ids.length; iii++) {
-                        if (_article.institution[_article.ids[iii]] == institutionAccounts[i]) {
-                            _article.institution[_article.ids[iii]] = address(0);
+                    emit InstitutionUnregistered(institutionsAccount[ii]);
+
+                    haveAffiliations = false;
+
+                    for (uint256 iii = 0; iii < _institution.affiliations[_institution.accounts[ii]].length; iii++) {
+                        emit AffiliationLinked(_institution.affiliations[_institution.accounts[ii]][iii]);
+                       
+                        if(!haveAffiliations) {
+                            haveAffiliations = true;
                         }
                     }
 
-                    emit InstitutionUnregistered(institutionAccounts[i]);
+                    if (haveAffiliations) {
+                        delete _institution.affiliations[institutionsAccount[ii]];
+                    }
+ 
+                    for (uint256 iii = 0; iii < _article.ids.length; iii++) {
+                        if (_article.validatingInstitution[_article.ids[iii]] == institutionsAccount[ii]) {
+                            _article.validatingInstitution[_article.ids[iii]] = address(0);
+
+                            emit ArticleInvalidated(_article.ids[iii]);
+                        }
+                    }
 
                     break;
                 } 
@@ -50,33 +66,35 @@ contract Write is IWrite, RepositoryExt, UtilsExt, ModifierExt, LogExt {
         }              
     }
 
-    function BindAuthenticator(address[] memory authenticatorAccounts)
+    function LinkAffiliations(address[] memory affiliationsAccount)
     public payable 
     IsInstitution
-    AreNotEmptyAccountEntrie(authenticatorAccounts)
-    AreNotDuplicatedAccountEntrie(authenticatorAccounts)
-    AreNotInstitution(authenticatorAccounts)
-    AreNotBindedToAnInstitution(authenticatorAccounts) {
+    AreNotEmptyAccountEntrie(affiliationsAccount)
+    AreNotDuplicatedAccountEntrie(affiliationsAccount)
+    AreNotInstitution(affiliationsAccount)
+    AreNotLinkedToAnInstitution(affiliationsAccount) 
+    {
         
-        for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
-            _institution.authenticators[msg.sender].push(authenticatorAccounts[i]);
+        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
+            _institution.affiliations[msg.sender].push(affiliationsAccount[i]);
 
-            emit AuthenticatorBinded(authenticatorAccounts[i]);
+            emit AffiliationLinked(affiliationsAccount[i]);
         }
     }
 
-    function UnbindAuthenticator(address[] memory authenticatorAccounts)
+    function UnlinkAffiliations(address[] memory affiliationsAccount)
     public payable 
     IsInstitution
-    AreBindedInInstitution(authenticatorAccounts) {
+    AreLinkedInInstitution(affiliationsAccount) 
+    {
 
-        for (uint256 i = 0; i < authenticatorAccounts.length; i++) {
-            for (uint256 ii = 0; ii < _institution.authenticators[msg.sender].length; ii++) {
-                if (_institution.authenticators[msg.sender][ii] == authenticatorAccounts[i]) {
-                    _institution.authenticators[msg.sender][ii] = _institution.authenticators[msg.sender][_institution.authenticators[msg.sender].length - 1];
-                    _institution.authenticators[msg.sender].pop();
+        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
+            for (uint256 ii = 0; ii < _institution.affiliations[msg.sender].length; ii++) {
+                if (_institution.affiliations[msg.sender][ii] == affiliationsAccount[i]) {
+                    _institution.affiliations[msg.sender][ii] = _institution.affiliations[msg.sender][_institution.affiliations[msg.sender].length - 1];
+                    _institution.affiliations[msg.sender].pop();
 
-                    emit AuthenticatorUnbinded(authenticatorAccounts[i]);
+                    emit AffiliationUnlinked(affiliationsAccount[i]);
 
                     break;
                 }  
@@ -84,12 +102,11 @@ contract Write is IWrite, RepositoryExt, UtilsExt, ModifierExt, LogExt {
         }             
     }
 
-    function AuthenticateArticle(bytes32[] memory articleIds)
+    function ValidateArticles(bytes32[] memory articlesId)
     public payable 
-    IsInstitutionOrAuthenticator
-    AreNotDuplicatedArticleEntrie(articleIds)
-    AreArticlePosted(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(articleIds, false, MessageLib.ONE_OF_ARTICLES_ALREADY_AUTHENTICATED) {          
+    IsInstitutionOrAffiliation
+    AreArticlePosted(articlesId) 
+    AreArticleNotValidated(articlesId) {          
         
         address institution;
         
@@ -97,80 +114,84 @@ contract Write is IWrite, RepositoryExt, UtilsExt, ModifierExt, LogExt {
             institution = msg.sender;
         }
         else {
-            institution = InstitutionOfAuthenticator(msg.sender);
+            institution = InstitutionOfAffiliation(msg.sender);
         }
 
-        for (uint256 i = 0; i < articleIds.length; i++) {
-            _article.institution[articleIds[i]] = institution;
+        for (uint256 i = 0; i < articlesId.length; i++) {
+            _article.validatingInstitution[articlesId[i]] = institution;
 
-            emit ArticleAuthenticated(articleIds[i]);
-        }
-    }
-
-    function UnauthenticateArticle(bytes32[] memory articleIds)
-    public payable
-    IsInstitutionOrAuthenticator
-    AreArticlePosted(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleAuthenticated(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_AUTHENTICATED) 
-    AreArticleAuthenticatedByInstitution(articleIds) {
-        
-        for (uint256 i = 0; i < articleIds.length; i++) {
-            _article.institution[articleIds[i]] = address(0);
-
-            emit ArticleUnauthenticate(articleIds[i]);
+            emit ArticleValidated(articlesId[i]);
         }
     }
 
-    function PostArticle(DelimitationLib.Article[] memory articleContents) 
+    function InvalidateArticles(bytes32[] memory articlesId)
     public payable
-    AreNotDuplicatedArticleEntrie(ArticleIdFromArticleContents(articleContents))
-    AreArticlePosted(ArticleIdFromArticleContents(articleContents), false, MessageLib.ONE_OF_ARTICLES_ALREADY_POSTED) {          
+    IsInstitutionOrAffiliation
+    AreArticlePosted(articlesId) 
+    AreArticleValidated(articlesId) 
+    AreArticleValidatedByInstitution(articlesId) {
         
-        bytes32[] memory articleIds = new bytes32[](articleContents.length);
+        for (uint256 i = 0; i < articlesId.length; i++) {
+            _article.validatingInstitution[articlesId[i]] = address(0);
+
+            emit ArticleInvalidated(articlesId[i]);
+        }
+    }
+
+    function PublishArticles(ModelLib.Article[] memory articleContents) 
+    public payable
+    AreNotDuplicatedArticleEntrie(Keccak256ArticlesContent(articleContents))
+    AreArticleNotPosted(Keccak256ArticlesContent(articleContents)) 
+    {          
+        
+        bytes32[] memory articlesId = new bytes32[](articleContents.length);
         address institution;
         
         if (IsInstitution_(msg.sender)) {
             institution = msg.sender;
         }
         else {
-            institution = InstitutionOfAuthenticator(msg.sender);
+            institution = InstitutionOfAffiliation(msg.sender);
         }
 
-        for (uint256 i = 0; i < articleIds.length; i++) {
-            articleIds[i] = keccak256(abi.encode(articleContents[i]));
+        for (uint256 i = 0; i < articlesId.length; i++) {
+            articlesId[i] = keccak256(abi.encode(articleContents[i]));
 
-            _article.ids.push(articleIds[i]);
-            _article.poster[articleIds[i]] = msg.sender;
-            _article.content[articleIds[i]] = articleContents[i];
+            _article.ids.push(articlesId[i]);
+
+            _article.poster[articlesId[i]] = msg.sender;
+            
+            _article.content[articlesId[i]] = articleContents[i];
+
+            emit ArticlePublished(articlesId[i]);
 
             if (institution != address(0)) {
-                _article.institution[articleIds[i]] = institution;
+                _article.validatingInstitution[articlesId[i]] = institution;
+                emit ArticleValidated(articlesId[i]);
             }
-
-            emit ArticlePosted(articleIds[i]);
         }
     }
 
-    function RemoveArticle(bytes32[] memory articleIds)
-    public payable 
-    AreArticlePosted(articleIds, true, MessageLib.ONE_OF_ARTICLES_WAS_NOT_POSTED) 
-    AreArticleMy(articleIds) {
+    function UnpublishArticles(bytes32[] memory articlesId)
+    public payable
+    AreArticlePosted(articlesId) 
+    AreArticleMy(articlesId) {
         
-        for (uint256 i = 0; i < articleIds.length; i++) {
+        for (uint256 i = 0; i < articlesId.length; i++) {
             for (uint256 ii = 0; ii < _article.ids.length; ii++) {
-                if (_article.ids[ii] == articleIds[i]) {                 
+                if (_article.ids[ii] == articlesId[i]) {                 
                     _article.ids[ii] = _article.ids[_article.ids.length - 1];
                     _article.ids.pop();
 
-                    _article.poster[articleIds[i]] = address(0);
+                    _article.poster[articlesId[i]] = address(0);
 
-                    if (_article.institution[articleIds[i]] != address(0)) {
-                        _article.institution[articleIds[i]] = address(0);
+                    if (_article.validatingInstitution[articlesId[i]] != address(0)) {
+                        _article.validatingInstitution[articlesId[i]] = address(0);
                     }
                     
-                    delete _article.content[articleIds[i]];
+                    delete _article.content[articlesId[i]];
 
-                    emit ArticleRemoved(articleIds[i]);
+                    emit ArticleUnpublished(articlesId[i]);
 
                     break;
                 }

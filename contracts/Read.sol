@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 
 import "./IRead.sol";
-import "./RepositoryExt.sol";
+import "./DataExt.sol";
 
 pragma solidity ^0.8.23;
 
-contract Read is IRead, RepositoryExt {
-    function ArticleIds(uint256 startIndex, uint256 endIndex) 
+contract Read is IRead, DataExt {
+    function SearchArticlesId(uint256 startIndex, uint256 endIndex) 
     public view 
     returns (bytes32[] memory result, uint256 currentSize) {
 
@@ -20,40 +20,40 @@ contract Read is IRead, RepositoryExt {
         }
     }
 
-    function ArticlePoster(bytes32[] memory articleIds) 
+    function SearchArticlesPoster(bytes32[] memory articlesId) 
     public view 
     returns (address[] memory result) {
 
-        result = new address[](articleIds.length);
+        result = new address[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _article.poster[articleIds[i]];
+            result[i] = _article.poster[articlesId[i]];
         }
     }
 
-    function ArticleInstitution(bytes32[] memory articleIds) 
+    function SearchArticlesValidatingInstitution(bytes32[] memory articlesId) 
     public view 
     returns (address[] memory result) {
 
-        result = new address[](articleIds.length);
+        result = new address[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _article.institution[articleIds[i]];
+            result[i] = _article.validatingInstitution[articlesId[i]];
         }
     }
 
-    function ArticleContent(bytes32[] memory articleIds) 
+    function SearchArticlesContent(bytes32[] memory articlesId) 
     public view 
-    returns (DelimitationLib.Article[] memory result) {
+    returns (ModelLib.Article[] memory result) {
 
-        result = new DelimitationLib.Article[](articleIds.length);
+        result = new ModelLib.Article[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _article.content[articleIds[i]];
+            result[i] = _article.content[articlesId[i]];
         }   
     }
 
-    function InstitutionAccounts(uint256 startIndex, uint256 endIndex)
+    function SearchInstitutionsAccount(uint256 startIndex, uint256 endIndex)
     public view
     returns (address[] memory result, uint256 currentSize){
 
@@ -67,20 +67,20 @@ contract Read is IRead, RepositoryExt {
         }
     }
 
-    function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex) 
+    function SearchInstitutionsAffiliations(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) 
     public view 
     returns (address[][] memory result, uint256[] memory currentSize) {
         
-        result = new address[][](institutionAccounts.length);
+        result = new address[][](institutionsAccount.length);
         currentSize = new uint256[](result.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            currentSize[i] = _institution.authenticators[institutionAccounts[i]].length;
+            currentSize[i] = _institution.affiliations[institutionsAccount[i]].length;
             result[i] = new address[](endIndex - startIndex + 1);
             
             for (uint256 ii = 0; ii < result[i].length; ii++) {
-                if (startIndex + ii < _institution.authenticators[institutionAccounts[i]].length) {
-                    result[i][ii] = _institution.authenticators[institutionAccounts[i]][(ii)];       
+                if (startIndex + ii < _institution.affiliations[institutionsAccount[i]].length) {
+                    result[i][ii] = _institution.affiliations[institutionsAccount[i]][(ii)];       
                 }         
             }                                
         }         

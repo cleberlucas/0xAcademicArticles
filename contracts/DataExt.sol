@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: MIT
 
-import "./RepositoryLib.sol";
+import "./DataLib.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract RepositoryExt {
+abstract contract DataExt {
     constructor() {
         OWNER = msg.sender;
     }
 
     address internal immutable OWNER;
 
-    RepositoryLib.Article _article;
-    RepositoryLib.Institution _institution;
+    DataLib.Article _article;
+    DataLib.Institution _institution;
 }

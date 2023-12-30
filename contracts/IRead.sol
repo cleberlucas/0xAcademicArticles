@@ -2,13 +2,13 @@
 
 pragma solidity ^0.8.23;
 
-import "./DelimitationLib.sol";
+import "./ModelLib.sol";
 
 interface IRead{
-    function ArticleIds(uint256 startIndex, uint256 endIndex) external view returns (bytes32[] memory result, uint256 currentSize);
-    function ArticlePoster(bytes32[] memory articleIds) external view returns (address[] memory result);
-    function ArticleInstitution(bytes32[] memory articleIds) external view returns (address[] memory result);
-    function ArticleContent(bytes32[] memory articleIds) external view returns (DelimitationLib.Article[] memory result);
-    function InstitutionAccounts(uint256 startIndex, uint256 endIndex) external view returns (address[] memory result, uint256 currentSize);
-    function InstitutionAuthenticators(address[] memory institutionAccounts, uint256 startIndex, uint256 endIndex) external view returns (address[][] memory result, uint256[] memory currentSize);
+    function SearchArticlesId(uint256 startIndex, uint256 endIndex) external view returns (bytes32[] memory result, uint256 currentSize);
+    function SearchArticlesPoster(bytes32[] memory articlesId) external view returns (address[] memory result);
+    function SearchArticlesValidatingInstitution(bytes32[] memory articlesId) external view returns (address[] memory result);
+    function SearchArticlesContent(bytes32[] memory articlesId) external view returns (ModelLib.Article[] memory result);
+    function SearchInstitutionsAccount(uint256 startIndex, uint256 endIndex) external view returns (address[] memory result, uint256 currentSize);
+    function SearchInstitutionsAffiliations(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) external view returns (address[][] memory result, uint256[] memory currentSize);
 }

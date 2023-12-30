@@ -2,15 +2,15 @@
 
 pragma solidity ^0.8.23;
 
-import "./DelimitationLib.sol";
+import "./ModelLib.sol";
 
 interface IWrite {
-    function RegisterInstitution(address[] memory institutionAccounts) external payable;
-    function UnregisterInstitution(address[] memory institutionAccounts) external payable;
-    function BindAuthenticator(address[] memory authenticatorAccounts) external payable;
-    function UnbindAuthenticator(address[] memory authenticatorAccounts) external payable;
-    function AuthenticateArticle(bytes32[] memory articleIds) external payable;
-    function UnauthenticateArticle(bytes32[] memory articleIds) external payable;
-    function PostArticle(DelimitationLib.Article[] memory articleContents) external payable;
-    function RemoveArticle(bytes32[] memory articleIds) external payable;
+    function RegisterInstitutions(address[] memory institutionsAccount) external payable;
+    function UnregisterInstitutions(address[] memory institutionsAccount) external payable;
+    function LinkAffiliations(address[] memory affiliationsAccount) external payable;
+    function UnlinkAffiliations(address[] memory affiliationsAccount) external payable;
+    function ValidateArticles(bytes32[] memory articlesId) external payable;
+    function InvalidateArticles(bytes32[] memory articlesd) external payable;
+    function PublishArticles(ModelLib.Article[] memory articlesContent) external payable;
+    function UnpublishArticles(bytes32[] memory articlesId) external payable;
 }

@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: MIT
 
-import "./RepositoryExt.sol";
+import "./DataExt.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract UtilsExt is RepositoryExt {
+abstract contract UtilsExt is DataExt {
 
-    function ArticleIdFromArticleContents(DelimitationLib.Article[] memory articleContents)
+    function Keccak256ArticlesContent(ModelLib.Article[] memory articlesContent)
     internal pure 
     returns (bytes32[] memory result) {
 
-        result = new bytes32[](articleContents.length);
+        result = new bytes32[](articlesContent.length);
 
-        for(uint256 i = 0; i < articleContents.length; i++) {
-            result[i] = keccak256(abi.encode(articleContents[i]));
+        for(uint256 i = 0; i < articlesContent.length; i++) {
+            result[i] = keccak256(abi.encode(articlesContent[i]));
         }
     }
 
-    function InstitutionOfAuthenticator(address authenticatorAccount)
+    function InstitutionOfAffiliation(address affiliationAccount)
     internal view 
     returns (address result) {
 
          for (uint256 i = 0; i < _institution.accounts.length; i++) {
-            for (uint256 ii = 0; ii < _institution.authenticators[_institution.accounts[i]].length; ii++) {
-                if (_institution.authenticators[_institution.accounts[i]][ii] == authenticatorAccount) {
+            for (uint256 ii = 0; ii < _institution.affiliations[_institution.accounts[i]].length; ii++) {
+                if (_institution.affiliations[_institution.accounts[i]][ii] == affiliationAccount) {
                     return _institution.accounts[i];
                 }
             }

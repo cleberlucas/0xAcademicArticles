@@ -7,15 +7,15 @@ abstract contract LogExt {
 
     event InstitutionUnregistered(address indexed institutionAccount);
 
-    event AuthenticatorBinded(address indexed authenticatorAccount);
+    event AffiliationLinked(address indexed affiliationAccount);
 
-    event AuthenticatorUnbinded(address indexed authenticatorAccount);
+    event AffiliationUnlinked(address indexed affiliationAccount);
 
-    event ArticleAuthenticated(bytes32 indexed articleId);
+    event ArticleValidated(bytes32 indexed articleId);
 
-    event ArticleUnauthenticate(bytes32 indexed articleId);
+    event ArticleInvalidated(bytes32 indexed articleId);
 
-    event ArticlePosted(bytes32 indexed articleId);
+    event ArticlePublished(bytes32 indexed articleId);
 
-    event ArticleRemoved(bytes32 indexed articleId);
+    event ArticleUnpublished(bytes32 indexed articleId);
 }
