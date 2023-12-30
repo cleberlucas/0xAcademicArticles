@@ -36,12 +36,12 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
                     _institution.accounts[ii] = _institution.accounts[_institution.accounts.length - 1];
                     _institution.accounts.pop();
 
-                    emit InstitutionUnregistered(institutionsAccount[ii]);
+                    emit InstitutionUnregistered(institutionsAccount[i]);
 
                     haveAffiliations = false;
 
-                    for (uint256 iii = 0; iii < _institution.affiliations[_institution.accounts[ii]].length; iii++) {
-                        emit AffiliationLinked(_institution.affiliations[_institution.accounts[ii]][iii]);
+                    for (uint256 iii = 0; iii < _institution.affiliations[institutionsAccount[i]].length; iii++) {
+                        emit AffiliationUnlinked(_institution.affiliations[institutionsAccount[i]][iii]);
                        
                         if(!haveAffiliations) {
                             haveAffiliations = true;
@@ -49,11 +49,11 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
                     }
 
                     if (haveAffiliations) {
-                        delete _institution.affiliations[institutionsAccount[ii]];
+                        delete _institution.affiliations[institutionsAccount[i]];
                     }
  
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) {
-                        if (_article.validatingInstitution[_article.ids[iii]] == institutionsAccount[ii]) {
+                        if (_article.validatingInstitution[_article.ids[iii]] == institutionsAccount[i]) {
                             _article.validatingInstitution[_article.ids[iii]] = address(0);
 
                             emit ArticleInvalidated(_article.ids[iii]);

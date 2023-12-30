@@ -21,5 +21,4 @@ library ModelLib {
         string[] advisors;
         string[] examinationsBoard;
     }
-
 }

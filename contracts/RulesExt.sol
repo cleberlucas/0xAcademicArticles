@@ -23,8 +23,9 @@ abstract contract RulesExt is DataExt, UtilsExt {
     }
 
     modifier AreNotInstitution(address[] memory accounts) {
-        for (uint256 i = 0; i < accounts.length; i++) 
+        for (uint256 i = 0; i < accounts.length; i++) {
             require(!IsInstitution_(accounts[i]), MessageLib.ONE_OF_ACCOUNTS_IS_A_INSTITUTION);
+        }
         _;
     }
 
@@ -45,9 +46,7 @@ abstract contract RulesExt is DataExt, UtilsExt {
     modifier AreNotDuplicatedAccountEntrie(address[] memory accounts) {
         for (uint i = 0; i < accounts.length; i++) {
             for (uint j = i + 1; j < accounts.length; j++) {
-                if (accounts[i] == accounts[j]) {
-                    require(false, MessageLib.ONE_OF_ACCOUNTS_IS_DUPLICATED);
-                }
+                require(accounts[i] != accounts[j], MessageLib.ONE_OF_ACCOUNTS_IS_DUPLICATED);
             }
         }
         _;
@@ -56,9 +55,7 @@ abstract contract RulesExt is DataExt, UtilsExt {
     modifier AreNotDuplicatedArticleEntrie(bytes32[] memory articlesId) {
         for (uint i = 0; i < articlesId.length; i++) {
             for (uint j = i + 1; j < articlesId.length; j++) {
-                if (articlesId[i] == articlesId[j]) {
-                    require(false, MessageLib.ONE_OF_ARTICLES_IS_DUPLICATED);
-                }
+                require(articlesId[i] != articlesId[j], MessageLib.ONE_OF_ARTICLES_IS_DUPLICATED);
             }
         }
         _;
@@ -80,14 +77,15 @@ abstract contract RulesExt is DataExt, UtilsExt {
 
     modifier AreLinkedInInstitution(address[] memory affiliationsAccount) {
         for (uint256 i = 0; i < affiliationsAccount.length; i++) {
-            require((InstitutionOfAffiliation(affiliationsAccount[i]) == msg.sender), MessageLib.ONE_OF_AFFILIATIONS_WAS_NOT_LINKED_IN_INSTITUTION);              
+            require(InstitutionOfAffiliation(affiliationsAccount[i]) == msg.sender, MessageLib.ONE_OF_AFFILIATIONS_WAS_NOT_LINKED_IN_INSTITUTION);
         }
         _;
     }
 
     modifier AreNotLinkedToAnInstitution(address[] memory affiliationsAccount) {
-        for (uint256 i = 0; i < affiliationsAccount.length; i++) 
-            require(InstitutionOfAffiliation(affiliationsAccount[i]) == address(0), MessageLib.ONE_OF_AFFILIATIONS_ALREADY_LINKED_TO_AN_INSTITUTION);              
+        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
+            require(InstitutionOfAffiliation(affiliationsAccount[i]) == address(0), MessageLib.ONE_OF_AFFILIATIONS_ALREADY_LINKED_TO_AN_INSTITUTION);
+        }
         _;
     }
 
@@ -137,7 +135,7 @@ abstract contract RulesExt is DataExt, UtilsExt {
 
     modifier AreArticleMy(bytes32[] memory articlesId) {
         for (uint256 i = 0; i < articlesId.length; i++) {
-            require(_article.poster[articlesId[i]] == msg.sender,MessageLib.ONE_OF_ARTICLES_NOT_YOURS);
+            require(_article.poster[articlesId[i]] == msg.sender, MessageLib.ONE_OF_ARTICLES_NOT_YOURS);
         }
         _;
     }
