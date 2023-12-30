@@ -10,5 +10,5 @@ interface IRead{
     function SearchArticlesValidatingInstitution(bytes32[] memory articlesId) external view returns (address[] memory result);
     function SearchArticlesContent(bytes32[] memory articlesId) external view returns (ModelLib.Article[] memory result);
     function SearchInstitutionsAccount(uint256 startIndex, uint256 endIndex) external view returns (address[] memory result, uint256 currentSize);
-    function SearchInstitutionsAffiliations(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) external view returns (address[][] memory result, uint256[] memory currentSize);
+    function SearchInstitutionsAffiliates(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) external view returns (address[][] memory result, uint256[] memory currentSize);
 }

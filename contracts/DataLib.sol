@@ -14,6 +14,6 @@ library DataLib {
 
     struct Institution {
         address[] accounts;
-        mapping(address account => address[]) affiliations;
+        mapping(address account => address[]) affiliates;
     }
 }

@@ -17,22 +17,8 @@ abstract contract RulesExt is DataExt, UtilsExt {
         _;
     }
 
-    modifier IsInstitutionOrAffiliation() {
-        require(IsInstitution_(msg.sender) || InstitutionOfAffiliation(msg.sender) != address(0), MessageLib.INSTITUTION_AFFILIATION_ACTION);
-        _;
-    }
-
-    modifier AreNotInstitution(address[] memory accounts) {
-        for (uint256 i = 0; i < accounts.length; i++) {
-            require(!IsInstitution_(accounts[i]), MessageLib.ONE_OF_ACCOUNTS_IS_A_INSTITUTION);
-        }
-        _;
-    }
-
-    modifier AreNotAffiliation(address[] memory accounts) {
-        for (uint256 i = 0; i < accounts.length; i++) {
-            require(InstitutionOfAffiliation(accounts[i]) == address(0), MessageLib.ONE_OF_ACCOUNTS_IS_A_AFFILIATION);
-        }
+    modifier IsInstitutionOrAffiliate() {
+        require(IsInstitution_(msg.sender) || InstitutionOfAffiliate(msg.sender) != address(0), MessageLib.AFFILIATE__INSTITUTION_ACTION);
         _;
     }
 
@@ -61,60 +47,61 @@ abstract contract RulesExt is DataExt, UtilsExt {
         _;
     }
 
-    modifier AreInstitutionRegistered(address[] memory institutionsAccount) {
+    modifier AreNotInstitution(address[] memory accounts) {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            require(!IsInstitution_(accounts[i]), MessageLib.ONE_OF_ACCOUNTS_IS_A_INSTITUTION);
+        }
+        _;
+    }
+
+    modifier AreNotAffiliate(address[] memory accounts) {
+        for (uint256 i = 0; i < accounts.length; i++) {
+            require(InstitutionOfAffiliate(accounts[i]) == address(0), MessageLib.ONE_OF_ACCOUNTS_IS_A_AFFILIATE);
+        }
+        _;
+    }
+
+    modifier AreLinkedInInstitution(address[] memory affiliatesAccount) {
+        for (uint256 i = 0; i < affiliatesAccount.length; i++) {
+            require(InstitutionOfAffiliate(affiliatesAccount[i]) == msg.sender, MessageLib.ONE_OF_AFFILIATES_WAS_NOT_LINKED_IN_INSTITUTION);
+        }
+        _;
+    }
+
+    modifier AreInstitutionExist(address[] memory institutionsAccount) {
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
-            require(IsInstitution_(institutionsAccount[i]), MessageLib.ONE_OF_INSTITUTION_ALREADY_REGISTERED);
+            require(IsInstitution_(institutionsAccount[i]), MessageLib.ONE_OF_INSTITUTIONS_WAS_NOT_EXIST);
         }
         _;
     }
 
-    modifier AreInstitutionNotRegistered(address[] memory institutionsAccount) {
+    modifier AreNotInstitutionExist(address[] memory institutionsAccount) {
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
-            require(!IsInstitution_(institutionsAccount[i]), MessageLib.ONE_OF_INSTITUTION_WAS_NOT_REGISTERED);
+            require(!IsInstitution_(institutionsAccount[i]), MessageLib.ONE_OF_INSTITUTIONS_WAS_NOT_EXIST);
         }
         _;
     }
 
-    modifier AreLinkedInInstitution(address[] memory affiliationsAccount) {
-        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
-            require(InstitutionOfAffiliation(affiliationsAccount[i]) == msg.sender, MessageLib.ONE_OF_AFFILIATIONS_WAS_NOT_LINKED_IN_INSTITUTION);
-        }
+    modifier AreAffiliateExist(address[] memory affiliatesAccount) {
+        require(InstitutionOfAffiliate(msg.sender) != address(0), MessageLib.ONE_OF_AFFILIATES_WAS_NOT_EXIST);
         _;
     }
 
-    modifier AreNotLinkedToAnInstitution(address[] memory affiliationsAccount) {
-        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
-            require(InstitutionOfAffiliation(affiliationsAccount[i]) == address(0), MessageLib.ONE_OF_AFFILIATIONS_ALREADY_LINKED_TO_AN_INSTITUTION);
-        }
+    modifier AreNotAffiliateExist(address[] memory affiliatesAccount) {
+        require(InstitutionOfAffiliate(msg.sender) == address(0), MessageLib.ONE_OF_AFFILIATES_ALREADY_EXIST);
         _;
     }
 
-    modifier AreArticleValidatedByInstitution(bytes32[] memory articlesId){
-        address institution;
-        
-        if (IsInstitution_(msg.sender)) {
-            institution = msg.sender;
-        }
-        else {
-            institution = InstitutionOfAffiliation(msg.sender);
-        }
-
+    modifier AreArticleExist(bytes32[] memory articlesId) { 
         for (uint256 i = 0; i < articlesId.length; i++) {
-            require(_article.validatingInstitution[articlesId[i]] == institution, MessageLib.ONE_OF_THE_ARTICLES_WAS_NOT_VALIDATED_BY_INSTITUTION);
-        } 
-        _;
-    }
-
-    modifier AreArticlePosted(bytes32[] memory articlesId) { 
-        for (uint256 i = 0; i < articlesId.length; i++) {
-            require((_article.poster[articlesId[i]] != address(0)), MessageLib.ONE_OF_ARTICLES_WAS_NOT_PUBLISHED);
+            require((_article.poster[articlesId[i]] != address(0)), MessageLib.ONE_OF_ARTICLES_WAS_NOT_EXIST);
         }
         _;
     }
 
-    modifier AreArticleNotPosted(bytes32[] memory articlesId) { 
+    modifier AreNotArticleExist(bytes32[] memory articlesId) { 
         for (uint256 i = 0; i < articlesId.length; i++) {
-            require((_article.poster[articlesId[i]] == address(0)),  MessageLib.ONE_OF_ARTICLES_ALREADY_PUBLISHED);
+            require((_article.poster[articlesId[i]] == address(0)),  MessageLib.ONE_OF_ARTICLES_ALREADY_EXIST);
         }
         _;
     }
@@ -126,7 +113,7 @@ abstract contract RulesExt is DataExt, UtilsExt {
         _;
     }
 
-    modifier AreArticleNotValidated(bytes32[] memory articlesId) {
+    modifier AreNotArticleValidated(bytes32[] memory articlesId) {
         for (uint256 i = 0; i < articlesId.length; i++) {
             require((_article.validatingInstitution[articlesId[i]] == address(0)), MessageLib.ONE_OF_ARTICLES_ALREADY_VALIDATED);
         }
@@ -137,6 +124,22 @@ abstract contract RulesExt is DataExt, UtilsExt {
         for (uint256 i = 0; i < articlesId.length; i++) {
             require(_article.poster[articlesId[i]] == msg.sender, MessageLib.ONE_OF_ARTICLES_NOT_YOURS);
         }
+        _;
+    }
+
+    modifier AreArticleValidatedByInstitution(bytes32[] memory articlesId){
+        address institution;
+        
+        if (IsInstitution_(msg.sender)) {
+            institution = msg.sender;
+        }
+        else {
+            institution = InstitutionOfAffiliate(msg.sender);
+        }
+
+        for (uint256 i = 0; i < articlesId.length; i++) {
+            require(_article.validatingInstitution[articlesId[i]] == institution, MessageLib.ONE_OF_THE_ARTICLES_WAS_NOT_VALIDATED_BY_INSTITUTION);
+        } 
         _;
     }
 }

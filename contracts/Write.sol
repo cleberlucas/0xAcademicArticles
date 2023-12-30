@@ -12,8 +12,8 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     IsOwner
     AreNotEmptyAccountEntrie(institutionsAccount)
     AreNotDuplicatedAccountEntrie(institutionsAccount)
-    AreNotAffiliation(institutionsAccount)
-    AreInstitutionNotRegistered(institutionsAccount) {
+    AreNotAffiliate(institutionsAccount)
+    AreNotInstitutionExist(institutionsAccount) {
 
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
             _institution.accounts.push(institutionsAccount[i]);
@@ -26,9 +26,9 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     function UnregisterInstitutions(address[] memory institutionsAccount) 
     public payable 
     IsOwner
-    AreInstitutionRegistered(institutionsAccount) {
+    AreInstitutionExist(institutionsAccount) {
 
-        bool haveAffiliations;
+        bool haveAffiliates;
 
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
@@ -38,18 +38,18 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
 
                     emit InstitutionUnregistered(institutionsAccount[i]);
 
-                    haveAffiliations = false;
+                    haveAffiliates = false;
 
-                    for (uint256 iii = 0; iii < _institution.affiliations[institutionsAccount[i]].length; iii++) {
-                        emit AffiliationUnlinked(_institution.affiliations[institutionsAccount[i]][iii]);
+                    for (uint256 iii = 0; iii < _institution.affiliates[institutionsAccount[i]].length; iii++) {
+                        emit AffiliateUnlinked(_institution.affiliates[institutionsAccount[i]][iii]);
                        
-                        if(!haveAffiliations) {
-                            haveAffiliations = true;
+                        if(!haveAffiliates) {
+                            haveAffiliates = true;
                         }
                     }
 
-                    if (haveAffiliations) {
-                        delete _institution.affiliations[institutionsAccount[i]];
+                    if (haveAffiliates) {
+                        delete _institution.affiliates[institutionsAccount[i]];
                     }
  
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) {
@@ -66,35 +66,36 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
         }              
     }
 
-    function LinkAffiliations(address[] memory affiliationsAccount)
+    function LinkAffiliates(address[] memory affiliatesAccount)
     public payable 
     IsInstitution
-    AreNotEmptyAccountEntrie(affiliationsAccount)
-    AreNotDuplicatedAccountEntrie(affiliationsAccount)
-    AreNotInstitution(affiliationsAccount)
-    AreNotLinkedToAnInstitution(affiliationsAccount) 
+    AreNotEmptyAccountEntrie(affiliatesAccount)
+    AreNotDuplicatedAccountEntrie(affiliatesAccount)
+    AreNotInstitution(affiliatesAccount)
+    AreNotAffiliateExist(affiliatesAccount)
     {
         
-        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
-            _institution.affiliations[msg.sender].push(affiliationsAccount[i]);
+        for (uint256 i = 0; i < affiliatesAccount.length; i++) {
+            _institution.affiliates[msg.sender].push(affiliatesAccount[i]);
 
-            emit AffiliationLinked(affiliationsAccount[i]);
+            emit AffiliateLinked(affiliatesAccount[i]);
         }
     }
 
-    function UnlinkAffiliations(address[] memory affiliationsAccount)
+    function UnlinkAffiliates(address[] memory affiliatesAccount)
     public payable 
     IsInstitution
-    AreLinkedInInstitution(affiliationsAccount) 
+    AreAffiliateExist(affiliatesAccount)
+    AreLinkedInInstitution(affiliatesAccount) 
     {
 
-        for (uint256 i = 0; i < affiliationsAccount.length; i++) {
-            for (uint256 ii = 0; ii < _institution.affiliations[msg.sender].length; ii++) {
-                if (_institution.affiliations[msg.sender][ii] == affiliationsAccount[i]) {
-                    _institution.affiliations[msg.sender][ii] = _institution.affiliations[msg.sender][_institution.affiliations[msg.sender].length - 1];
-                    _institution.affiliations[msg.sender].pop();
+        for (uint256 i = 0; i < affiliatesAccount.length; i++) {
+            for (uint256 ii = 0; ii < _institution.affiliates[msg.sender].length; ii++) {
+                if (_institution.affiliates[msg.sender][ii] == affiliatesAccount[i]) {
+                    _institution.affiliates[msg.sender][ii] = _institution.affiliates[msg.sender][_institution.affiliates[msg.sender].length - 1];
+                    _institution.affiliates[msg.sender].pop();
 
-                    emit AffiliationUnlinked(affiliationsAccount[i]);
+                    emit AffiliateUnlinked(affiliatesAccount[i]);
 
                     break;
                 }  
@@ -104,9 +105,9 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
 
     function ValidateArticles(bytes32[] memory articlesId)
     public payable 
-    IsInstitutionOrAffiliation
-    AreArticlePosted(articlesId) 
-    AreArticleNotValidated(articlesId) {          
+    IsInstitutionOrAffiliate
+    AreArticleExist(articlesId) 
+    AreNotArticleValidated(articlesId) {          
         
         address institution;
         
@@ -114,7 +115,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
             institution = msg.sender;
         }
         else {
-            institution = InstitutionOfAffiliation(msg.sender);
+            institution = InstitutionOfAffiliate(msg.sender);
         }
 
         for (uint256 i = 0; i < articlesId.length; i++) {
@@ -126,8 +127,8 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
 
     function InvalidateArticles(bytes32[] memory articlesId)
     public payable
-    IsInstitutionOrAffiliation
-    AreArticlePosted(articlesId) 
+    IsInstitutionOrAffiliate
+    AreArticleExist(articlesId) 
     AreArticleValidated(articlesId) 
     AreArticleValidatedByInstitution(articlesId) {
         
@@ -141,7 +142,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     function PublishArticles(ModelLib.Article[] memory articleContents) 
     public payable
     AreNotDuplicatedArticleEntrie(Keccak256ArticlesContent(articleContents))
-    AreArticleNotPosted(Keccak256ArticlesContent(articleContents)) 
+    AreNotArticleExist(Keccak256ArticlesContent(articleContents)) 
     {          
         
         bytes32[] memory articlesId = new bytes32[](articleContents.length);
@@ -151,7 +152,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
             institution = msg.sender;
         }
         else {
-            institution = InstitutionOfAffiliation(msg.sender);
+            institution = InstitutionOfAffiliate(msg.sender);
         }
 
         for (uint256 i = 0; i < articlesId.length; i++) {
@@ -174,7 +175,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
 
     function UnpublishArticles(bytes32[] memory articlesId)
     public payable
-    AreArticlePosted(articlesId) 
+    AreArticleExist(articlesId) 
     AreArticleMy(articlesId) {
         
         for (uint256 i = 0; i < articlesId.length; i++) {

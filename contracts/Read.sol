@@ -67,7 +67,7 @@ contract Read is IRead, DataExt {
         }
     }
 
-    function SearchInstitutionsAffiliations(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) 
+    function SearchInstitutionsAffiliates(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) 
     public view 
     returns (address[][] memory result, uint256[] memory currentSize) {
         
@@ -75,12 +75,12 @@ contract Read is IRead, DataExt {
         currentSize = new uint256[](result.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            currentSize[i] = _institution.affiliations[institutionsAccount[i]].length;
+            currentSize[i] = _institution.affiliates[institutionsAccount[i]].length;
             result[i] = new address[](endIndex - startIndex + 1);
             
             for (uint256 ii = 0; ii < result[i].length; ii++) {
-                if (startIndex + ii < _institution.affiliations[institutionsAccount[i]].length) {
-                    result[i][ii] = _institution.affiliations[institutionsAccount[i]][(ii)];       
+                if (startIndex + ii < _institution.affiliates[institutionsAccount[i]].length) {
+                    result[i][ii] = _institution.affiliates[institutionsAccount[i]][(ii)];       
                 }         
             }                                
         }         

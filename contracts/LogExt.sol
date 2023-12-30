@@ -7,9 +7,9 @@ abstract contract LogExt {
 
     event InstitutionUnregistered(address indexed institutionAccount);
 
-    event AffiliationLinked(address indexed affiliationAccount);
+    event AffiliateLinked(address indexed affiliateAccount);
 
-    event AffiliationUnlinked(address indexed affiliationAccount);
+    event AffiliateUnlinked(address indexed affiliateAccount);
 
     event ArticleValidated(bytes32 indexed articleId);
 

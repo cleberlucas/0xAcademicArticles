@@ -17,13 +17,13 @@ abstract contract UtilsExt is DataExt {
         }
     }
 
-    function InstitutionOfAffiliation(address affiliationAccount)
+    function InstitutionOfAffiliate(address affiliateAccount)
     internal view 
     returns (address result) {
 
          for (uint256 i = 0; i < _institution.accounts.length; i++) {
-            for (uint256 ii = 0; ii < _institution.affiliations[_institution.accounts[i]].length; ii++) {
-                if (_institution.affiliations[_institution.accounts[i]][ii] == affiliationAccount) {
+            for (uint256 ii = 0; ii < _institution.affiliates[_institution.accounts[i]].length; ii++) {
+                if (_institution.affiliates[_institution.accounts[i]][ii] == affiliateAccount) {
                     return _institution.accounts[i];
                 }
             }
