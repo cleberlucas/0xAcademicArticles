@@ -1,20 +1,19 @@
 // SPDX-License-Identifier: MIT
 
 import "./IWrite.sol";
-import "./RulesExt.sol";
-import "./LogExt.sol";
+import "./Rules.sol";
+import "./Log.sol";
 
 pragma solidity ^0.8.23;
 
-contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
+abstract contract Write is IWrite, Rules, Log {
     function RegisterInstitutions(address[] memory institutionsAccount) 
     public payable
     IsOwner
     AreNotEmptyAccountEntrie(institutionsAccount)
     AreNotDuplicatedAccountEntrie(institutionsAccount)
-    AreNotAffiliate(institutionsAccount)
-    AreNotInstitutionExist(institutionsAccount) {
-
+    AreNotInstitutionExist(institutionsAccount) 
+    AreNotAffiliate(institutionsAccount) {
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
             _institution.accounts.push(institutionsAccount[i]);
 
@@ -27,7 +26,6 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     public payable 
     IsOwner
     AreInstitutionExist(institutionsAccount) {
-
         for (uint256 i = 0; i < institutionsAccount.length; i++) {
             for (uint256 ii = 0; ii < _institution.accounts.length; ii++) {
                 if (_institution.accounts[ii] == institutionsAccount[i]) {
@@ -57,10 +55,8 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     IsInstitution
     AreNotEmptyAccountEntrie(affiliatesAccount)
     AreNotDuplicatedAccountEntrie(affiliatesAccount)
-    AreNotInstitution(affiliatesAccount)
     AreNotAffiliateExist(affiliatesAccount)
-    {
-        
+    AreNotInstitution(affiliatesAccount) {     
         for (uint256 i = 0; i < affiliatesAccount.length; i++) {
             _institution.affiliates[msg.sender].push(affiliatesAccount[i]);
 
@@ -72,9 +68,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     public payable 
     IsInstitution
     AreAffiliateExist(affiliatesAccount)
-    AreAffiliateLinkedInInstitution(affiliatesAccount) 
-    {
-
+    AreAffiliateLinkedInInstitution(affiliatesAccount) {
         for (uint256 i = 0; i < affiliatesAccount.length; i++) {
             for (uint256 ii = 0; ii < _institution.affiliates[msg.sender].length; ii++) {
                 if (_institution.affiliates[msg.sender][ii] == affiliatesAccount[i]) {
@@ -93,8 +87,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     public payable 
     IsInstitutionOrAffiliate
     AreArticleExist(articlesId) 
-    AreNotArticleValidated(articlesId) {          
-        
+    AreNotArticleValidated(articlesId) {            
         address institution;
         
         if (IsInstitution_(msg.sender)) {
@@ -116,8 +109,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     IsInstitutionOrAffiliate
     AreArticleExist(articlesId) 
     AreArticleValidated(articlesId) 
-    AreArticleValidatedByInstitution(articlesId) {
-        
+    AreArticleValidatedByInstitution(articlesId) {    
         for (uint256 i = 0; i < articlesId.length; i++) {
             _article.validatingInstitution[articlesId[i]] = address(0);
 
@@ -128,9 +120,7 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     function PublishArticles(ModelLib.Article[] memory articleContents) 
     public payable
     AreNotDuplicatedArticleEntrie(Keccak256ArticlesContent(articleContents))
-    AreNotArticleExist(Keccak256ArticlesContent(articleContents)) 
-    {          
-        
+    AreNotArticleExist(Keccak256ArticlesContent(articleContents)) {          
         bytes32[] memory articlesId = new bytes32[](articleContents.length);
         address institution;
         
@@ -162,7 +152,6 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
     public payable
     AreArticleExist(articlesId) 
     AreArticleMy(articlesId) {
-        
         for (uint256 i = 0; i < articlesId.length; i++) {
             for (uint256 ii = 0; ii < _article.ids.length; ii++) {
                 if (_article.ids[ii] == articlesId[i]) {                 
@@ -184,5 +173,4 @@ contract Write is IWrite, DataExt, UtilsExt, RulesExt, LogExt {
             }          
         }      
     }
-
 }

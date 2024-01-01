@@ -4,7 +4,7 @@ pragma solidity ^0.8.23;
 
 import "./ModelLib.sol";
 
-interface IRead{
+interface IRead {
     function SearchArticlesId(uint256 startIndex, uint256 endIndex) external view returns (bytes32[] memory result, uint256 currentSize);
     function SearchArticlesPoster(bytes32[] memory articlesId) external view returns (address[] memory result);
     function SearchArticlesValidatingInstitution(bytes32[] memory articlesId) external view returns (address[] memory result);

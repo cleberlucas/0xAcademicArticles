@@ -4,7 +4,7 @@ import "./DataLib.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract DataExt {
+abstract contract Repository {
     constructor() {
         OWNER = msg.sender;
     }

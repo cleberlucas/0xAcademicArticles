@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.23;
 
-abstract contract LogExt {
+abstract contract Log {
     event InstitutionRegistered(address indexed institutionAccount);
 
     event InstitutionUnregistered(address indexed institutionAccount);

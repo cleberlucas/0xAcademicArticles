@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-import "./UtilsExt.sol";
+import "./Utils.sol";
 import "./MessageLib.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract RulesExt is DataExt, UtilsExt {
+abstract contract Rules is Utils {
 
     modifier IsOwner() {
         require(OWNER == msg.sender, MessageLib.OWNER_ACTION);
@@ -31,8 +31,8 @@ abstract contract RulesExt is DataExt, UtilsExt {
 
     modifier AreNotDuplicatedAccountEntrie(address[] memory accounts) {
         for (uint256 i = 0; i < accounts.length; i++) {
-            for (uint256 j = i + 1; j < accounts.length; j++) {
-                require(accounts[i] != accounts[j], MessageLib.ONE_OF_ACCOUNTS_IS_DUPLICATED);
+            for (uint256 p = i + 1; p < accounts.length; p++) {
+                require(accounts[i] != accounts[p], MessageLib.ONE_OF_ACCOUNTS_IS_DUPLICATED);
             }
         }
         _;
@@ -40,8 +40,8 @@ abstract contract RulesExt is DataExt, UtilsExt {
 
     modifier AreNotDuplicatedArticleEntrie(bytes32[] memory articlesId) {
         for (uint256 i = 0; i < articlesId.length; i++) {
-            for (uint256 j = i + 1; j < articlesId.length; j++) {
-                require(articlesId[i] != articlesId[j], MessageLib.ONE_OF_ARTICLES_IS_DUPLICATED);
+            for (uint256 p = i + 1; p < articlesId.length; p++) {
+                require(articlesId[i] != articlesId[p], MessageLib.ONE_OF_ARTICLES_IS_DUPLICATED);
             }
         }
         _;

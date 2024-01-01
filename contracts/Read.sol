@@ -1,29 +1,34 @@
 // SPDX-License-Identifier: MIT
 
 import "./IRead.sol";
-import "./DataExt.sol";
+import "./Repository.sol";
 
 pragma solidity ^0.8.23;
 
-contract Read is IRead, DataExt {
+abstract contract Read is IRead, Repository {
     function SearchArticlesId(uint256 startIndex, uint256 endIndex) 
     public view 
     returns (bytes32[] memory result, uint256 currentSize) {
-
         currentSize = _article.ids.length;
-        result = new bytes32[](endIndex - startIndex + 1);
 
-        for (uint256 i = 0; i < result.length; i++) {
-            if (startIndex + i < _article.ids.length) {
-                result[i] = _article.ids[i];  
-            }                        
+        if (startIndex >= currentSize || startIndex > endIndex) {
+            result = new bytes32[](0);
+        }
+        else {
+            uint256 count = endIndex - startIndex + 1;
+            uint256 actualCount = (count <= currentSize - startIndex) ? count : currentSize - startIndex;
+
+            result = new bytes32[](actualCount);
+
+            for (uint256 i = 0; i < actualCount; i++) {
+                result[i] = _article.ids[startIndex + i];
+            }
         }
     }
 
     function SearchArticlesPoster(bytes32[] memory articlesId) 
     public view 
     returns (address[] memory result) {
-
         result = new address[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
@@ -34,7 +39,6 @@ contract Read is IRead, DataExt {
     function SearchArticlesValidatingInstitution(bytes32[] memory articlesId) 
     public view 
     returns (address[] memory result) {
-
         result = new address[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
@@ -45,7 +49,6 @@ contract Read is IRead, DataExt {
     function SearchArticlesContent(bytes32[] memory articlesId) 
     public view 
     returns (ModelLib.Article[] memory result) {
-
         result = new ModelLib.Article[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
@@ -55,34 +58,50 @@ contract Read is IRead, DataExt {
 
     function SearchInstitutionsAccount(uint256 startIndex, uint256 endIndex)
     public view
-    returns (address[] memory result, uint256 currentSize){
-
+    returns (address[] memory result, uint256 currentSize) {
         currentSize = _institution.accounts.length;
-        result = new address[](endIndex - startIndex + 1);
 
-        for (uint256 i = 0; i < result.length; i++) {
-            if (startIndex + i < _institution.accounts.length) {
-                 result[i] = _institution.accounts[i];       
+        if (startIndex >= currentSize || startIndex > endIndex) {
+            result = new address[](0);
+        }
+        else {
+            uint256 count = endIndex - startIndex + 1;
+            uint256 actualCount = (count <= currentSize - startIndex) ? count : currentSize - startIndex;
+
+            result = new address[](actualCount);
+
+            for (uint256 i = 0; i < actualCount; i++) {
+                result[i] = _institution.accounts[startIndex + i];
             }
         }
     }
 
+
     function SearchInstitutionsAffiliates(address[] memory institutionsAccount, uint256 startIndex, uint256 endIndex) 
     public view 
     returns (address[][] memory result, uint256[] memory currentSize) {
-        
         currentSize = new uint256[](institutionsAccount.length);
         result = new address[][](institutionsAccount.length);
 
+        uint256 count;
+        uint256 actualCount;
+
         for (uint256 i = 0; i < result.length; i++) {
             currentSize[i] = _institution.affiliates[institutionsAccount[i]].length;
-            result[i] = new address[](endIndex - startIndex + 1);
-            
-            for (uint256 ii = 0; ii < result[i].length; ii++) {
-                if (startIndex + ii < _institution.affiliates[institutionsAccount[i]].length) {
-                    result[i][ii] = _institution.affiliates[institutionsAccount[i]][(ii)];       
+
+            if (startIndex >= currentSize[i] || startIndex > endIndex) {
+                result[i] = new address[](0);
+            }
+            else {
+                count = endIndex - startIndex + 1;
+                actualCount = (count <= currentSize[i] - startIndex) ? count : currentSize[i] - startIndex;
+
+                result[i] = new address[](actualCount);
+
+                for (uint256 ii = 0; ii < actualCount; ii++) {
+                    result[i][ii] = _institution.affiliates[institutionsAccount[i]][startIndex + ii];       
                 }         
-            }                                
+            }                     
         }         
     }
 }

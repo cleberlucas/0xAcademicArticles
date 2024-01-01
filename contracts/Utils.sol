@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-import "./DataExt.sol";
+import "./Repository.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract UtilsExt is DataExt {
+abstract contract Utils is Repository {
 
     function Keccak256ArticlesContent(ModelLib.Article[] memory articlesContent)
     internal pure 
