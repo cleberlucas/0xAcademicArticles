@@ -6,9 +6,9 @@ library ModelLib {
     struct Article {
         string title;
         string summary;
-        string course;
         string additional;
         string institution;
+        string course;
         string articleType;
         string academicDegree;
         string documentUrl;
