@@ -8,4 +8,4 @@ import "./Write.sol";
 
 pragma solidity ^0.8.23;
 
-contract ArtigosAcademicos is IMain, Read, Write {}
+contract AcademicArticles is IMain, Read, Write {}
