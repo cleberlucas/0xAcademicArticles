@@ -37,8 +37,8 @@ abstract contract Write is IWrite, Rules, Log {
                     }
  
                     for (uint256 iii = 0; iii < _article.ids.length; iii++) {
-                        if (_article.validatingInstitution[_article.ids[iii]] == institutionsAccount[i]) {
-                            _article.validatingInstitution[_article.ids[iii]] = address(0);
+                        if (_article.institutionStamp[_article.ids[iii]] == institutionsAccount[i]) {
+                            _article.institutionStamp[_article.ids[iii]] = address(0);
                         }
                     }
 
@@ -98,7 +98,7 @@ abstract contract Write is IWrite, Rules, Log {
         }
 
         for (uint256 i = 0; i < articlesId.length; i++) {
-            _article.validatingInstitution[articlesId[i]] = institution;
+            _article.institutionStamp[articlesId[i]] = institution;
 
             emit ArticleValidated(articlesId[i]);
         }
@@ -111,7 +111,7 @@ abstract contract Write is IWrite, Rules, Log {
     AreArticleValidated(articlesId) 
     AreArticleValidatedByInstitution(articlesId) {    
         for (uint256 i = 0; i < articlesId.length; i++) {
-            _article.validatingInstitution[articlesId[i]] = address(0);
+            _article.institutionStamp[articlesId[i]] = address(0);
 
             emit ArticleInvalidated(articlesId[i]);
         }
@@ -141,7 +141,7 @@ abstract contract Write is IWrite, Rules, Log {
             _article.content[articlesId[i]] = articleContents[i];
 
             if (institution != address(0)) {
-                _article.validatingInstitution[articlesId[i]] = institution;
+                _article.institutionStamp[articlesId[i]] = institution;
             }
 
             emit ArticlePublished(articlesId[i]);
@@ -160,8 +160,8 @@ abstract contract Write is IWrite, Rules, Log {
 
                     _article.poster[articlesId[i]] = address(0);
 
-                    if (_article.validatingInstitution[articlesId[i]] != address(0)) {
-                        _article.validatingInstitution[articlesId[i]] = address(0);
+                    if (_article.institutionStamp[articlesId[i]] != address(0)) {
+                        _article.institutionStamp[articlesId[i]] = address(0);
                     }
                     
                     delete _article.content[articlesId[i]];

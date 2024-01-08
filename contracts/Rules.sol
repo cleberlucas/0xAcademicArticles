@@ -112,14 +112,14 @@ abstract contract Rules is Utils {
 
     modifier AreArticleValidated(bytes32[] memory articlesId) {
         for (uint256 i = 0; i < articlesId.length; i++) {
-            require((_article.validatingInstitution[articlesId[i]] != address(0)), MessageLib.ONE_OF_ARTICLES_WAS_NOT_VALIDATED);
+            require((_article.institutionStamp[articlesId[i]] != address(0)), MessageLib.ONE_OF_ARTICLES_WAS_NOT_VALIDATED);
         }
         _;
     }
 
     modifier AreNotArticleValidated(bytes32[] memory articlesId) {
         for (uint256 i = 0; i < articlesId.length; i++) {
-            require((_article.validatingInstitution[articlesId[i]] == address(0)), MessageLib.ONE_OF_ARTICLES_ALREADY_VALIDATED);
+            require((_article.institutionStamp[articlesId[i]] == address(0)), MessageLib.ONE_OF_ARTICLES_ALREADY_VALIDATED);
         }
         _;
     }
@@ -142,7 +142,7 @@ abstract contract Rules is Utils {
         }
 
         for (uint256 i = 0; i < articlesId.length; i++) {
-            require(_article.validatingInstitution[articlesId[i]] == institution, MessageLib.ONE_OF_THE_ARTICLES_WAS_NOT_VALIDATED_BY_INSTITUTION);
+            require(_article.institutionStamp[articlesId[i]] == institution, MessageLib.ONE_OF_THE_ARTICLES_WAS_NOT_VALIDATED_BY_INSTITUTION);
         } 
         _;
     }

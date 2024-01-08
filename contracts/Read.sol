@@ -36,13 +36,13 @@ abstract contract Read is IRead, Repository {
         }
     }
 
-    function SearchArticlesValidatingInstitution(bytes32[] memory articlesId) 
+    function SearchArticlesInstitutionStamp(bytes32[] memory articlesId) 
     public view 
     returns (address[] memory result) {
         result = new address[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _article.validatingInstitution[articlesId[i]];
+            result[i] = _article.institutionStamp[articlesId[i]];
         }
     }
 
