@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.23;
 
-library ModelLib {
+library AcademicArticlesModelLib {
     struct Article {
         string title;
         string summary;

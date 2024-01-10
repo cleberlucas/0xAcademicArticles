@@ -2,10 +2,10 @@
 
 // Created by Cleber Lucas
 
-import "./IMain.sol";
-import "./Read.sol";
-import "./Write.sol";
+import "./IAcademicArticlesMain.sol";
+import "./AcademicArticlesRead.sol";
+import "./AcademicArticlesWrite.sol";
 
 pragma solidity ^0.8.23;
 
-contract AcademicArticles is IMain, Read, Write {}
+contract AcademicArticles is IAcademicArticlesMain, AcademicArticlesRead, AcademicArticlesWrite {}

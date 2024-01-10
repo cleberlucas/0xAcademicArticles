@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-import "./Repository.sol";
+import "./AcademicArticlesRepository.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract Utils is Repository {
+abstract contract AcademicArticlesUtils is AcademicArticlesRepository {
 
-    function Keccak256ArticlesContent(ModelLib.Article[] memory articlesContent)
+    function Keccak256ArticlesContent(AcademicArticlesModelLib.Article[] memory articlesContent)
     internal pure 
     returns (bytes32[] memory result) {
 

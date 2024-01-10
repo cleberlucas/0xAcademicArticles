@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.23;
 
-library MessageLib {
+library AcademicArticlesMessageLib {
     string public constant OWNER_ACTION = "owner-action";
     string public constant INSTITUTION_ACTION = "institution-action";
     string public constant AFFILIATE__INSTITUTION_ACTION = "affiliate/institution-action";

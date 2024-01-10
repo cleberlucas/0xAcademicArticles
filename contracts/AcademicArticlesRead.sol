@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-import "./IRead.sol";
-import "./Repository.sol";
+import "./IAcademicArticlesRead.sol";
+import "./AcademicArticlesRepository.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract Read is IRead, Repository {
+abstract contract AcademicArticlesRead is IAcademicArticlesRead, AcademicArticlesRepository {
     function SearchArticlesId(uint256 startIndex, uint256 endIndex) 
     public view 
     returns (bytes32[] memory result, uint256 currentSize) {
@@ -48,8 +48,8 @@ abstract contract Read is IRead, Repository {
 
     function SearchArticlesContent(bytes32[] memory articlesId) 
     public view 
-    returns (ModelLib.Article[] memory result) {
-        result = new ModelLib.Article[](articlesId.length);
+    returns (AcademicArticlesModelLib.Article[] memory result) {
+        result = new AcademicArticlesModelLib.Article[](articlesId.length);
 
         for (uint256 i = 0; i < result.length; i++) {
             result[i] = _article.content[articlesId[i]];

@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: MIT
 
-import "./IWrite.sol";
-import "./Rules.sol";
-import "./Log.sol";
+import "./IAcademicArticlesWrite.sol";
+import "./AcademicArticlesRules.sol";
+import "./AcademicArticlesLog.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract Write is IWrite, Rules, Log {
+abstract contract AcademicArticlesWrite is IAcademicArticlesWrite, AcademicArticlesRules, AcademicArticlesLog {
     function RegisterInstitutions(address[] memory institutionsAccount) 
     public payable
     IsOwner
@@ -117,10 +117,11 @@ abstract contract Write is IWrite, Rules, Log {
         }
     }
 
-    function PublishArticles(ModelLib.Article[] memory articleContents) 
+    function PublishArticles(AcademicArticlesModelLib.Article[] memory articleContents) 
     public payable
     AreNotDuplicatedArticleEntrie(Keccak256ArticlesContent(articleContents))
-    AreNotArticleExist(Keccak256ArticlesContent(articleContents)) {          
+    AreNotArticleExist(Keccak256ArticlesContent(articleContents)) 
+    {          
         bytes32[] memory articlesId = new bytes32[](articleContents.length);
         address institution;
         
