@@ -2,15 +2,14 @@
 
 pragma solidity ^0.8.23;
 
-import "./AcademicArticlesModelLib.sol";
 
 interface IAcademicArticlesWrite {
-    function RegisterInstitutions(address[] memory institutionsAccount) external payable;
-    function UnregisterInstitutions(address[] memory institutionsAccount) external payable;
-    function LinkAffiliates(address[] memory affiliatesAccount) external payable;
-    function UnlinkAffiliates(address[] memory affiliatesAccount) external payable;
-    function ValidateArticles(bytes32[] memory articlesId) external payable;
-    function InvalidateArticles(bytes32[] memory articlesd) external payable;
-    function PublishArticles(AcademicArticlesModelLib.Article[] memory articlesContent) external payable;
-    function UnpublishArticles(bytes32[] memory articlesId) external payable;
+    function RegisterInstitution(address institutionAccount) external payable;
+    function UnregisterInstitution(address institutionAccount) external payable;
+    function LinkAffiliate(address affiliateAccount) external payable;
+    function UnlinkAffiliate(address affiliateAccount) external payable;
+    function ValidateArticle(bytes32 articleToken) external payable;
+    function InvalidateArticle(bytes32 articleToken) external payable;
+    function PublishArticle(string memory articleAbi) external payable returns (bytes32 articleToken);
+    function UnpublishArticle(bytes32 articleToken) external payable;
 }

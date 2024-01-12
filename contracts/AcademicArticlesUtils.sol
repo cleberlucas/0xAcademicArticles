@@ -1,26 +1,19 @@
 // SPDX-License-Identifier: MIT
 
-import "./AcademicArticlesRepository.sol";
+import "./AcademicArticlesData.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract AcademicArticlesUtils is AcademicArticlesRepository {
-
-    function Keccak256ArticlesContent(AcademicArticlesModelLib.Article[] memory articlesContent)
+abstract contract AcademicArticlesUtils is AcademicArticlesData{
+    function Keccak256Abi(string memory articleAbi)
     internal pure 
-    returns (bytes32[] memory result) {
-
-        result = new bytes32[](articlesContent.length);
-
-        for(uint256 i = 0; i < articlesContent.length; i++) {
-            result[i] = keccak256(abi.encode(articlesContent[i]));
-        }
+    returns (bytes32 result) {
+        return keccak256(abi.encode(articleAbi));
     }
 
     function InstitutionOfAffiliate(address affiliateAccount)
     internal view 
     returns (address result) {
-
          for (uint256 i = 0; i < _institution.accounts.length; i++) {
             for (uint256 ii = 0; ii < _institution.affiliates[_institution.accounts[i]].length; ii++) {
                 if (_institution.affiliates[_institution.accounts[i]][ii] == affiliateAccount) {
@@ -33,7 +26,6 @@ abstract contract AcademicArticlesUtils is AcademicArticlesRepository {
     function IsInstitution_(address institutionAccount)
     internal view 
     returns (bool result) {
-
         for (uint256 i = 0; i < _institution.accounts.length; i++) {
             if (_institution.accounts[i] == institutionAccount) {
                 return true;

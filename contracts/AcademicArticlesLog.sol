@@ -11,11 +11,11 @@ abstract contract AcademicArticlesLog {
 
     event AffiliateUnlinked(address indexed affiliateAccount);
 
-    event ArticleValidated(bytes32 indexed articleId);
+    event ArticleValidated(bytes32 indexed articleToken);
 
-    event ArticleInvalidated(bytes32 indexed articleId);
+    event ArticleInvalidated(bytes32 indexed articleToken);
 
-    event ArticlePublished(bytes32 indexed articleId);
+    event ArticlePublished(bytes32 indexed articleToken);
 
-    event ArticleUnpublished(bytes32 indexed articleId);
+    event ArticleUnpublished(bytes32 indexed articleToken);
 }

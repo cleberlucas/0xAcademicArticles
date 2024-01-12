@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 
 import "./IAcademicArticlesRead.sol";
-import "./AcademicArticlesRepository.sol";
+import "./AcademicArticlesData.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract AcademicArticlesRead is IAcademicArticlesRead, AcademicArticlesRepository {
+abstract contract AcademicArticlesRead is IAcademicArticlesRead, AcademicArticlesData {
     function SearchArticlesId(uint256 startIndex, uint256 endIndex) 
     public view 
     returns (bytes32[] memory result, uint256 currentSize) {
-        currentSize = _article.ids.length;
+        currentSize = _article.tokens.length;
 
         if (startIndex >= currentSize || startIndex > endIndex) {
             result = new bytes32[](0);
@@ -21,7 +21,7 @@ abstract contract AcademicArticlesRead is IAcademicArticlesRead, AcademicArticle
             result = new bytes32[](actualCount);
 
             for (uint256 i = 0; i < actualCount; i++) {
-                result[i] = _article.ids[startIndex + i];
+                result[i] = _article.tokens[startIndex + i];
             }
         }
     }
@@ -44,16 +44,6 @@ abstract contract AcademicArticlesRead is IAcademicArticlesRead, AcademicArticle
         for (uint256 i = 0; i < result.length; i++) {
             result[i] = _article.institutionStamp[articlesId[i]];
         }
-    }
-
-    function SearchArticlesContent(bytes32[] memory articlesId) 
-    public view 
-    returns (AcademicArticlesModelLib.Article[] memory result) {
-        result = new AcademicArticlesModelLib.Article[](articlesId.length);
-
-        for (uint256 i = 0; i < result.length; i++) {
-            result[i] = _article.content[articlesId[i]];
-        }   
     }
 
     function SearchInstitutionsAccount(uint256 startIndex, uint256 endIndex)
