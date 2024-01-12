@@ -53,7 +53,7 @@ abstract contract AcademicArticlesRead is IAcademicArticlesRead, AcademicArticle
 
         if (startIndex >= currentSize || startIndex > endIndex) {
             result = new address[](0);
-        }
+        } 
         else {
             uint256 count = endIndex - startIndex + 1;
             uint256 actualCount = (count <= currentSize - startIndex) ? count : currentSize - startIndex;

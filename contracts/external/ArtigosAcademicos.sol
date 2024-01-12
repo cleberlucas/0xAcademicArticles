@@ -2,11 +2,51 @@
 
 // Created by Cleber Lucas
 
-import "../../IAcademicArticles.sol";
+import "../IAcademicArticles.sol";
 
 pragma solidity ^0.8.23;
 
 contract ArtigosAcademicos {
+     struct Publicacao {
+        Artigo conteudo;
+        bytes32 identificacao;
+        address publicador;
+        uint256 timestampPublicacao;
+        uint256 bloco;
+        bool validado;
+        address instituicao;
+        string nomeInstituicaoValidadora;
+        string logoInstituicaoValidadora;
+    }
+
+    struct PublicacaoResumo {
+        string titulo;
+        bool validado;
+    }
+
+    struct Artigo {
+        string titulo;
+        string resumo;
+        string adicionais;
+        string instituicao;
+        string curso;
+        string tipoDeArtigo;
+        string graoAcademico;
+        string urlDaDocumentacao;
+        string[] autores;
+        string[] orientadores;
+        string[] bancaExaminadora;
+        int anoDeApresentacao;
+    }
+
+    struct Instituicao {
+        address conta;
+        string nome;
+        string urlDaLogo;
+        string urlDoSite;
+        string emailParaSolicitacao;
+        string numeroContato;
+    }
 
     IAcademicArticles private _academicArticles;
 
@@ -15,10 +55,10 @@ contract ArtigosAcademicos {
     }
     
     bytes32[] private identificacaoPublicacoes;
-    mapping(bytes32 identificacaoPublicacao => Model.Publicacao) private _publicacoes;
-    mapping(address conta => Model.Instituicao) private _instituicoes;
+    mapping(bytes32 identificacaoPublicacao => Publicacao) private _publicacoes;
+    mapping(address conta => Instituicao) private _instituicoes;
 
-    function PublicarArtigos(Model.Artigo[] memory artigos) 
+    function PublicarArtigos(Artigo[] memory artigos) 
     public payable
     {          
         bytes32[] memory identificacaoArtigo = new bytes32[](1);
@@ -31,7 +71,7 @@ contract ArtigosAcademicos {
 
             identificacaoPublicacoes.push(identificacaoArtigo[0]);
 
-            _publicacoes[identificacaoArtigo[0]] = (Model.Publicacao(
+            _publicacoes[identificacaoArtigo[0]] = (Publicacao(
                 artigos[i],
                 identificacaoArtigo[0],
                 msg.sender,
@@ -88,7 +128,7 @@ contract ArtigosAcademicos {
 
     function VisualizarPublicacao(bytes32 identificacaoPublicacao) 
     public view
-    returns (Model.Publicacao memory resultado)
+    returns (Publicacao memory resultado)
     {  
         address[] memory instituicoesValidadora= new address[](1);
         bytes32[] memory identificacaoArtigo = new bytes32[](1);
@@ -99,7 +139,7 @@ contract ArtigosAcademicos {
 
         instituicoesValidadora = _academicArticles.SearchArticlesInstitutionStamp(identificacaoArtigo);
 
-        resultado = Model.Publicacao(
+        resultado = Publicacao(
                 resultado.conteudo,
                 resultado.identificacao,
                 resultado.publicador,
@@ -112,77 +152,33 @@ contract ArtigosAcademicos {
             );            
     }
 
-
-    function VisualizarResumoPublicacoes(uint256 startIndex, uint256 endIndex) 
+    function VisualizarResumoPublicacoes(uint256 indiceInicial, uint256 indiceFinal) 
     public view
-    returns (Model.PublicacaoResumo[] memory resultado, uint256 tamanhoAtual)
+    returns (PublicacaoResumo[] memory resultado, uint256 tamanhoAtual)
     {          
         tamanhoAtual = identificacaoPublicacoes.length;
 
-        if (startIndex >= tamanhoAtual || startIndex > endIndex) {
-            resultado = new Model.PublicacaoResumo[](0);
+        if (indiceInicial >= tamanhoAtual || indiceInicial > indiceFinal) {
+            resultado = new PublicacaoResumo[](0);
         }
         else {
             address[] memory instituicoesValidadora= new address[](1);
             bytes32[] memory identificacaoArtigo = new bytes32[](1);
 
-            uint256 count = endIndex - startIndex + 1;
-            uint256 actualCount = (count <= tamanhoAtual - startIndex) ? count : tamanhoAtual - startIndex;
+            uint256 contagem = indiceFinal - indiceInicial + 1;
+            uint256 contagemAtual = (contagem <= tamanhoAtual - indiceInicial) ? contagem : tamanhoAtual - indiceInicial;
 
-            resultado = new Model.PublicacaoResumo[](actualCount);
+            resultado = new PublicacaoResumo[](contagemAtual);
 
-            for (uint256 i = 0; i < actualCount; i++) {
-                identificacaoArtigo[0] = identificacaoArtigo[startIndex + i];
+            for (uint256 i = 0; i < contagemAtual; i++) {
+                identificacaoArtigo[0] = identificacaoArtigo[indiceInicial + i];
                 instituicoesValidadora = _academicArticles.SearchArticlesInstitutionStamp(identificacaoArtigo);
 
-                resultado[i] = Model.PublicacaoResumo(
-                    _publicacoes[identificacaoPublicacoes[startIndex + i]].conteudo.titulo,
+                resultado[i] = PublicacaoResumo(
+                    _publicacoes[identificacaoPublicacoes[indiceInicial + i]].conteudo.titulo,
                     instituicoesValidadora[0] != address(0)
                 );
             }
         }      
-    }
-}
-
-library Model {
-    struct Publicacao {
-        Artigo conteudo;
-        bytes32 identificacao;
-        address publicador;
-        uint256 timestampPublicacao;
-        uint256 bloco;
-        bool validado;
-        address instituicao;
-        string nomeInstituicaoValidadora;
-        string logoInstituicaoValidadora;
-    }
-
-    struct PublicacaoResumo {
-        string titulo;
-        bool validado;
-    }
-
-    struct Artigo {
-        string titulo;
-        string resumo;
-        string adicionais;
-        string instituicao;
-        string curso;
-        string tipoDeArtigo;
-        string graoAcademico;
-        string urlDaDocumentacao;
-        string[] autores;
-        string[] orientadores;
-        string[] bancaExaminadora;
-        int anoDeApresentacao;
-    }
-
-    struct Instituicao {
-        address conta;
-        string nome;
-        string urlDaLogo;
-        string urlDoSite;
-        string emailParaSolicitacao;
-        string numeroContato;
     }
 }
