@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.23;
 
-library AcademicArticlesModel {  
+library AcademicArticlesDataModel {  
     struct Article {
         bytes32[] tokens;
         mapping(bytes32 token => address) publisher;

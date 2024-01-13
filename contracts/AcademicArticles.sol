@@ -8,4 +8,8 @@ import "./AcademicArticlesSearch.sol";
 
 pragma solidity ^0.8.23;
 
-contract AcademicArticles is IAcademicArticles, AcademicArticlesInteract, AcademicArticlesSearch {}
+contract AcademicArticles is IAcademicArticles, AcademicArticlesInteract, AcademicArticlesSearch {
+    constructor() {
+        OWNER = tx.origin;
+    }
+}
