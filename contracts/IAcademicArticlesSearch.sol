@@ -3,10 +3,8 @@
 pragma solidity ^0.8.23;
 
 interface IAcademicArticlesSearch {
-    function ArticleTokens(uint256 startIndex, uint256 endIndex) external view returns (bytes32[] memory result, uint256 currentSize);
-    function ArticlePoster(bytes32[] memory articlesToken) external view returns (address[] memory result);
-    function ArticleInstitutionStamp(bytes32[] memory articlesToken) external view returns (address[] memory result);
-    function InstitutionAccounts(uint256 startIndex, uint256 endIndex) external view returns (address[] memory result, uint256 currentSize);
-    function InstitutionAffiliates(address institutionAccount, uint256 startIndex, uint256 endIndex) external view returns (address[] memory result, uint256 currentSize);
-    function ExternalContracts(uint256 startIndex, uint256 endIndex) external view returns (address[] memory result, uint256 currentSize);    
+    function ArticleTokens() external view returns (bytes32[] memory articleTokens);
+    function ArticlePublisher(bytes32 articleToken) external view returns (address articlePublisher);
+    function ArticleAbi(bytes32 articleToken, address contractAccount) external view returns (string memory articleAbi);
+    function ExternalContracts() external view returns (address[] memory externalContracts);    
 }

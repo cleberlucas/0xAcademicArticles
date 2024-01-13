@@ -12,6 +12,5 @@ abstract contract AcademicArticlesData {
     address internal immutable OWNER;
 
     AcademicArticlesModel.Article internal _article;
-    AcademicArticlesModel.Institution internal _institution;
     AcademicArticlesModel.External internal _external;
 }
