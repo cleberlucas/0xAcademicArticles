@@ -3,11 +3,12 @@
 // Created by Cleber Lucas
 
 import "../IAcademicArticles.sol";
+import "../AcademicArticlesMessage.sol";
 
 pragma solidity ^0.8.23;
 
 contract ArtigosAcademicos {
-     struct Publicacao {
+    struct Publicacao {
         Artigo conteudo;
         bytes32 identificacao;
         address publicador;
@@ -46,98 +47,126 @@ contract ArtigosAcademicos {
         string urlDoSite;
         string emailParaSolicitacao;
         string numeroContato;
+        address[] contasAfiliados;
+        bytes32[] identificacoesArtigosValidados;
     }
 
-    IAcademicArticles private _academicArticles;
+    struct ModeloDados {
+        bytes32[] identificacoesArtigosPublicacao;
+        mapping(bytes32 identificacaoArtigo => Publicacao) publicacao;
+        address[] contasInstituicoes;
+        mapping(address conta => Instituicao) instituicao;
+        bytes32[] identificacoesArtigosValidados;  
+    }
+
+    event ArtigoPublicado(bytes32 indexed identificacaoArtigo);
+    event ArtigoDespublicado(bytes32 indexed identificacaoArtigo);
+    event ArtigoValidado(bytes32 indexed identificacaoArtigo);
+    event ArtigoDesvalidado(bytes32 indexed identificacaoArtigo);
+    event AfiliadoVinculado(address indexed contaAfiliado);
+    event AfiliadoDesvinculado(address indexed contaAfiliado);
 
     constructor(address academicArticlesAddress) {
         _academicArticles = IAcademicArticles(academicArticlesAddress);
     }
-    
-    bytes32[] private identificacaoPublicacoes;
-    mapping(bytes32 identificacaoPublicacao => Publicacao) private _publicacoes;
-    mapping(address conta => Instituicao) private _instituicoes;
+
+    IAcademicArticles private _academicArticles;
+
+    ModeloDados private _dados;
 
     function PublicarArtigos(Artigo[] memory artigos) 
-    public payable
-    {          
-        bytes32[] memory identificacaoArtigo = new bytes32[](1);
-        address[] memory instituicoesValidadora= new address[](1);
+    public payable {          
+        bytes32[] memory identificacaoArtigoEscrita = new bytes32[](1);
+        address[] memory instituicoesValidadoraConsulta = new address[](1);
         
         for (uint256 i = 0; i < artigos.length; i++) {
-            identificacaoArtigo[0] = _academicArticles.PublishArticle(string(abi.encode(artigos[i])));
+            identificacaoArtigoEscrita[0] = _academicArticles.PublishArticle(string(abi.encode(artigos[i])));
 
-            instituicoesValidadora = _academicArticles.SearchArticlesInstitutionStamp(identificacaoArtigo);
+            instituicoesValidadoraConsulta = _academicArticles.ArticleInstitutionStamp(identificacaoArtigoEscrita);
 
-            identificacaoPublicacoes.push(identificacaoArtigo[0]);
+            _dados.identificacoesArtigosPublicacao.push(identificacaoArtigoEscrita[0]);
 
-            _publicacoes[identificacaoArtigo[0]] = (Publicacao(
+            _dados.publicacao[identificacaoArtigoEscrita[0]] = (Publicacao(
                 artigos[i],
-                identificacaoArtigo[0],
-                msg.sender,
+                identificacaoArtigoEscrita[0],
+                tx.origin,
                 block.timestamp,
                 block.number,
                 false,
                 address(0),
                 "",
                 ""
-            ));        
+            ));
+
+            emit ArtigoPublicado(identificacaoArtigoEscrita[0]);      
         }       
     }
 
-    function DespublicarArtigos(bytes32[] memory identificacaoPublicacao) 
-    public payable
-    {          
-        for (uint256 i = 0; i < identificacaoPublicacao.length; i++) {
-            _academicArticles.UnpublishArticle(identificacaoPublicacao[0]);
+    function DespublicarArtigos(bytes32[] memory identificacoesArtigos)
+    public payable {          
+        for (uint256 i = 0; i < identificacoesArtigos.length; i++) {
+            for (uint256 ii = 0; ii < _dados.identificacoesArtigosPublicacao.length; ii++) {
+                if (_dados.identificacoesArtigosPublicacao[ii] == identificacoesArtigos[i]) {    
+
+                    try _academicArticles.UnpublishArticle(identificacoesArtigos[i]) {                      
+                    } catch Error(string memory erro) {
+                        if (keccak256(abi.encodePacked(erro)) != keccak256(abi.encodePacked(AcademicArticlesMessage.ARTICLE_WAS_NOT_PUBLISHED))) {
+                            revert(erro);
+                        }
+                    } 
+
+                    _dados.identificacoesArtigosPublicacao[ii] = _dados.identificacoesArtigosPublicacao[_dados.identificacoesArtigosPublicacao.length - 1];
+                    _dados.identificacoesArtigosPublicacao.pop();
+
+                    emit ArtigoDespublicado(identificacoesArtigos[i]);
+                }
+            }
+        }     
+    }
+
+    //Criar o criar instituição
+   
+    function ValidarArtigos(bytes32[] memory identificacaoArtigo) 
+    public payable {          
+        for (uint256 i = 0; i < identificacaoArtigo.length; i++) {
+            _academicArticles.StampArticle(identificacaoArtigo[i]);
+            emit ArtigoValidado(identificacaoArtigo[i]);
         }       
     }
 
-    function ValidarArtigos(bytes32[] memory identificacaoPublicacao) 
-    public payable
-    {          
-        for (uint256 i = 0; i < identificacaoPublicacao.length; i++) {
-            _academicArticles.ValidateArticle(identificacaoPublicacao[0]);
-        }       
-    }
-
-    function DesvalidarArtigos(bytes32[] memory identificacaoPublicacao) 
-    public payable
-    {          
-        for (uint256 i = 0; i < identificacaoPublicacao.length; i++) {
-            _academicArticles.InvalidateArticle(identificacaoPublicacao[0]);
+    function DesvalidarArtigos(bytes32[] memory identificacaoArtigo) 
+    public payable {          
+        for (uint256 i = 0; i < identificacaoArtigo.length; i++) {
+            _academicArticles.UnstampArticle(identificacaoArtigo[i]);
+            emit ArtigoDesvalidado(identificacaoArtigo[i]);
         }       
     }
 
     function VincularAssociado(address[] memory contaAssociados) 
-    public payable
-    {          
+    public payable {          
         for (uint256 i = 0; i < contaAssociados.length; i++) {
             _academicArticles.LinkAffiliate(contaAssociados[0]);
         }       
     }
 
     function DesvincularAssociado(address[] memory contaAssociados) 
-    public payable
-    {          
+    public payable {          
         for (uint256 i = 0; i < contaAssociados.length; i++) {
             _academicArticles.UnlinkAffiliate(contaAssociados[0]);
         }       
     }
 
-
-    function VisualizarPublicacao(bytes32 identificacaoPublicacao) 
+    function VisualizarPublicacao(bytes32 identificacaoArtigo) 
     public view
-    returns (Publicacao memory resultado)
-    {  
-        address[] memory instituicoesValidadora= new address[](1);
-        bytes32[] memory identificacaoArtigo = new bytes32[](1);
+    returns (Publicacao memory resultado) {  
+        address[] memory instituicoesValidadoraConsulta = new address[](1);
+        bytes32[] memory identificacaoArtigoConsulta = new bytes32[](1);
 
-        resultado = _publicacoes[identificacaoPublicacao];  
+        resultado = _dados.publicacao[identificacaoArtigo];  
 
-        identificacaoArtigo[0] = identificacaoPublicacao;
+        identificacaoArtigoConsulta[0] = identificacaoArtigo;
 
-        instituicoesValidadora = _academicArticles.SearchArticlesInstitutionStamp(identificacaoArtigo);
+        instituicoesValidadoraConsulta = _academicArticles.ArticleInstitutionStamp(identificacaoArtigoConsulta);
 
         resultado = Publicacao(
                 resultado.conteudo,
@@ -145,38 +174,37 @@ contract ArtigosAcademicos {
                 resultado.publicador,
                 resultado.timestampPublicacao,
                 resultado.bloco,
-                instituicoesValidadora[0] != address(0),
-                instituicoesValidadora[0],
-                instituicoesValidadora[0] != address(0)? _instituicoes[instituicoesValidadora[0]].nome : "",
-                instituicoesValidadora[0] != address(0)? _instituicoes[instituicoesValidadora[0]].urlDaLogo : ""
+                instituicoesValidadoraConsulta[0] != address(0),
+                instituicoesValidadoraConsulta[0],
+                instituicoesValidadoraConsulta[0] != address(0)? _dados.instituicao[instituicoesValidadoraConsulta[0]].nome : "",
+                instituicoesValidadoraConsulta[0] != address(0)? _dados.instituicao[instituicoesValidadoraConsulta[0]].urlDaLogo : ""
             );            
     }
 
     function VisualizarResumoPublicacoes(uint256 indiceInicial, uint256 indiceFinal) 
     public view
-    returns (PublicacaoResumo[] memory resultado, uint256 tamanhoAtual)
-    {          
-        tamanhoAtual = identificacaoPublicacoes.length;
+    returns (PublicacaoResumo[] memory resultado, uint256 tamanhoAtual) {          
+        tamanhoAtual = _dados.identificacoesArtigosPublicacao.length;
 
         if (indiceInicial >= tamanhoAtual || indiceInicial > indiceFinal) {
             resultado = new PublicacaoResumo[](0);
         }
         else {
-            address[] memory instituicoesValidadora= new address[](1);
-            bytes32[] memory identificacaoArtigo = new bytes32[](1);
+            address[] memory instituicoesValidadoraConsulta = new address[](1);
+            bytes32[] memory identificacaoArtigoConsulta  = new bytes32[](1);
 
-            uint256 contagem = indiceFinal - indiceInicial + 1;
-            uint256 contagemAtual = (contagem <= tamanhoAtual - indiceInicial) ? contagem : tamanhoAtual - indiceInicial;
+            uint256 tamanho = indiceFinal - indiceInicial + 1;
+            uint256 tamanhoCorrigido = (tamanho <= tamanhoAtual - indiceInicial) ? tamanho : tamanhoAtual - indiceInicial;
 
-            resultado = new PublicacaoResumo[](contagemAtual);
+            resultado = new PublicacaoResumo[](tamanhoCorrigido);
 
-            for (uint256 i = 0; i < contagemAtual; i++) {
-                identificacaoArtigo[0] = identificacaoArtigo[indiceInicial + i];
-                instituicoesValidadora = _academicArticles.SearchArticlesInstitutionStamp(identificacaoArtigo);
+            for (uint256 i = 0; i < tamanhoCorrigido; i++) {
+                identificacaoArtigoConsulta [0] = identificacaoArtigoConsulta [indiceInicial + i];
+                instituicoesValidadoraConsulta  = _academicArticles.ArticleInstitutionStamp(identificacaoArtigoConsulta);
 
                 resultado[i] = PublicacaoResumo(
-                    _publicacoes[identificacaoPublicacoes[indiceInicial + i]].conteudo.titulo,
-                    instituicoesValidadora[0] != address(0)
+                    _dados.publicacao[_dados.identificacoesArtigosPublicacao[indiceInicial + i]].conteudo.titulo,
+                    instituicoesValidadoraConsulta [0] != address(0)
                 );
             }
         }      

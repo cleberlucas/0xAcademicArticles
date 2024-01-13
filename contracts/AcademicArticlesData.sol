@@ -1,16 +1,17 @@
 // SPDX-License-Identifier: MIT
 
-import "./AcademicArticlesDataModel.sol";
+import "./AcademicArticlesModel.sol";
 
 pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesData {
     constructor() {
-        OWNER = msg.sender;
+        OWNER = tx.origin;
     }
 
     address internal immutable OWNER;
 
-    AcademicArticlesDataModel.Article internal _article;
-    AcademicArticlesDataModel.Institution internal _institution;
+    AcademicArticlesModel.Article internal _article;
+    AcademicArticlesModel.Institution internal _institution;
+    AcademicArticlesModel.External internal _external;
 }

@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.23;
 
-import "./IAcademicArticlesWrite.sol";
-import "./IAcademicArticlesRead.sol";
+import "./IAcademicArticlesInteract.sol";
+import "./IAcademicArticlesSearch.sol";
 
-interface IAcademicArticles is IAcademicArticlesWrite, IAcademicArticlesRead {}
+interface IAcademicArticles is IAcademicArticlesInteract, IAcademicArticlesSearch {}

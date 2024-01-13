@@ -5,12 +5,6 @@ import "./AcademicArticlesData.sol";
 pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesUtils is AcademicArticlesData{
-    function Keccak256Abi(string memory articleAbi)
-    internal pure 
-    returns (bytes32 result) {
-        return keccak256(abi.encode(articleAbi));
-    }
-
     function InstitutionOfAffiliate(address affiliateAccount)
     internal view 
     returns (address result) {
@@ -28,6 +22,16 @@ abstract contract AcademicArticlesUtils is AcademicArticlesData{
     returns (bool result) {
         for (uint256 i = 0; i < _institution.accounts.length; i++) {
             if (_institution.accounts[i] == institutionAccount) {
+                return true;
+            }
+        }
+    }
+
+    function IsContract_(address contractAccount)
+    internal view 
+    returns (bool result) {
+        for (uint256 i = 0; i < _external.contracts.length; i++) {
+            if (_external.contracts[i] == contractAccount) {
                 return true;
             }
         }

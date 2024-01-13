@@ -3,9 +3,9 @@
 // Created by Cleber Lucas
 
 import "./IAcademicArticles.sol";
-import "./AcademicArticlesRead.sol";
-import "./AcademicArticlesWrite.sol";
+import "./AcademicArticlesInteract.sol";
+import "./AcademicArticlesSearch.sol";
 
 pragma solidity ^0.8.23;
 
-contract AcademicArticles is IAcademicArticles, AcademicArticlesRead, AcademicArticlesWrite {}
+contract AcademicArticles is IAcademicArticles, AcademicArticlesInteract, AcademicArticlesSearch {}
