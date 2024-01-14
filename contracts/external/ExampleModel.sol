@@ -5,6 +5,7 @@ pragma solidity ^0.8.23;
 library ExampleModel {
 
     struct Publication {
+
         Article article;
         bytes32 identification;
         address publisher;
@@ -13,11 +14,13 @@ library ExampleModel {
     }
 
     struct PublicationPreview {
+
         string title;
         bool validated;
     }
 
     struct Article {
+
         string title;
         string summary;
         string additionalInfo;
@@ -33,6 +36,7 @@ library ExampleModel {
     }
 
     struct Me {
+
         string name;
         string logoUrl;
         string siteUrl;

@@ -26,7 +26,7 @@ abstract contract ExampleInteract is ExampleData {
 
                 _publication.publisher[articlesIdentification[i]] = msg.sender;
 
-                _publication.datatime[articlesIdentification[i]] = block.timestamp;
+                _publication.dateTime[articlesIdentification[i]] = block.timestamp;
 
                 _publication.blockNumber[articlesIdentification[i]] = block.number;
             } 

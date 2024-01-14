@@ -1,18 +1,20 @@
 // SPDX-License-Identifier: MIT
 
+import "./AcademicArticlesDataModel.sol";
+
 pragma solidity ^0.8.23;
 
 library AcademicArticlesCommon {
 
-    function IsContractBinded(address[] storage externalContracts, address contractAccount)
+    function IsExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount)
     internal view 
-    returns (bool isContract) {
+    returns (bool isExternalContractBinded) {
         
-        for (uint256 i = 0; i < externalContracts.length; i++) {
+        for (uint256 i = 0; i < externalContract.accounts.length; i++) {
 
-            if (externalContracts[i] == contractAccount) {
+            if (externalContract.accounts[i] == externalContractAccount) {
 
-                isContract = true;
+                isExternalContractBinded = true;
                 
                 break;
             }

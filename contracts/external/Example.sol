@@ -9,12 +9,11 @@ pragma solidity ^0.8.23;
 
 contract Example is ExampleInteract, ExampleSearch  {
 
-    constructor(address academicArticlesContractAccount) {
+    constructor(address academicArticlesContract) {
 
         OWNER = msg.sender;
-
         CONTRACT = address(this);
-        
-        _academicArticles = IAcademicArticles(academicArticlesContractAccount);
+
+        _academicArticles = IAcademicArticles(academicArticlesContract);
     }
 }

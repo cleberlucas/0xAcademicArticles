@@ -11,7 +11,7 @@ pragma solidity ^0.8.23;
 contract AcademicArticles is IAcademicArticles, AcademicArticlesInteract, AcademicArticlesSearch {
 
     constructor() {
-
+        
         OWNER = msg.sender;
     }
 }

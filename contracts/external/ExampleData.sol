@@ -10,12 +10,11 @@ pragma solidity ^0.8.23;
 abstract contract ExampleData {
 
     address internal immutable OWNER;
-
     address internal immutable CONTRACT;
 
-    ExampleDataModel.Publication internal _publication;
-
-    ExampleDataModel.Me internal _me;
-
     IAcademicArticles internal _academicArticles;
+
+    ExampleDataModel.Publication internal _publication;
+    ExampleDataModel.Affiliate internal _affiliate;
+    ExampleModel.Me internal _me;
 }

@@ -6,6 +6,6 @@ library AcademicArticlesLog {
 
     event ArticlePublished(bytes32 indexed articleToken);
     event ArticleUnpublished(bytes32 indexed articleToken);
-    event ContractBinded(address indexed contractAccount);
-    event ContractUnbinded(address indexed contractAccount);
+    event ExternalContractBinded(address indexed externalContractAccount);
+    event ExternalContractUnbinded(address indexed externalContractAccount);
 }

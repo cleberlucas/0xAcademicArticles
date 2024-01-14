@@ -2,71 +2,75 @@
 
 import "./AcademicArticlesCommon.sol";
 import "./AcademicArticlesMessage.sol";
+import "./AcademicArticlesDataModel.sol";
 
 pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesRules {
 
-    modifier IsOwner(address ownerAccount) {
+    address internal immutable OWNER;
 
-        require(ownerAccount == tx.origin, AcademicArticlesMessage.OWNER_ACTION);
+    modifier IsNotEntryEncodeEmpty(bytes calldata encode) {      
+
+        require(encode.length > 0, AcademicArticlesMessage.ENTRY_ENCODE_EMPTY);
         _;
     }
 
-    modifier IsContract(address[] storage externalContracts, address contractAccount) {
+    modifier IsNotEntryAccountZero(address account) {    
 
-        require(AcademicArticlesCommon.IsContractBinded(externalContracts, contractAccount), AcademicArticlesMessage.CONTRACT_ACTION);
+        require(account != address(0), AcademicArticlesMessage.ENTRY_ACCOUNT_ZERO);
         _;
     }
 
-    modifier IsNotEntryArticleEncodeEmpty(bytes calldata articleEncode) {      
-
-        require(articleEncode.length > 0, AcademicArticlesMessage.ENTRY_ARTICLE_ENCODE_EMPTY);
-        _;
-    }
-
-    modifier IsNotEntryAccountEmpty(address account) {    
-
-        require(account != address(0), AcademicArticlesMessage.ENTRY_ACCOUNT_EMPTY);
-        _;
-    }
-
-    modifier IsAccountContract(address account) {
+    modifier IsEntryContract(address account) {
 
         uint32 size;
         assembly {
             size := extcodesize(account)
         }
-        require (size > 0, AcademicArticlesMessage.ENTRY_ACCOUNT_IS_NOT_A_CONTRACT);
+        require (size > 0, AcademicArticlesMessage.ENTRY_IS_NOT_A_CONTRACT);
         _;
     }
 
-    modifier IsContractBinded(address[] storage externalContracts, address contractAccount) {
+    modifier IsOwner() {
 
-        require(AcademicArticlesCommon.IsContractBinded(externalContracts, contractAccount), AcademicArticlesMessage.CONTRACT_IS_NOT_BINDED);
+        require(OWNER == tx.origin, AcademicArticlesMessage.OWNER_ACTION);
         _;
     }
 
-    modifier IsNotContractBinded(address[] storage externalContracts, address contractAccount) {
+    modifier IsExternalContract(AcademicArticlesDataModel.ExternalContract storage externalContract) {
 
-        require(!AcademicArticlesCommon.IsContractBinded(externalContracts, contractAccount), AcademicArticlesMessage.CONTRACT_ALREADY_BINDED);
+        require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, msg.sender), AcademicArticlesMessage.EXTERNAL_CONTRACT_ACTION);
         _;
     }
 
-    modifier IsArticlePublished(bytes storage articleEncode) {
+    modifier IsExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
 
-        require(articleEncode.length > 0, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+        require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_BINDED);
         _;
     }
 
-    modifier IsNotArticlePublished(bytes storage articleEncode) { 
+    modifier IsNotExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
 
-        require(articleEncode.length == 0, AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
+        require(!AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_BINDED);
         _;
     }
 
-    modifier IsArticlePublishedByMy(address articlePublisher) {
-        require(articlePublisher == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
+    modifier IsArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
+
+        require(article.encode[articleToken][msg.sender].length > 0, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+        _;
+    }
+
+    modifier IsNotArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) { 
+
+        require(article.encode[articleToken][msg.sender].length == 0, AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
+        _;
+    }
+
+    modifier IsArticlePublishedByMy(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
+
+        require(article.publisher[articleToken] == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
         _;
     }
 }

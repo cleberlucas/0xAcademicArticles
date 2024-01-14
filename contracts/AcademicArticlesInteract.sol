@@ -11,10 +11,9 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
     function PublishArticle(bytes calldata articleEncode) 
     public payable
-    IsAccountContract(msg.sender)
-    IsContract(_external.contracts, msg.sender)
-    IsNotEntryArticleEncodeEmpty(articleEncode)
-    IsNotArticlePublished(_article.encode[keccak256(articleEncode)][msg.sender]) {          
+    IsExternalContract(_externalContract)
+    IsNotEntryEncodeEmpty(articleEncode)
+    IsNotArticlePublished(_article, keccak256(articleEncode)) {          
 
         bytes32 articleToken = keccak256(articleEncode);
 
@@ -29,10 +28,9 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
     function UnpublishArticle(bytes32 articleToken)
     public payable
-    IsAccountContract(msg.sender)
-    IsContract(_external.contracts, msg.sender)
-    IsArticlePublished(_article.encode[articleToken][msg.sender])
-    IsArticlePublishedByMy(_article.publisher[articleToken]) {
+    IsExternalContract(_externalContract)
+    IsArticlePublished(_article, articleToken)
+    IsArticlePublishedByMy(_article, articleToken) {
 
         for (uint256 i = 0; i < _article.tokens.length; i++) {
 
@@ -52,33 +50,33 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
         }             
     }
 
-    function BindContract(address contractAccount)
+    function BindExternalContract(address externalContractAccount)
     public payable
-    IsOwner(OWNER)
-    IsNotEntryAccountEmpty(contractAccount)
-    IsAccountContract(contractAccount)
-    IsNotContractBinded(_external.contracts, contractAccount) {
+    IsOwner
+    IsNotEntryAccountZero(externalContractAccount)
+    IsEntryContract(externalContractAccount)
+    IsNotExternalContractBinded(_externalContract, externalContractAccount) {
 
-        _external.contracts.push(contractAccount);
+        _externalContract.accounts.push(externalContractAccount);
 
-        emit AcademicArticlesLog.ContractBinded(contractAccount);    
+        emit AcademicArticlesLog.ExternalContractBinded(externalContractAccount);    
     }
 
-    function UnbindContract(address contractAccount)
+    function UnbindExternalContract(address externalContractAccount)
     public payable
-    IsOwner(OWNER)
-    IsNotEntryAccountEmpty(contractAccount)
-    IsAccountContract(contractAccount)
-    IsContractBinded(_external.contracts, contractAccount) {
+    IsOwner
+    IsNotEntryAccountZero(externalContractAccount)
+    IsEntryContract(externalContractAccount)
+    IsExternalContractBinded(_externalContract, externalContractAccount) {
 
-          for (uint256 i = 0; i < _external.contracts.length; i++) {
+          for (uint256 i = 0; i < _externalContract.accounts.length; i++) {
 
-            if (_external.contracts[i] == contractAccount) {
+            if (_externalContract.accounts[i] == externalContractAccount) {
 
-                _external.contracts[i] = _external.contracts[_external.contracts.length - 1];
-                _external.contracts.pop();
+                _externalContract.accounts[i] = _externalContract.accounts[_externalContract.accounts.length - 1];
+                _externalContract.accounts.pop();
 
-                emit AcademicArticlesLog.ContractUnbinded(contractAccount);
+                emit AcademicArticlesLog.ExternalContractUnbinded(externalContractAccount);
 
                 break;
             }

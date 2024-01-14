@@ -2,11 +2,12 @@
 
 import "./IAcademicArticlesSearch.sol";
 import "./AcademicArticlesData.sol";
+import "./AcademicArticlesDataModel.sol";
 
 pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesData {
-    
+
     function ArticleTokens() 
     public view 
     returns (bytes32[] memory articleTokens) { 
@@ -21,17 +22,17 @@ abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArt
         articlePublisher = _article.publisher[articleToken];
     }
 
-    function ArticleEncode(bytes32 articleToken, address contractAccount) 
+    function ArticleEncode(bytes32 articleToken, address externalContractAccount) 
     public view 
     returns (bytes memory articleEncode) {
 
-        articleEncode = _article.encode[articleToken][contractAccount];
+        articleEncode = _article.encode[articleToken][externalContractAccount];
     }
 
-    function ExternalContracts()
+    function ExternalContract()
     public view
-    returns (address[] memory externalContracts) {
+    returns (AcademicArticlesDataModel.ExternalContract memory externalContract) {
 
-        externalContracts = _external.contracts;
+        externalContract = _externalContract;
     }
 }
