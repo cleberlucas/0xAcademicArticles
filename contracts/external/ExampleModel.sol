@@ -4,11 +4,10 @@ pragma solidity ^0.8.23;
 
 contract ExampleModel {
     struct Publication {
-        Article content;
+        Article article;
         bytes32 identification;
         address publisher;
-        uint256 publicationTimestamp;
-        uint256 blockNumber;
+        uint256 datatime;
         bool valid;
     }
 
@@ -32,7 +31,7 @@ contract ExampleModel {
         int presentationYear;
     }
 
-    struct Institution {
+    struct Me {
         string name;
         string logoUrl;
         string siteUrl;

@@ -6,7 +6,7 @@ library AcademicArticlesDataModel {
     struct Article {
         bytes32[] tokens;
         mapping(bytes32 token => address) publisher;
-        mapping(bytes32 token => mapping(address contractAccount => string)) abi;
+        mapping(bytes32 token => mapping(address contractAccount => bytes)) encode;
     }
 
     struct External {

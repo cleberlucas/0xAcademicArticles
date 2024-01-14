@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-import "./AcademicArticlesUtils.sol";
+import "./AcademicArticlesCommon.sol";
 import "./AcademicArticlesMessage.sol";
 
 pragma solidity ^0.8.23;
 
-abstract contract AcademicArticlesRules is AcademicArticlesUtils {
+abstract contract AcademicArticlesRules is AcademicArticlesCommon {
     modifier IsOwner() {
         require(OWNER == tx.origin, AcademicArticlesMessage.OWNER_ACTION);
         _;
@@ -16,11 +16,8 @@ abstract contract AcademicArticlesRules is AcademicArticlesUtils {
         _;
     }
 
-    modifier IsNotEntryArticleAbiEmpty(string calldata articleAbi) {       
-        require(
-            keccak256(abi.encodePacked(articleAbi)) != keccak256(abi.encodePacked("")),
-            AcademicArticlesMessage.ENTRY_ARTICLE_ABI_EMPTY
-        );
+    modifier IsNotEntryArticleEncodeEmpty(bytes calldata articleEncode) {       
+        require(articleEncode.length > 0, AcademicArticlesMessage.ENTRY_ARTICLE_ABI_EMPTY);
         _;
     }
 
@@ -49,18 +46,12 @@ abstract contract AcademicArticlesRules is AcademicArticlesUtils {
     }
 
     modifier IsArticlePublished(bytes32 articleToken, address contractAccount) {
-        require(
-            keccak256(abi.encodePacked(_article.abi[articleToken][contractAccount])) != keccak256(abi.encodePacked("")),
-            AcademicArticlesMessage.ARTICLE_WAS_NOT_PUBLISHED
-        );
+        require(_article.encode[articleToken][contractAccount].length > 0, AcademicArticlesMessage.ARTICLE_WAS_NOT_PUBLISHED);
         _;
     }
 
     modifier IsNotArticlePublished(bytes32 articleToken, address contractAccount) { 
-        require(
-            keccak256(abi.encodePacked(_article.abi[articleToken][contractAccount])) == keccak256(abi.encodePacked("")),
-            AcademicArticlesMessage.ARTICLE_WAS_NOT_PUBLISHED
-        );
+        require(_article.encode[articleToken][contractAccount].length == 0, AcademicArticlesMessage.ARTICLE_WAS_NOT_PUBLISHED);
         _;
     }
 

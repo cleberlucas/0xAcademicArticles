@@ -7,21 +7,20 @@ import "./AcademicArticlesLog.sol";
 pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, AcademicArticlesRules, AcademicArticlesLog {
-    function PublishArticle(string calldata articleAbi) 
+    function PublishArticle(bytes calldata articleEncode) 
     public payable
     IsAccountContract(msg.sender)
     IsContract(msg.sender)
-    IsNotEntryArticleAbiEmpty(articleAbi)
-    IsNotArticlePublished(keccak256(abi.encode(articleAbi)), msg.sender) {          
+    IsNotEntryArticleEncodeEmpty(articleEncode)
+    IsNotArticlePublished(keccak256(articleEncode), msg.sender) {          
 
-        bytes32 
-        articleToken = keccak256(abi.encode(articleAbi));
+        bytes32 articleToken = keccak256(articleEncode);
 
         _article.tokens.push(articleToken);
         _article.publisher[articleToken] = tx.origin;
 
-        if (keccak256(abi.encodePacked(articleAbi)) == keccak256(abi.encodePacked(""))) {
-            _article.abi[articleToken][msg.sender] = articleAbi;
+        if (_article.encode[articleToken][msg.sender].length == 0) {
+            _article.encode[articleToken][msg.sender] = articleEncode;
         }
 
         emit ArticlePublished(articleToken);
@@ -33,6 +32,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     IsContract(msg.sender)
     IsArticlePublished(articleToken, msg.sender)
     IsArticlePublishedByMy(articleToken) {
+
         for (uint256 i = 0; i < _article.tokens.length; i++) {
             if (_article.tokens[i] == articleToken) {                 
                 _article.tokens[i] = _article.tokens[_article.tokens.length - 1];
@@ -53,6 +53,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     IsNotEntryAccountEmpty(contractAccount)
     IsAccountContract(contractAccount)
     IsContractBinded(contractAccount) {
+
         _external.contracts.push(contractAccount);
 
         emit ContractBinded(contractAccount);    
@@ -64,6 +65,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     IsNotEntryAccountEmpty(contractAccount)
     IsAccountContract(contractAccount)
     IsNotContractBinded(contractAccount) {
+
           for (uint256 i = 0; i < _external.contracts.length; i++) {
             if (_external.contracts[i] == contractAccount) {                 
                 _external.contracts[i] = _external.contracts[_external.contracts.length - 1];

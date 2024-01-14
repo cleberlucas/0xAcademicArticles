@@ -14,5 +14,5 @@ abstract contract ExampleData {
     IAcademicArticles internal _academicArticles;
 
     ExampleDataModel.Publication internal _publication;
-    ExampleDataModel.Institution internal _institution;
+    ExampleDataModel.Me internal _me;
 }

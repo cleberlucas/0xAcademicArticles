@@ -3,10 +3,10 @@
 pragma solidity ^0.8.23;
 
 abstract contract ExampleLog {
-    event ArticlePublished(bytes32 indexed articleIdentification);
-    event ArticleUnpublished(bytes32 indexed articleIdentification);
-    event ArticleValidated(bytes32 indexed articleIdentification);
-    event ArticleInvalidated(bytes32 indexed articleIdentification);
-    event AffiliateLinked(address indexed affiliateAccount);
-    event AffiliateUnlinked(address indexed affiliateAccount);
+    event ArticlesPublished(bytes32[] indexed articlesIdentification);
+    event ArticlesUnpublished(bytes32[] indexed articlesIdentification);
+    event ArticlesValidated(bytes32[] indexed articlesIdentification);
+    event ArticlesInvalidated(bytes32[] indexed articlesIdentification);
+    event AffiliatesLinked(address[] indexed affiliateAccount);
+    event AffiliatesUnlinked(address[] indexed affiliateAccount);
 }

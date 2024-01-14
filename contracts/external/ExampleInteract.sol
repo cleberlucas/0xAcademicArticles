@@ -10,64 +10,65 @@ pragma solidity ^0.8.23;
 
 abstract contract ExampleInteract is ExampleData, ExampleLog{
     function PublishArticles(ExampleModel.Article[] memory articles) public payable {
-        for (uint256 i = 0; i < articles.length; i++) {
-            _academicArticles.PublishArticle(string(abi.encode(articles[i])));
+    bytes32[] memory articlesIdentification = new bytes32[](articles.length);
 
-            bytes32 articleIdentification = keccak256(abi.encode(articles[i]));
+    for (uint256 i = 0; i < articles.length; i++) {
+        try _academicArticles.PublishArticle(abi.encode(articles[i])) {
+            articlesIdentification[i] = keccak256(abi.encode(articles[i]));
+            _publication.identifications.push(articlesIdentification[i]);
 
-            _publication.articleIdentifications.push(articleIdentification);
-
-            _publication.publication[articleIdentification] = ExampleModel.Publication(
-                articles[i],
-                articleIdentification,
-                tx.origin,
-                block.timestamp,
-                block.number,
-                false
-            );
-
-            emit ArticlePublished(articleIdentification);
+            _publication.identificationsOfPublisher[msg.sender].push(articlesIdentification[i]);
+            _publication.datatime[articlesIdentification[i]] = block.timestamp;
+            _publication.blockNumber[articlesIdentification[i]] = block.number;
+        } catch Error(string memory errorMessage) {
+            revert(string(abi.encodePacked(articlesIdentification[i], " : ", errorMessage)));
         }
     }
 
-    function UnpublishArticles(bytes32[] calldata articleIdentifications) public payable {
+    emit ArticlesPublished(articlesIdentification);
+}
+
+
+    function UnpublishArticles(bytes32[] calldata articleIdentifications) public payable {  
         for (uint256 i = 0; i < articleIdentifications.length; i++) {
-            for (uint256 ii = 0; ii < _publication.articleIdentifications.length; ii++) {
-                if (_publication.articleIdentifications[ii] == articleIdentifications[i]) {
+            for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
+                if (_publication.identifications[ii] == articleIdentifications[i]) {
                     _academicArticles.UnpublishArticle(articleIdentifications[i]);
 
-                    _publication.articleIdentifications[ii] = _publication.articleIdentifications[_publication.articleIdentifications.length - 1];
-                    _publication.articleIdentifications.pop();
+                    _publication.identifications[ii] = _publication.identifications[_publication.identifications.length - 1];
+                    _publication.identifications.pop();
 
-                    emit ArticleUnpublished(articleIdentifications[i]);
+                    
                 }
             }
         }
+
+        emit ArticlesUnpublished(articleIdentifications);
     }
 
     function ValidateArticles(bytes32[] calldata articleIdentification) public payable {
         for (uint256 i = 0; i < articleIdentification.length; i++) {
-            emit ArticleValidated(articleIdentification[i]);
         }
+        emit ArticlesValidated(articleIdentification);
     }
 
     function InvalidateArticles(bytes32[] calldata articleIdentification) public payable {
         for (uint256 i = 0; i < articleIdentification.length; i++) {
-            emit ArticleInvalidated(articleIdentification[i]);
         }
+        emit ArticlesInvalidated(articleIdentification);
     }
 
     function LinkAffiliates(address[] calldata affiliateAccounts) public payable {
         for (uint256 i = 0; i < affiliateAccounts.length; i++) {
             
-            emit AffiliateLinked(affiliateAccounts[i]);
         }
+        emit AffiliatesLinked(affiliateAccounts);
     }
 
     function UnlinkAffiliates(address[] calldata affiliateAccounts) public payable {
         for (uint256 i = 0; i < affiliateAccounts.length; i++) {
             
-            emit AffiliateUnlinked(affiliateAccounts[i]);
         }
+        emit AffiliatesUnlinked(affiliateAccounts);
     }
 }
