@@ -5,6 +5,7 @@ import "./ExampleModel.sol";
 pragma solidity ^0.8.23;
 
 abstract contract ExampleDataModel {
+    
     struct Publication {
         bytes32[] identifications;
         bytes32[] identificationsValid;

@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.23;
 
-abstract contract AcademicArticlesLog {
+library AcademicArticlesLog {
+
     event ArticlePublished(bytes32 indexed articleToken);
     event ArticleUnpublished(bytes32 indexed articleToken);
     event ContractBinded(address indexed contractAccount);

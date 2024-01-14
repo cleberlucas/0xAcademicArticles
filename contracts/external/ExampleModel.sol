@@ -2,7 +2,8 @@
 
 pragma solidity ^0.8.23;
 
-contract ExampleModel {
+library ExampleModel {
+
     struct Publication {
         Article article;
         bytes32 identification;

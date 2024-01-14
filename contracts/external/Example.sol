@@ -8,9 +8,13 @@ import "./ExampleSearch.sol";
 pragma solidity ^0.8.23;
 
 contract Example is ExampleInteract, ExampleSearch  {
+
     constructor(address academicArticlesContractAccount) {
+
         OWNER = msg.sender;
+
         CONTRACT = address(this);
+        
         _academicArticles = IAcademicArticles(academicArticlesContractAccount);
     }
 }

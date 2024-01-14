@@ -6,6 +6,7 @@ import "./AcademicArticlesData.sol";
 pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesData {
+    
     function ArticleTokens() 
     public view 
     returns (bytes32[] memory articleTokens) { 
