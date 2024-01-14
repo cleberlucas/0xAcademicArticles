@@ -78,7 +78,7 @@ abstract contract ExampleSearch is ExampleData {
 
     function Me() 
     public view 
-    returns (ExampleModel.Me memory me) {
+    returns (ExampleDataModel.Me memory me) {
 
         me = _me;
     }
@@ -99,20 +99,20 @@ abstract contract ExampleSearch is ExampleData {
         if (startIndex >= currentSize || startIndex > endIndex) {
 
             publicationsPreview = new ExampleModel.PublicationPreview[](0);
-        } else {
+        }   else {
 
-            uint256 size = endIndex - startIndex + 1;
-            size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+                uint256 size = endIndex - startIndex + 1;
+                size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
 
-            publicationsPreview = new ExampleModel.PublicationPreview[](size);
+                publicationsPreview = new ExampleModel.PublicationPreview[](size);
 
-            for (uint256 i = 0; i < size; i++) {
+                for (uint256 i = 0; i < size; i++) {
 
-                publicationsPreview[i] = ExampleModel.PublicationPreview(
-                    abi.decode(_academicArticles.ArticleEncode(_publication.identifications[startIndex + i], CONTRACT), (ExampleModel.Article)).title,
-                    _publication.valid[_publication.identifications[startIndex + i]]
-                );
-            }
+                    publicationsPreview[i] = ExampleModel.PublicationPreview(
+                        abi.decode(_academicArticles.ArticleEncode(_publication.identifications[startIndex + i], CONTRACT), (ExampleModel.Article)).title,
+                        _publication.valid[_publication.identifications[startIndex + i]]
+                    );
+                }
         }
     }
 }

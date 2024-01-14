@@ -34,13 +34,4 @@ library ExampleModel {
         string[] examiningBoard;
         int presentationYear;
     }
-
-    struct Me {
-
-        string name;
-        string logoUrl;
-        string siteUrl;
-        string requestEmail;
-        string contactNumber;
-    }
 }

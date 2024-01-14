@@ -10,4 +10,5 @@ library ExampleLog {
     event ArticlesInvalidated(bytes32[] indexed articlesIdentification);
     event AffiliatesLinked(address[] indexed affiliateAccount);
     event AffiliatesUnlinked(address[] indexed affiliateAccount);
+    event MeChanged();
 }

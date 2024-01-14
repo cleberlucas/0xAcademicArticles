@@ -16,5 +16,5 @@ abstract contract ExampleData {
 
     ExampleDataModel.Publication internal _publication;
     ExampleDataModel.Affiliate internal _affiliate;
-    ExampleModel.Me internal _me;
+    ExampleDataModel.Me internal _me;
 }
