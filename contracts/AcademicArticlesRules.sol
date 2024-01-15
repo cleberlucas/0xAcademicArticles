@@ -44,7 +44,7 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
-    modifier IsContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract) {
+    modifier IsExternalContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract) {
 
         require(externalContract.enable[msg.sender], AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_DISABLED);
         _;
