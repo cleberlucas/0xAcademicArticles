@@ -11,6 +11,7 @@ library AcademicArticlesDataModel {
     }
 
     struct ExternalContract {  
-        address[] accounts; 
+        address[] accounts;
+        mapping(address account => bool) enable;
     }
 }

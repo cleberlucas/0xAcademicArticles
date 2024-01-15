@@ -12,7 +12,7 @@ pragma solidity ^0.8.23;
 
 abstract contract ExampleInteract is ExampleData {
 
-    function PublishPublications(ExampleModel.Article[] memory articles) 
+    function PublishArticles(ExampleModel.Article[] memory articles) 
     public payable {
         
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
@@ -61,10 +61,10 @@ abstract contract ExampleInteract is ExampleData {
             }
         }
 
-        emit ExampleLog.PublicationsPublished(publicationIdentifications);
+        emit ExampleLog.ArticlesPublished(publicationIdentifications);
     }
 
-    function UnpublishPublications(bytes32[] calldata publicationIdentifications) 
+    function UnpublishArticles(bytes32[] calldata publicationIdentifications) 
     public payable {
 
         address publisher;
@@ -73,11 +73,11 @@ abstract contract ExampleInteract is ExampleData {
 
         for (uint256 i = 0; i < publicationIdentifications.length; i++) {
 
+            publicationIdentification = publicationIdentifications[i];
+            
             publisher = _publication.publisher[publicationIdentification];
      
-            if (publisher != address(0)) {
-
-                publicationIdentification = publicationIdentifications[i];
+            if (publisher != address(0)) {           
 
                 _publication.publisher[publicationIdentification] = address(0);
 
@@ -136,10 +136,10 @@ abstract contract ExampleInteract is ExampleData {
             } 
         }
 
-        emit ExampleLog.PublicationsUnpublished(publicationIdentifications);
+        emit ExampleLog.ArticlesUnpublished(publicationIdentifications);
     }
 
-    function ValidatePublications(bytes32[] calldata publicationIdentifications) 
+    function ValidateArticles(bytes32[] calldata publicationIdentifications) 
     public payable {
         
         require(OWNER == msg.sender || ExampleCommon.IsAffiliateLinked(_affiliate, msg.sender));
@@ -158,10 +158,10 @@ abstract contract ExampleInteract is ExampleData {
             }
         }
         
-        emit ExampleLog.PublicationsValidated(publicationIdentifications);
+        emit ExampleLog.ArticlesValidated(publicationIdentifications);
     }
 
-    function InvalidatePublications(bytes32[] calldata publicationIdentifications) 
+    function InvalidateArticles(bytes32[] calldata publicationIdentifications) 
     public payable {
         
         require(OWNER == msg.sender || ExampleCommon.IsAffiliateLinked(_affiliate, msg.sender));
@@ -189,7 +189,7 @@ abstract contract ExampleInteract is ExampleData {
             }    
         }
 
-        emit ExampleLog.PublicationsInvalidated(publicationIdentifications);
+        emit ExampleLog.ArticlesInvalidated(publicationIdentifications);
     }
 
     function LinkAffiliates(address[] calldata affiliateAccounts) 

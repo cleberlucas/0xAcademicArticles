@@ -44,9 +44,9 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
-    modifier IsExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
+    modifier IsContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract) {
 
-        require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_BINDED);
+        require(externalContract.enable[msg.sender], AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_DISABLED);
         _;
     }
 
@@ -56,15 +56,27 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
+    modifier IsNotExternalContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
+
+        require(!externalContract.enable[externalContractAccount], AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_ENABLED);
+        _;
+    }
+
+    modifier IsNotExternalContractDisabled(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
+
+        require(externalContract.enable[externalContractAccount], AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_DISABLED);
+        _;
+    }
+
     modifier IsArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
 
-        require(article.encode[articleToken][msg.sender].length > 0, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+        require(article.publisher[articleToken] != address(0), AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
         _;
     }
 
     modifier IsNotArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) { 
 
-        require(article.encode[articleToken][msg.sender].length == 0, AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
+        require(article.publisher[articleToken] == address(0), AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
         _;
     }
 

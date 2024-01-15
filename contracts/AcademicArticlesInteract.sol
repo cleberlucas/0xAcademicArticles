@@ -12,6 +12,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     function PublishArticle(bytes calldata articleEncode) 
     public payable
     IsExternalContract(_externalContract)
+    IsContractEnabled(_externalContract)
     IsNotEntryEncodeEmpty(articleEncode)
     IsNotArticlePublished(_article, keccak256(articleEncode)) {          
 
@@ -29,6 +30,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     function UnpublishArticle(bytes32 articleToken)
     public payable
     IsExternalContract(_externalContract)
+    IsContractEnabled(_externalContract)
     IsArticlePublished(_article, articleToken)
     IsArticlePublishedByMy(_article, articleToken) {
 
@@ -59,27 +61,32 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
         _externalContract.accounts.push(externalContractAccount);
 
+        _externalContract.enable[externalContractAccount] = true;
+
         emit AcademicArticlesLog.ExternalContractBinded(externalContractAccount);    
     }
 
-    function UnbindExternalContract(address externalContractAccount)
+    function EnableExternalContract(address externalContractAccount)
     public payable
     IsOwner
     IsNotEntryAccountZero(externalContractAccount)
     IsEntryContract(externalContractAccount)
-    IsExternalContractBinded(_externalContract, externalContractAccount) {
+    IsNotExternalContractEnabled(_externalContract, externalContractAccount) {
 
-          for (uint256 i = 0; i < _externalContract.accounts.length; i++) {
+        _externalContract.enable[externalContractAccount] = true;
 
-            if (_externalContract.accounts[i] == externalContractAccount) {
+        emit AcademicArticlesLog.ExternalContractEnabled(externalContractAccount);
+    }
 
-                _externalContract.accounts[i] = _externalContract.accounts[_externalContract.accounts.length - 1];
-                _externalContract.accounts.pop();
+    function DisableExternalContract(address externalContractAccount)
+    public payable
+    IsOwner
+    IsNotEntryAccountZero(externalContractAccount)
+    IsEntryContract(externalContractAccount)
+    IsNotExternalContractDisabled(_externalContract, externalContractAccount) {
 
-                emit AcademicArticlesLog.ExternalContractUnbinded(externalContractAccount);
+        _externalContract.enable[externalContractAccount] = false;
 
-                break;
-            }
-        } 
+        emit AcademicArticlesLog.ExternalContractDisabled(externalContractAccount);
     }
 }

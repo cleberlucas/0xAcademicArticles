@@ -29,10 +29,17 @@ abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArt
         articleEncode = _article.encode[articleToken][externalContractAccount];
     }
 
-    function ExternalContract()
+    function ExternalContractAccounts()
     public view
-    returns (AcademicArticlesDataModel.ExternalContract memory externalContract) {
+    returns (address[] memory externalContractAccounts) {
 
-        externalContract = _externalContract;
+        externalContractAccounts = _externalContract.accounts;
+    }
+
+    function ExternalContractEnable(address externalContractAccount)
+    public view
+    returns (bool externalContractEnable) {
+
+        externalContractEnable = _externalContract.enable[externalContractAccount];
     }
 }

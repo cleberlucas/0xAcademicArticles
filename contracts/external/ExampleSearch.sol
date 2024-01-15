@@ -28,11 +28,11 @@ abstract contract ExampleSearch is ExampleData {
         publicationPublishers = _publication.publishers;
     }
 
-    function PublicationIdentificationsOfPublisher(address publisherAccount) 
+    function PublicationIdentificationsOfPublisher(address publicationPublisher) 
     public view 
     returns (bytes32[] memory publicationIdentificationsOfPublisher) {
 
-        publicationIdentificationsOfPublisher = _publication.identificationsOfPublisher[publisherAccount];
+        publicationIdentificationsOfPublisher = _publication.identificationsOfPublisher[publicationPublisher];
     }
 
     function Me() 
