@@ -23,37 +23,9 @@ abstract contract ExampleSearch is ExampleData {
 
     function PublicationPublishers() 
     public view 
-    returns (bytes32[] memory publicationPublishers) {
+    returns (address[] memory publicationPublishers) {
 
         publicationPublishers = _publication.publishers;
-    }
-
-    function PublicationPublisher(bytes32 publicationIdentification) 
-    public view 
-    returns (address publicationPublisher) {
-
-        publicationPublisher = _publication.publisher[publicationIdentification];
-    }
-
-    function PublicationDateTime(bytes32 publicationIdentification) 
-    public view 
-    returns (uint256 publicationDateTime) {
-
-        publicationDateTime = _publication.dateTime[publicationIdentification];
-    }
-
-    function PublicationBlockNumber(bytes32 publicationIdentification) 
-    public view 
-    returns (uint256 publicationBlockNumber) {
-
-        publicationBlockNumber = _publication.blockNumber[publicationIdentification];
-    }
-
-    function PublicationValid(bytes32 publicationIdentification) 
-    public view 
-    returns (bool publicationValid) {
-
-        publicationValid = _publication.valid[publicationIdentification];
     }
 
     function PublicationIdentificationsOfPublisher(address publisherAccount) 
@@ -61,6 +33,20 @@ abstract contract ExampleSearch is ExampleData {
     returns (bytes32[] memory publicationIdentificationsOfPublisher) {
 
         publicationIdentificationsOfPublisher = _publication.identificationsOfPublisher[publisherAccount];
+    }
+
+    function Me() 
+    public view 
+    returns (ExampleDataModel.Me memory me) {
+
+        me = _me;
+    }
+
+    function AffiliateAccounts() 
+    public view 
+    returns (address[] memory affiliateAccounts) {
+
+        affiliateAccounts = _affiliate.accounts;
     }
 
     function Publication(bytes32 publicationIdentification) 
@@ -74,20 +60,6 @@ abstract contract ExampleSearch is ExampleData {
             _publication.dateTime[publicationIdentification],
             _publication.valid[publicationIdentification]
         );
-    }
-
-    function Me() 
-    public view 
-    returns (ExampleDataModel.Me memory me) {
-
-        me = _me;
-    }
-
-    function Affiliate() 
-    public view 
-    returns (ExampleDataModel.Affiliate memory affiliate) {
-
-        affiliate = _affiliate;
     }
 
     function PreviewPublications(uint256 startIndex, uint256 endIndex) 

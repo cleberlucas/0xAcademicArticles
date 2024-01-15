@@ -4,10 +4,10 @@ pragma solidity ^0.8.23;
 
 library ExampleLog {
 
-    event ArticlesPublished(bytes32[] indexed articlesIdentification);
-    event ArticlesUnpublished(bytes32[] indexed articlesIdentification);
-    event ArticlesValidated(bytes32[] indexed articlesIdentification);
-    event ArticlesInvalidated(bytes32[] indexed articlesIdentification);
+    event PublicationsPublished(bytes32[] indexed publicationIdentifications);
+    event PublicationsUnpublished(bytes32[] indexed publicationIdentifications);
+    event PublicationsValidated(bytes32[] indexed publicationIdentifications);
+    event PublicationsInvalidated(bytes32[] indexed publicationIdentifications);
     event AffiliatesLinked(address[] indexed affiliateAccount);
     event AffiliatesUnlinked(address[] indexed affiliateAccount);
     event MeChanged();

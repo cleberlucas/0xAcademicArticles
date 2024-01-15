@@ -6,28 +6,23 @@ pragma solidity ^0.8.23;
 
 library ExampleDataModel {
 
-    // Write methods: PublishArticles, UnpublishArticles
     struct Publication {
-
         bytes32[] identifications;
         bytes32[] identificationsValid;
-        bytes32[] publishers;
+        address[] publishers;
 		mapping(bytes32 identification => address) publisher;
         mapping(bytes32 identification => uint256) dateTime;
         mapping(bytes32 identification => uint256) blockNumber;
-		mapping(bytes32 identification => bool) valid; //Write methods: ValidateArticles, InvalidateArticles
-		mapping(address publisher => bytes32[]) identificationsOfPublisher;	
+		mapping(bytes32 identification => bool) valid;
+		mapping(address publisher => bytes32[]) identificationsOfPublisher;
     }
 
-    // Write methods: LinkAffiliate, UnlinkAffiliate
     struct Affiliate {
-
-        address[] accounts;     
+        address[] accounts;
+        mapping(address account => bool) binded;
     }
 
-    // Write method: ChangeMe
     struct Me {
-
         string name;
         string logoUrl;
         string siteUrl;
