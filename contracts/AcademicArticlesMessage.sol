@@ -11,6 +11,7 @@ library AcademicArticlesMessage {
     string public constant EXTERNAL_CONTRACT_ACTION = "external contract action";
     string public constant EXTERNAL_CONTRACT_IS_DISABLED = "external contract is disabled";
     string public constant EXTERNAL_CONTRACT_ALREADY_BINDED = "external contract already binded";
+	string public constant EXTERNAL_CONTRACT_IS_NOT_BINDED = "external contract is not binded";
     string public constant EXTERNAL_CONTRACT_ALREADY_ENABLED = "external contract already enabled";
     string public constant EXTERNAL_CONTRACT_ALREADY_DISABLED = "external contract already disabled";
     string public constant ARTICLE_ALREADY_PUBLISHED = "article already published";

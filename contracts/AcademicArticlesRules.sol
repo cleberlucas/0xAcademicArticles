@@ -56,6 +56,12 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
+    modifier IsExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
+
+        require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_BINDED);
+        _;
+    }
+
     modifier IsNotExternalContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
 
         require(!externalContract.enable[externalContractAccount], AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_ENABLED);
