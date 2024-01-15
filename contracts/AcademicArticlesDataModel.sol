@@ -5,13 +5,12 @@ pragma solidity ^0.8.23;
 library AcademicArticlesDataModel {
 
     struct Article {   
-        bytes32[] tokens;
+        mapping(address externalContractAccount => bytes32[]) tokens;
         mapping(bytes32 token => address) publisher;
-        mapping(bytes32 token => mapping(address externalContractAccount => bytes)) encode;
+        mapping(bytes32 token => bytes) encode;
     }
 
     struct ExternalContract {  
         address[] accounts;
-        mapping(address account => bool) enable;
     }
 }

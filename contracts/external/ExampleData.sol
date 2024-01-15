@@ -10,7 +10,6 @@ pragma solidity ^0.8.23;
 abstract contract ExampleData {
 
     address internal immutable OWNER;
-    address internal immutable CONTRACT;
 
     IAcademicArticles internal _academicArticles;
 

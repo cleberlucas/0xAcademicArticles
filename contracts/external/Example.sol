@@ -12,7 +12,6 @@ contract Example is ExampleInteract, ExampleSearch  {
     constructor(address academicArticles) {
 
         OWNER = msg.sender;
-        CONTRACT = address(this);
 
         _academicArticles = IAcademicArticles(academicArticles);
     }

@@ -8,6 +8,4 @@ library AcademicArticlesLog {
     event ArticleUnpublished(bytes32 indexed articleToken);
     event ExternalContractBinded(address indexed externalContractAccount);
     event ExternalContractUnbinded(address indexed externalContractAccount);
-    event ExternalContractEnabled(address indexed externalContractAccount);
-    event ExternalContractDisabled(address indexed externalContractAccount);
 }

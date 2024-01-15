@@ -44,12 +44,6 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
-    modifier IsExternalContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract) {
-
-        require(externalContract.enable[msg.sender], AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_DISABLED);
-        _;
-    }
-
     modifier IsNotExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
 
         require(!AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_BINDED);
@@ -59,18 +53,6 @@ abstract contract AcademicArticlesRules {
     modifier IsExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
 
         require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_BINDED);
-        _;
-    }
-
-    modifier IsNotExternalContractEnabled(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
-
-        require(!externalContract.enable[externalContractAccount], AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_ENABLED);
-        _;
-    }
-
-    modifier IsNotExternalContractDisabled(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
-
-        require(externalContract.enable[externalContractAccount], AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_DISABLED);
         _;
     }
 
@@ -86,7 +68,7 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
-    modifier IsArticlePublishedByMy(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
+    modifier IsArticlePublishedByMe(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
 
         require(article.publisher[articleToken] == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
         _;
