@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./ExampleModel.sol";
+import "./DuofranModel.sol";
 
-library ExampleDataModel {
+library DuofranDataModel {
     struct Publication {
         bytes32[] identifications;
         bytes32[] identificationsValid;

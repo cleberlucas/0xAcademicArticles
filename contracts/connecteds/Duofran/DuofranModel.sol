@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-library ExampleModel {
+library DuofranModel {
     struct Publication {
         Article article;
         bytes32 identification;

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./ExampleInteract.sol";
-import "./ExampleSearch.sol";
+import "./DuofranInteract.sol";
+import "./DuofranSearch.sol";
 
-contract Example is ExampleInteract, ExampleSearch  {
+contract Duofran is DuofranInteract, DuofranSearch  {
     // Created by Cleber Lucas
     constructor(address academicArticles) {
         OWNER = msg.sender;

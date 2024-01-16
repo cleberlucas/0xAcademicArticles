@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./ExampleData.sol";
-import "./ExampleLog.sol";
-import "./ExampleModel.sol";
-import "./ExampleCommon.sol";
+import "./DuofranData.sol";
+import "./DuofranLog.sol";
+import "./DuofranModel.sol";
+import "./DuofranCommon.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract ExampleInteract is ExampleData {
-    function PublishArticles(ExampleModel.Article[] memory articles) 
+abstract contract DuofranInteract is DuofranData {
+    function PublishArticles(DuofranModel.Article[] memory articles) 
     public payable {
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
         bytes32 publicationIdentification;
-        ExampleModel.Article memory article;
+        DuofranModel.Article memory article;
 
         for (uint256 i = 0; i < articles.length; i++) {
             article = articles[i];
@@ -25,7 +25,7 @@ abstract contract ExampleInteract is ExampleData {
                 _publication.publisher[publicationIdentification] = msg.sender;
                 _publication.dateTime[publicationIdentification] = block.timestamp;
                 _publication.blockNumber[publicationIdentification] = block.number;
-                _publication.valid[publicationIdentification] = OWNER == msg.sender|| ExampleCommon.IsAffiliateLinked(_affiliate, msg.sender);
+                _publication.valid[publicationIdentification] = OWNER == msg.sender|| DuofranCommon.IsAffiliateLinked(_affiliate, msg.sender);
                 _publication.identificationsOfPublisher[msg.sender].push(publicationIdentification);
 
                 if (_publication.valid[publicationIdentification]) {
@@ -44,7 +44,7 @@ abstract contract ExampleInteract is ExampleData {
             }
         }
 
-        emit ExampleLog.ArticlesPublished(publicationIdentifications);
+        emit DuofranLog.ArticlesPublished(publicationIdentifications);
     }
 
     function UnpublishArticles(bytes32[] calldata publicationIdentifications) 
@@ -101,12 +101,12 @@ abstract contract ExampleInteract is ExampleData {
             } 
         }
 
-        emit ExampleLog.ArticlesUnpublished(publicationIdentifications);
+        emit DuofranLog.ArticlesUnpublished(publicationIdentifications);
     }
 
     function ValidateArticles(bytes32[] calldata publicationIdentifications) 
     public payable {
-        require(OWNER == msg.sender || ExampleCommon.IsAffiliateLinked(_affiliate, msg.sender));
+        require(OWNER == msg.sender || DuofranCommon.IsAffiliateLinked(_affiliate, msg.sender));
 
         bytes32 publicationIdentification;
         
@@ -119,12 +119,12 @@ abstract contract ExampleInteract is ExampleData {
             }
         }
         
-        emit ExampleLog.ArticlesValidated(publicationIdentifications);
+        emit DuofranLog.ArticlesValidated(publicationIdentifications);
     }
 
     function InvalidateArticles(bytes32[] calldata publicationIdentifications) 
     public payable {       
-        require(OWNER == msg.sender || ExampleCommon.IsAffiliateLinked(_affiliate, msg.sender));
+        require(OWNER == msg.sender || DuofranCommon.IsAffiliateLinked(_affiliate, msg.sender));
 
         bytes32 publicationIdentification;
 
@@ -144,7 +144,7 @@ abstract contract ExampleInteract is ExampleData {
             }    
         }
 
-        emit ExampleLog.ArticlesInvalidated(publicationIdentifications);
+        emit DuofranLog.ArticlesInvalidated(publicationIdentifications);
     }
 
     function LinkAffiliates(address[] calldata affiliateAccounts) 
@@ -162,7 +162,7 @@ abstract contract ExampleInteract is ExampleData {
             }       
         }
 
-        emit ExampleLog.AffiliatesLinked(affiliateAccounts);
+        emit DuofranLog.AffiliatesLinked(affiliateAccounts);
     }
 
     function UnlinkAffiliates(address[] calldata affiliateAccounts) 
@@ -184,15 +184,15 @@ abstract contract ExampleInteract is ExampleData {
             }
         }
 
-        emit ExampleLog.AffiliatesUnlinked(affiliateAccounts);
+        emit DuofranLog.AffiliatesUnlinked(affiliateAccounts);
     }
 
-    function ChangeMe(ExampleDataModel.Me calldata me) 
+    function ChangeMe(DuofranDataModel.Me calldata me) 
     public payable {
         require(OWNER == msg.sender);
 
         _me = me;
        
-        emit ExampleLog.MeChanged();
+        emit DuofranLog.MeChanged();
     }
 }

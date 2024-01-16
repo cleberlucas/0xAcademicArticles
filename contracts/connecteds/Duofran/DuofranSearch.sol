@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./ExampleData.sol";
-import "./ExampleModel.sol";
+import "./DuofranData.sol";
+import "./DuofranModel.sol";
 
-abstract contract ExampleSearch is ExampleData {
+abstract contract DuofranSearch is DuofranData {
     function PublicationIdentifications() 
     public view 
     returns (bytes32[] memory publicationIdentifications) {
@@ -31,7 +31,7 @@ abstract contract ExampleSearch is ExampleData {
 
     function Me() 
     public view 
-    returns (ExampleDataModel.Me memory me) {
+    returns (DuofranDataModel.Me memory me) {
         me = _me;
     }
 
@@ -43,9 +43,9 @@ abstract contract ExampleSearch is ExampleData {
 
     function Publication(bytes32 publicationIdentification) 
     public view 
-    returns (ExampleModel.Publication memory publication) {
-        publication = ExampleModel.Publication(
-            abi.decode(_academicArticles.ArticleEncoded(publicationIdentification), (ExampleModel.Article)),
+    returns (DuofranModel.Publication memory publication) {
+        publication = DuofranModel.Publication(
+            abi.decode(_academicArticles.ArticleEncoded(publicationIdentification), (DuofranModel.Article)),
             publicationIdentification,
             _publication.publisher[publicationIdentification],
             _publication.dateTime[publicationIdentification],
@@ -55,20 +55,20 @@ abstract contract ExampleSearch is ExampleData {
 
     function PreviewPublications(uint256 startIndex, uint256 endIndex) 
     public view 
-    returns (ExampleModel.PublicationPreview[] memory publicationsPreview, uint256 currentSize) {     
+    returns (DuofranModel.PublicationPreview[] memory publicationsPreview, uint256 currentSize) {     
         currentSize = _publication.identifications.length;
 
         if (startIndex >= currentSize || startIndex > endIndex) {
-            publicationsPreview = new ExampleModel.PublicationPreview[](0);
+            publicationsPreview = new DuofranModel.PublicationPreview[](0);
         }   else {
                 uint256 size = endIndex - startIndex + 1;
                 
                 size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
-                publicationsPreview = new ExampleModel.PublicationPreview[](size);
+                publicationsPreview = new DuofranModel.PublicationPreview[](size);
 
                 for (uint256 i = 0; i < size; i++) {
-                    publicationsPreview[i] = ExampleModel.PublicationPreview(
-                        abi.decode(_academicArticles.ArticleEncoded(_publication.identifications[startIndex + i]), (ExampleModel.Article)).title,
+                    publicationsPreview[i] = DuofranModel.PublicationPreview(
+                        abi.decode(_academicArticles.ArticleEncoded(_publication.identifications[startIndex + i]), (DuofranModel.Article)).title,
                         _publication.valid[_publication.identifications[startIndex + i]]
                     );
                 }
