@@ -5,11 +5,11 @@ import "./AcademicArticlesDataModel.sol";
 
 library AcademicArticlesCommon {
     
-    function IsContractConnected(AcademicArticlesDataModel.Connected storage connected, address connectedContract)
+    function IsContractConnected(AcademicArticlesDataModel.Interconnection storage Interconnection, address interconnectionContract)
     internal view
     returns (bool isContractConnected) {
-        for (uint256 i = 0; i < connected.contracts.length; i++) {
-            if (connected.contracts[i] == connectedContract) {
+        for (uint256 i = 0; i < Interconnection.contracts.length; i++) {
+            if (Interconnection.contracts[i] == interconnectionContract) {
                 isContractConnected = true;
                 break;
             }

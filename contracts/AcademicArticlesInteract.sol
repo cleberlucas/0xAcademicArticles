@@ -10,7 +10,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
     function PublishArticle(bytes calldata articleEncoded)
     public payable
-    IsConnected(_connected)
+    IsConnected(_interconnection)
     IsNotEntryEncodedEmpty(articleEncoded)
     IsNotArticlePublished(_article, keccak256(articleEncoded)) {
         address articlePublisher = tx.origin;
@@ -25,51 +25,51 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
     function UnpublishArticle(bytes32 articleToken)
     public payable
-    IsConnected(_connected)
+    IsConnected(_interconnection)
     IsArticlePublished(_article, articleToken)
     IsArticlePublishedByMe(_article, articleToken) {
-        address connectedContract = msg.sender;
+        address interconnectionContract = msg.sender;
 
         _article.publisher[articleToken] = address(0);
         _article.encoded[articleToken] = new bytes(0);
 
-        for (uint256 i = 0; i < _article.tokens[connectedContract].length; i++) {
-            if (_article.tokens[connectedContract][i] == articleToken) {
-                _article.tokens[connectedContract][i] = _article.tokens[connectedContract][_article.tokens[connectedContract].length - 1];
-                _article.tokens[connectedContract].pop();
+        for (uint256 i = 0; i < _article.tokens[interconnectionContract].length; i++) {
+            if (_article.tokens[interconnectionContract][i] == articleToken) {
+                _article.tokens[interconnectionContract][i] = _article.tokens[interconnectionContract][_article.tokens[interconnectionContract].length - 1];
+                _article.tokens[interconnectionContract].pop();
                 emit AcademicArticlesLog.ArticleUnpublished(articleToken);
                 return;
             }
         }
     }
 
-    function ConnectContract(address connectedContract)
+    function ConnectContract(address interconnectionContract)
     public payable
     IsOwner
-    IsEntryContract(connectedContract)
-    IsNotContractConnected(_connected, connectedContract) {
-        _connected.contracts.push(connectedContract);
-        emit AcademicArticlesLog.ContractConnected(connectedContract);
+    IsEntryContract(interconnectionContract)
+    IsNotContractConnected(_interconnection, interconnectionContract) {
+        _interconnection.contracts.push(interconnectionContract);
+        emit AcademicArticlesLog.ContractConnected(interconnectionContract);
     }
 
-    function DisconnectContract(address connectedContract)
+    function DisconnectContract(address interconnectionContract)
     public payable
     IsOwner
-    IsContractConnected(_connected, connectedContract) {
-        for (uint256 i = 0; i < _connected.contracts.length; i++) {
-            if (_connected.contracts[i] == connectedContract) {
-                _connected.contracts[i] = _connected.contracts[_connected.contracts.length - 1];
-                _connected.contracts.pop();
+    IsContractConnected(_interconnection, interconnectionContract) {
+        for (uint256 i = 0; i < _interconnection.contracts.length; i++) {
+            if (_interconnection.contracts[i] == interconnectionContract) {
+                _interconnection.contracts[i] = _interconnection.contracts[_interconnection.contracts.length - 1];
+                _interconnection.contracts.pop();
 
-                for (uint256 ii = 0; ii < _article.tokens[connectedContract].length; ii++) {
-                    bytes32 articleToken = _article.tokens[connectedContract][ii];
+                for (uint256 ii = 0; ii < _article.tokens[interconnectionContract].length; ii++) {
+                    bytes32 articleToken = _article.tokens[interconnectionContract][ii];
                     _article.publisher[articleToken] = address(0);
                     _article.encoded[articleToken] = new bytes(0);
                 }
 
-                _article.tokens[connectedContract] = new bytes32[](0);
+                _article.tokens[interconnectionContract] = new bytes32[](0);
 
-                emit AcademicArticlesLog.ContractDisconnected(connectedContract);
+                emit AcademicArticlesLog.ContractDisconnected(interconnectionContract);
                 return;
             }
         }

@@ -5,8 +5,8 @@ import "./AcademicArticlesDataModel.sol";
 
 interface IAcademicArticlesSearch {
     
-    function ArticleTokens(address connectedContract) external view returns (bytes32[] memory articleTokens);
+    function ArticleTokens(address interconnectionContract) external view returns (bytes32[] memory articleTokens);
     function ArticlePublisher(bytes32 articleToken) external view returns (address articlePublisher);
     function ArticleEncoded(bytes32 articleToken) external view returns (bytes memory articleEncoded);
-    function Connected() external view returns (AcademicArticlesDataModel.Connected memory connected);
+    function Interconnection() external view returns (AcademicArticlesDataModel.Interconnection memory interconnection);
 }

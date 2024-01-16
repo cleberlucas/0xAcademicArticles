@@ -6,5 +6,5 @@ import "./AcademicArticlesDataModel.sol";
 abstract contract AcademicArticlesData {
 
     AcademicArticlesDataModel.Article internal _article;
-    AcademicArticlesDataModel.Connected internal _connected;
+    AcademicArticlesDataModel.Interconnection internal _interconnection;
 }

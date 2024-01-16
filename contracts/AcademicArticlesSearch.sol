@@ -7,10 +7,10 @@ import "./AcademicArticlesDataModel.sol";
 
 abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesData {
 
-    function ArticleTokens(address connectedContract) 
+    function ArticleTokens(address interconnectionContract) 
     public view 
     returns (bytes32[] memory articleTokens) {
-        articleTokens = _article.tokens[connectedContract];
+        articleTokens = _article.tokens[interconnectionContract];
     }
 
     function ArticlePublisher(bytes32 articleToken) 
@@ -25,9 +25,9 @@ abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArt
         articleEncoded = _article.encoded[articleToken];
     }
 
-    function Connected()
+    function Interconnection()
     public view
-    returns (AcademicArticlesDataModel.Connected memory connected) {
-        connected = _connected;
+    returns (AcademicArticlesDataModel.Interconnection memory interconnection) {
+        interconnection = _interconnection;
     }
 }

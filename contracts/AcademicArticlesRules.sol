@@ -14,10 +14,10 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
-    modifier IsEntryContract(address connectedContract) {
+    modifier IsEntryContract(address interconnectionContract) {
         uint32 size;
         assembly {
-            size := extcodesize(connectedContract)
+            size := extcodesize(interconnectionContract)
         }
         require (size > 0, AcademicArticlesMessage.ENTRY_IS_NOT_A_CONTRACT);
         _;
@@ -28,18 +28,18 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
-    modifier IsConnected(AcademicArticlesDataModel.Connected storage connected) {
-        require(AcademicArticlesCommon.IsContractConnected(connected, msg.sender), AcademicArticlesMessage.EXTERNAL_CONTRACT_ACTION);
+    modifier IsConnected(AcademicArticlesDataModel.Interconnection storage interconnection) {
+        require(AcademicArticlesCommon.IsContractConnected(interconnection, msg.sender), AcademicArticlesMessage.CONNECTED_CONTRACT_ACTION);
         _;
     }
 
-    modifier IsNotContractConnected(AcademicArticlesDataModel.Connected storage connected, address connectedContract) {
-        require(!AcademicArticlesCommon.IsContractConnected(connected, connectedContract), AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_CONNECTED);
+    modifier IsNotContractConnected(AcademicArticlesDataModel.Interconnection storage interconnection, address interconnectionContract) {
+        require(!AcademicArticlesCommon.IsContractConnected(interconnection, interconnectionContract), AcademicArticlesMessage.CONTRACT_ALREADY_CONNECTED);
         _;
     }
 
-    modifier IsContractConnected(AcademicArticlesDataModel.Connected storage connected, address connectedContract) {
-        require(AcademicArticlesCommon.IsContractConnected(connected, connectedContract), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_CONNECTED);
+    modifier IsContractConnected(AcademicArticlesDataModel.Interconnection storage interconnection, address interconnectionContract) {
+        require(AcademicArticlesCommon.IsContractConnected(interconnection, interconnectionContract), AcademicArticlesMessage.CONTRACT_IS_NOT_CONNECTED);
         _;
     }
 
