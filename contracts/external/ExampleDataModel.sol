@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
 
 import "./ExampleModel.sol";
 
-pragma solidity ^0.8.23;
-
 library ExampleDataModel {
-
     struct Publication {
         bytes32[] identifications;
         bytes32[] identificationsValid;

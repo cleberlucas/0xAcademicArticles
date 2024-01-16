@@ -2,7 +2,6 @@
 pragma solidity ^0.8.23;
 
 library AcademicArticlesMessage {
-
     string public constant ENTRY_ENCODED_IS_EMPTY = "entry encoded is empty";
     string public constant ENTRY_IS_NOT_A_CONTRACT = "entry is not a contract";
     string public constant OWNER_ACTION = "owner action";

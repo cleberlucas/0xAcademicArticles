@@ -6,7 +6,6 @@ import "./AcademicArticlesMessage.sol";
 import "./AcademicArticlesDataModel.sol";
 
 abstract contract AcademicArticlesRules {
-
     address internal immutable OWNER;
 
     modifier IsNotEntryEncodedEmpty(bytes calldata articleEncoded) {      

@@ -6,7 +6,6 @@ import "./AcademicArticlesInteract.sol";
 import "./AcademicArticlesSearch.sol";
 
 contract AcademicArticles is IAcademicArticles, AcademicArticlesInteract, AcademicArticlesSearch {
-    
     // Created by Cleber Lucas
     constructor() {
         OWNER = msg.sender;

@@ -1,18 +1,13 @@
 // SPDX-License-Identifier: MIT
-
-// Created by Cleber Lucas
+pragma solidity ^0.8.23;
 
 import "./ExampleInteract.sol";
 import "./ExampleSearch.sol";
 
-pragma solidity ^0.8.23;
-
 contract Example is ExampleInteract, ExampleSearch  {
-
+    // Created by Cleber Lucas
     constructor(address academicArticles) {
-
         OWNER = msg.sender;
-
         _academicArticles = IAcademicArticles(academicArticles);
     }
 }

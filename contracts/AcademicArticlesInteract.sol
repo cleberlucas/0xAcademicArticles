@@ -7,7 +7,6 @@ import "./AcademicArticlesRules.sol";
 import "./AcademicArticlesLog.sol";
 
 abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, AcademicArticlesData, AcademicArticlesRules {
-
     function PublishArticle(bytes calldata articleEncoded)
     public payable
     IsConnected(_interconnection)
@@ -37,6 +36,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
             if (_article.tokens[interconnectionContract][i] == articleToken) {
                 _article.tokens[interconnectionContract][i] = _article.tokens[interconnectionContract][_article.tokens[interconnectionContract].length - 1];
                 _article.tokens[interconnectionContract].pop();
+
                 emit AcademicArticlesLog.ArticleUnpublished(articleToken);
                 return;
             }
@@ -49,6 +49,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     IsEntryContract(interconnectionContract)
     IsNotContractConnected(_interconnection, interconnectionContract) {
         _interconnection.contracts.push(interconnectionContract);
+
         emit AcademicArticlesLog.ContractConnected(interconnectionContract);
     }
 
@@ -63,6 +64,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
                 for (uint256 ii = 0; ii < _article.tokens[interconnectionContract].length; ii++) {
                     bytes32 articleToken = _article.tokens[interconnectionContract][ii];
+                    
                     _article.publisher[articleToken] = address(0);
                     _article.encoded[articleToken] = new bytes(0);
                 }

@@ -4,7 +4,6 @@ pragma solidity ^0.8.23;
 import "./AcademicArticlesDataModel.sol";
 
 library AcademicArticlesCommon {
-    
     function IsContractConnected(AcademicArticlesDataModel.Interconnection storage Interconnection, address interconnectionContract)
     internal view
     returns (bool isContractConnected) {

@@ -6,7 +6,6 @@ import "./AcademicArticlesData.sol";
 import "./AcademicArticlesDataModel.sol";
 
 abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesData {
-
     function ArticleTokens(address interconnectionContract) 
     public view 
     returns (bytes32[] memory articleTokens) {
