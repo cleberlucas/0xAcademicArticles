@@ -1,75 +1,59 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
 
 import "./AcademicArticlesCommon.sol";
 import "./AcademicArticlesMessage.sol";
 import "./AcademicArticlesDataModel.sol";
 
-pragma solidity ^0.8.23;
-
 abstract contract AcademicArticlesRules {
 
     address internal immutable OWNER;
 
-    modifier IsNotEntryEncodeEmpty(bytes calldata encode) {      
-
-        require(encode.length > 0, AcademicArticlesMessage.ENTRY_ENCODE_EMPTY);
+    modifier IsNotEntryEncodedEmpty(bytes calldata articleEncoded) {      
+        require(articleEncoded.length > 0, AcademicArticlesMessage.ENTRY_ENCODED_IS_EMPTY);
         _;
     }
 
-    modifier IsNotEntryAccountZero(address account) {    
-
-        require(account != address(0), AcademicArticlesMessage.ENTRY_ACCOUNT_ZERO);
-        _;
-    }
-
-    modifier IsEntryContract(address account) {
-
+    modifier IsEntryContract(address connectedContract) {
         uint32 size;
         assembly {
-            size := extcodesize(account)
+            size := extcodesize(connectedContract)
         }
         require (size > 0, AcademicArticlesMessage.ENTRY_IS_NOT_A_CONTRACT);
         _;
     }
 
     modifier IsOwner() {
-
         require(OWNER == tx.origin, AcademicArticlesMessage.OWNER_ACTION);
         _;
     }
 
-    modifier IsExternalContract(AcademicArticlesDataModel.ExternalContract storage externalContract) {
-
-        require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, msg.sender), AcademicArticlesMessage.EXTERNAL_CONTRACT_ACTION);
+    modifier IsConnected(AcademicArticlesDataModel.Connected storage connected) {
+        require(AcademicArticlesCommon.IsContractConnected(connected, msg.sender), AcademicArticlesMessage.EXTERNAL_CONTRACT_ACTION);
         _;
     }
 
-    modifier IsNotExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
-
-        require(!AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_BINDED);
+    modifier IsNotContractConnected(AcademicArticlesDataModel.Connected storage connected, address connectedContract) {
+        require(!AcademicArticlesCommon.IsContractConnected(connected, connectedContract), AcademicArticlesMessage.EXTERNAL_CONTRACT_ALREADY_CONNECTED);
         _;
     }
 
-    modifier IsExternalContractBinded(AcademicArticlesDataModel.ExternalContract storage externalContract, address externalContractAccount) {
-
-        require(AcademicArticlesCommon.IsExternalContractBinded(externalContract, externalContractAccount), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_BINDED);
-        _;
-    }
-
-    modifier IsArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
-
-        require(article.publisher[articleToken] != address(0), AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+    modifier IsContractConnected(AcademicArticlesDataModel.Connected storage connected, address connectedContract) {
+        require(AcademicArticlesCommon.IsContractConnected(connected, connectedContract), AcademicArticlesMessage.EXTERNAL_CONTRACT_IS_NOT_CONNECTED);
         _;
     }
 
     modifier IsNotArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) { 
-
         require(article.publisher[articleToken] == address(0), AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
         _;
     }
 
-    modifier IsArticlePublishedByMe(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
+    modifier IsArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
+        require(article.publisher[articleToken] != address(0), AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+        _;
+    }
 
+    modifier IsArticlePublishedByMe(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
         require(article.publisher[articleToken] == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
         _;
     }

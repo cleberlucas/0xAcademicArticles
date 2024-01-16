@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: MIT
-
-// Created by Cleber Lucas
+pragma solidity ^0.8.23;
 
 import "./IAcademicArticles.sol";
 import "./AcademicArticlesInteract.sol";
 import "./AcademicArticlesSearch.sol";
 
-pragma solidity ^0.8.23;
-
 contract AcademicArticles is IAcademicArticles, AcademicArticlesInteract, AcademicArticlesSearch {
-
+    
+    // Created by Cleber Lucas
     constructor() {
-        
         OWNER = msg.sender;
     }
 }

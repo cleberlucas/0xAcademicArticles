@@ -54,7 +54,7 @@ abstract contract ExampleSearch is ExampleData {
     returns (ExampleModel.Publication memory publication) {
 
         publication = ExampleModel.Publication(
-            abi.decode(_academicArticles.ArticleEncode(publicationIdentification), (ExampleModel.Article)),
+            abi.decode(_academicArticles.ArticleEncoded(publicationIdentification), (ExampleModel.Article)),
             publicationIdentification,
             _publication.publisher[publicationIdentification],
             _publication.dateTime[publicationIdentification],
@@ -81,7 +81,7 @@ abstract contract ExampleSearch is ExampleData {
                 for (uint256 i = 0; i < size; i++) {
 
                     publicationsPreview[i] = ExampleModel.PublicationPreview(
-                        abi.decode(_academicArticles.ArticleEncode(_publication.identifications[startIndex + i]), (ExampleModel.Article)).title,
+                        abi.decode(_academicArticles.ArticleEncoded(_publication.identifications[startIndex + i]), (ExampleModel.Article)).title,
                         _publication.valid[_publication.identifications[startIndex + i]]
                     );
                 }

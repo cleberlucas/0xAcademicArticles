@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
+pragma solidity ^0.8.23;
 
 import "./AcademicArticlesDataModel.sol";
-
-pragma solidity ^0.8.23;
 
 abstract contract AcademicArticlesData {
 
     AcademicArticlesDataModel.Article internal _article;
-    AcademicArticlesDataModel.ExternalContract internal _externalContract;
+    AcademicArticlesDataModel.Connected internal _connected;
 }
