@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./DuofranData.sol";
+import "./DuofranStorage.sol";
 import "./DuofranModel.sol";
 
-abstract contract DuofranSearch is DuofranData {
+abstract contract DuofranSearch is DuofranStorage {
     function PublicationIdentifications() 
     public view 
     returns (bytes32[] memory publicationIdentifications) {
@@ -31,7 +31,7 @@ abstract contract DuofranSearch is DuofranData {
 
     function Me() 
     public view 
-    returns (DuofranDataModel.Me memory me) {
+    returns (DuofranStorageModel.Me memory me) {
         me = _me;
     }
 
@@ -45,8 +45,7 @@ abstract contract DuofranSearch is DuofranData {
     public view 
     returns (DuofranModel.Publication memory publication) {
         publication = DuofranModel.Publication(
-            abi.decode(_academicArticles.ArticleEncoded(publicationIdentification), (DuofranModel.Article)),
-            publicationIdentification,
+            abi.decode(_academicArticles.ArticleData(publicationIdentification), (DuofranModel.Article)),
             _publication.publisher[publicationIdentification],
             _publication.dateTime[publicationIdentification],
             _publication.valid[publicationIdentification]
@@ -68,8 +67,9 @@ abstract contract DuofranSearch is DuofranData {
 
                 for (uint256 i = 0; i < size; i++) {
                     publicationsPreview[i] = DuofranModel.PublicationPreview(
-                        abi.decode(_academicArticles.ArticleEncoded(_publication.identifications[startIndex + i]), (DuofranModel.Article)).title,
-                        _publication.valid[_publication.identifications[startIndex + i]]
+                        abi.decode(_academicArticles.ArticleData(_publication.identifications[startIndex + i]), (DuofranModel.Article)).title,
+                        _publication.valid[_publication.identifications[startIndex + i]],
+                        _publication.identifications[startIndex + i]
                     );
                 }
         }

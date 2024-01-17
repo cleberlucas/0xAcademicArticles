@@ -1,59 +1,59 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./AcademicArticlesCommon.sol";
-import "./AcademicArticlesMessage.sol";
-import "./AcademicArticlesDataModel.sol";
+import "./libs/AcademicArticlesMessage.sol";
+import "./libs/AcademicArticlesStorageModel.sol";
 
 abstract contract AcademicArticlesRules {
     address internal immutable OWNER;
 
-    modifier IsNotEntryEncodedEmpty(bytes calldata articleEncoded) {      
-        require(articleEncoded.length > 0, AcademicArticlesMessage.ENTRY_ENCODED_IS_EMPTY);
+    modifier InputArticleDataIsNotEmpty(bytes calldata articleData) {      
+        require(articleData.length > 0, AcademicArticlesMessage.ARTICLE_DATA_INPUTED_IS_EMPTY);
         _;
     }
 
-    modifier IsEntryContract(address interconnectionContract) {
-        uint32 size;
-        assembly {
-            size := extcodesize(interconnectionContract)
-        }
-        require (size > 0, AcademicArticlesMessage.ENTRY_IS_NOT_A_CONTRACT);
+    modifier InputContractNameIsNotEmpty(string calldata contractName) {      
+        require(bytes(contractName).length > 0, AcademicArticlesMessage.CONTRACT_NAME_INPUTED_IS_EMPTY);
         _;
     }
 
-    modifier IsOwner() {
-        require(OWNER == tx.origin, AcademicArticlesMessage.OWNER_ACTION);
+    modifier InputAccountIsAContract(address contractAccount) {
+        require (contractAccount.code.length > 0, AcademicArticlesMessage.CONTRACT_ACCOUNT_INPUTED_IS_NOT_A_CONTRACT);
         _;
     }
 
-    modifier IsConnected(AcademicArticlesDataModel.Interconnection storage interconnection) {
-        require(AcademicArticlesCommon.IsContractConnected(interconnection, msg.sender), AcademicArticlesMessage.CONNECTED_CONTRACT_ACTION);
+    modifier OnlyOwner() {
+        require(OWNER == msg.sender, AcademicArticlesMessage.OWNER_ACTION);
         _;
     }
 
-    modifier IsNotContractConnected(AcademicArticlesDataModel.Interconnection storage interconnection, address interconnectionContract) {
-        require(!AcademicArticlesCommon.IsContractConnected(interconnection, interconnectionContract), AcademicArticlesMessage.CONTRACT_ALREADY_CONNECTED);
+    modifier OnlyContractConnected(AcademicArticlesStorageModel.Contract storage _contract) {
+        require(bytes(_contract.name[msg.sender]).length > 0, AcademicArticlesMessage.CONNECTED_CONTRACT_ACTION);
         _;
     }
 
-    modifier IsContractConnected(AcademicArticlesDataModel.Interconnection storage interconnection, address interconnectionContract) {
-        require(AcademicArticlesCommon.IsContractConnected(interconnection, interconnectionContract), AcademicArticlesMessage.CONTRACT_IS_NOT_CONNECTED);
+    modifier IsNotContractConnected(AcademicArticlesStorageModel.Contract storage _contract, address contractAccount) {
+        require(bytes(_contract.name[contractAccount]).length == 0, AcademicArticlesMessage.CONTRACT_ALREADY_CONNECTED);
         _;
     }
 
-    modifier IsNotArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) { 
-        require(article.publisher[articleToken] == address(0), AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
+    modifier IsContractConnected(AcademicArticlesStorageModel.Contract storage _contract, address contractAccount) {
+        require(bytes(_contract.name[contractAccount]).length > 0, AcademicArticlesMessage.CONTRACT_IS_NOT_CONNECTED);
         _;
     }
 
-    modifier IsArticlePublished(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
-        require(article.publisher[articleToken] != address(0), AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+    modifier IsNotArticlePublished(AcademicArticlesStorageModel.Article storage _article, bytes32 articleToken) { 
+        require(_article.publisher[articleToken] == address(0), AcademicArticlesMessage.ARTICLE_ALREADY_PUBLISHED);
         _;
     }
 
-    modifier IsArticlePublishedByMe(AcademicArticlesDataModel.Article storage article, bytes32 articleToken) {
-        require(article.publisher[articleToken] == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
+    modifier IsArticlePublished(AcademicArticlesStorageModel.Article storage _article, bytes32 articleToken) {
+        require(_article.publisher[articleToken] != address(0), AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED);
+        _;
+    }
+
+    modifier IsArticlePublishedByMe(AcademicArticlesStorageModel.Article storage _article, bytes32 articleToken) {
+        require(_article.publisher[articleToken] == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
         _;
     }
 }

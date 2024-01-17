@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./IAcademicArticles.sol";
+import "./interfaces/IAcademicArticles.sol";
 import "./AcademicArticlesInteract.sol";
 import "./AcademicArticlesSearch.sol";
 

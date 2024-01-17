@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./IAcademicArticlesSearch.sol";
-import "./AcademicArticlesData.sol";
-import "./AcademicArticlesDataModel.sol";
+import "./interfaces/IAcademicArticlesSearch.sol";
+import "./AcademicArticlesStorage.sol";
 
-abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesData {
-    function ArticleTokens(address interconnectionContract) 
+abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesStorage {
+    function ArticleTokens(address contractAccount) 
     public view 
     returns (bytes32[] memory articleTokens) {
-        articleTokens = _article.tokens[interconnectionContract];
+        articleTokens = _article.tokens[contractAccount];
     }
 
     function ArticlePublisher(bytes32 articleToken) 
@@ -18,15 +17,21 @@ abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArt
         articlePublisher = _article.publisher[articleToken];
     }
 
-    function ArticleEncoded(bytes32 articleToken) 
+    function ArticleData(bytes32 articleToken) 
     public view 
-    returns (bytes memory articleEncoded) {
-        articleEncoded = _article.encoded[articleToken];
+    returns (bytes memory articleData) {
+        articleData = _article.data[articleToken];
     }
 
-    function Interconnection()
+    function ContractAccounts()
     public view
-    returns (AcademicArticlesDataModel.Interconnection memory interconnection) {
-        interconnection = _interconnection;
+    returns (address[] memory contractAccounts) {
+        contractAccounts = _contract.accounts;
+    }
+
+    function ContractName(address contractAccount)
+    public view
+    returns (string memory contractName) {
+        contractName = _contract.name[contractAccount];
     }
 }

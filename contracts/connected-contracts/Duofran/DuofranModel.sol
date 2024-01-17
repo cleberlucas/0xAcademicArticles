@@ -4,7 +4,6 @@ pragma solidity ^0.8.23;
 library DuofranModel {
     struct Publication {
         Article article;
-        bytes32 identification;
         address publisher;
         uint256 datatime;
         bool valid;
@@ -13,6 +12,7 @@ library DuofranModel {
     struct PublicationPreview {
         string title;
         bool validated;
+        bytes32 identification;
     }
 
     struct Article {

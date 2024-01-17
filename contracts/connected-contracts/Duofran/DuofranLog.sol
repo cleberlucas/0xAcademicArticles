@@ -6,7 +6,7 @@ library DuofranLog {
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
     event ArticlesValidated(bytes32[] indexed publicationIdentifications);
     event ArticlesInvalidated(bytes32[] indexed publicationIdentifications);
-    event AffiliatesLinked(address[] indexed affiliateAccount);
-    event AffiliatesUnlinked(address[] indexed affiliateAccount);
+    event AffiliateLinked(address indexed affiliateAccount);
+    event AffiliatesUnlinked(address[] indexed affiliateAccounts);
     event MeChanged();
 }

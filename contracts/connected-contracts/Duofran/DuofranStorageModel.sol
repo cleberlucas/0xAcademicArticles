@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import "./DuofranModel.sol";
 
-library DuofranDataModel {
+library DuofranStorageModel {
     struct Publication {
         bytes32[] identifications;
         bytes32[] identificationsValid;
@@ -17,7 +17,7 @@ library DuofranDataModel {
 
     struct Affiliate {
         address[] accounts;
-        mapping(address account => bool) binded;
+        mapping(address account => string) name;
     }
 
     struct Me {

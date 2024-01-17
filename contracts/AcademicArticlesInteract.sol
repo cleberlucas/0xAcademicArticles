@@ -1,77 +1,81 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./IAcademicArticlesInteract.sol";
-import "./AcademicArticlesData.sol";
+import "./libs/AcademicArticlesLog.sol";
+import "./interfaces/IAcademicArticlesInteract.sol";
+import "./AcademicArticlesStorage.sol";
 import "./AcademicArticlesRules.sol";
-import "./AcademicArticlesLog.sol";
 
-abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, AcademicArticlesData, AcademicArticlesRules {
-    function PublishArticle(bytes calldata articleEncoded)
+abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, AcademicArticlesStorage, AcademicArticlesRules {
+    function PublishArticle(bytes calldata articleData)
     public payable
-    IsConnected(_interconnection)
-    IsNotEntryEncodedEmpty(articleEncoded)
-    IsNotArticlePublished(_article, keccak256(articleEncoded)) {
+    OnlyContractConnected(_contract)
+    InputArticleDataIsNotEmpty(articleData)
+    IsNotArticlePublished(_article, keccak256(articleData)) {
         address articlePublisher = tx.origin;
-        bytes32 articleToken = keccak256(articleEncoded);
+        bytes32 articleToken = keccak256(articleData);
 
-        _article.tokens[articlePublisher].push(articleToken);
+        _article.tokens[msg.sender].push(articleToken);
         _article.publisher[articleToken] = articlePublisher;
-        _article.encoded[articleToken] = articleEncoded;
+        _article.data[articleToken] = articleData;
 
         emit AcademicArticlesLog.ArticlePublished(articleToken);
     }
 
     function UnpublishArticle(bytes32 articleToken)
     public payable
-    IsConnected(_interconnection)
+    OnlyContractConnected(_contract)
     IsArticlePublished(_article, articleToken)
     IsArticlePublishedByMe(_article, articleToken) {
-        address interconnectionContract = msg.sender;
+        address contractAccount = msg.sender;
 
-        _article.publisher[articleToken] = address(0);
-        _article.encoded[articleToken] = new bytes(0);
-
-        for (uint256 i = 0; i < _article.tokens[interconnectionContract].length; i++) {
-            if (_article.tokens[interconnectionContract][i] == articleToken) {
-                _article.tokens[interconnectionContract][i] = _article.tokens[interconnectionContract][_article.tokens[interconnectionContract].length - 1];
-                _article.tokens[interconnectionContract].pop();
+        for (uint256 i = 0; i < _article.tokens[contractAccount].length; i++) {
+            if (_article.tokens[contractAccount][i] == articleToken) {
+                _article.tokens[contractAccount][i] = _article.tokens[contractAccount][_article.tokens[contractAccount].length - 1];
+                _article.tokens[contractAccount].pop();
 
                 emit AcademicArticlesLog.ArticleUnpublished(articleToken);
                 return;
             }
         }
+
+        _article.publisher[articleToken] = address(0);
+        _article.data[articleToken] = new bytes(0);
     }
 
-    function ConnectContract(address interconnectionContract)
+    function ConnectContract(address contractAccount, string calldata contractName)
     public payable
-    IsOwner
-    IsEntryContract(interconnectionContract)
-    IsNotContractConnected(_interconnection, interconnectionContract) {
-        _interconnection.contracts.push(interconnectionContract);
+    OnlyOwner
+    InputAccountIsAContract(contractAccount)
+    InputContractNameIsNotEmpty(contractName)
+    IsNotContractConnected(_contract, contractAccount) {
+        _contract.accounts.push(contractAccount);
+        _contract.name[contractAccount] = contractName;
 
-        emit AcademicArticlesLog.ContractConnected(interconnectionContract);
+        emit AcademicArticlesLog.ContractConnected(contractAccount);
     }
 
-    function DisconnectContract(address interconnectionContract)
+    function DisconnectContract(address contractAccount)
     public payable
-    IsOwner
-    IsContractConnected(_interconnection, interconnectionContract) {
-        for (uint256 i = 0; i < _interconnection.contracts.length; i++) {
-            if (_interconnection.contracts[i] == interconnectionContract) {
-                _interconnection.contracts[i] = _interconnection.contracts[_interconnection.contracts.length - 1];
-                _interconnection.contracts.pop();
+    OnlyOwner
+    IsContractConnected(_contract, contractAccount) {
+        for (uint256 i = 0; i < _contract.accounts.length; i++) {
+            if (_contract.accounts[i] == contractAccount) {
+                _contract.accounts[i] = _contract.accounts[_contract.accounts.length - 1];
+                _contract.accounts.pop();
 
-                for (uint256 ii = 0; ii < _article.tokens[interconnectionContract].length; ii++) {
-                    bytes32 articleToken = _article.tokens[interconnectionContract][ii];
+                for (uint256 ii = 0; ii < _article.tokens[contractAccount].length; ii++) {
+                    bytes32 articleToken = _article.tokens[contractAccount][ii];
                     
                     _article.publisher[articleToken] = address(0);
-                    _article.encoded[articleToken] = new bytes(0);
+                    _article.data[articleToken] = new bytes(0);
                 }
 
-                _article.tokens[interconnectionContract] = new bytes32[](0);
+                _contract.name[contractAccount]  = "";
 
-                emit AcademicArticlesLog.ContractDisconnected(interconnectionContract);
+                _article.tokens[contractAccount] = new bytes32[](0);
+
+                emit AcademicArticlesLog.ContractDisconnected(contractAccount);
                 return;
             }
         }

@@ -1,18 +1,158 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./DuofranData.sol";
-import "./DuofranLog.sol";
-import "./DuofranModel.sol";
-import "./DuofranCommon.sol";
+import "../../interfaces/IAcademicArticles.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract DuofranInteract is DuofranData {
-    function PublishArticles(DuofranModel.Article[] memory articles) 
+abstract contract DuofranInteract {
+    constructor(address academicArticles) {
+        OWNER = msg.sender;
+        _academicArticles = IAcademicArticles(academicArticles);
+    }
+
+    address internal immutable OWNER;
+
+    IAcademicArticles internal _academicArticles;
+
+    Publication_StorageModel internal _publication;
+    Affiliate_StorageModel internal _affiliate;
+    Me_StorageModel internal _me;
+
+    struct Publication_Model {
+        Article_Model article;
+        address publisher;
+        uint256 datatime;
+        bool valid;
+    }
+
+    struct PublicationPreview_Model {
+        string title;
+        bool validated;
+        bytes32 identification;
+    }
+
+    struct Article_Model {
+        string title;
+        string summary;
+        string additionalInfo;
+        string institution;
+        string course;
+        string articleType;
+        string academicDegree;
+        string documentationUrl;
+        string[] authors;
+        string[] supervisors;
+        string[] examiningBoard;
+        int presentationYear;
+    }
+
+    struct Publication_StorageModel {
+        bytes32[] identifications;
+        bytes32[] identificationsValid;
+        address[] publishers;
+		mapping(bytes32 identification => address) publisher;
+        mapping(bytes32 identification => uint256) dateTime;
+        mapping(bytes32 identification => uint256) blockNumber;
+		mapping(bytes32 identification => bool) valid;
+		mapping(address publisher => bytes32[]) identificationsOfPublisher;
+    }
+
+    struct Affiliate_StorageModel {
+        address[] accounts;
+        mapping(address account => string) name;
+    }
+
+    struct Me_StorageModel {
+        string name;
+        string logoUrl;
+        string siteUrl;
+        string requestEmail;
+        string contactNumber;
+    }
+
+    event ArticlesPublished(bytes32[] indexed publicationIdentifications);
+    event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
+    event ArticlesValidated(bytes32[] indexed publicationIdentifications);
+    event ArticlesInvalidated(bytes32[] indexed publicationIdentifications);
+    event AffiliateLinked(address indexed affiliateAccount);
+    event AffiliatesUnlinked(address[] indexed affiliateAccounts);
+    event MeChanged();
+
+    function PublicationIdentifications() 
+    public view 
+    returns (bytes32[] memory publicationIdentifications) {
+        publicationIdentifications = _publication.identifications;
+    }
+
+    function PublicationIdentificationsValid() 
+    public view 
+    returns (bytes32[] memory publicationIdentificationsValid) {       
+        publicationIdentificationsValid = _publication.identificationsValid;
+    }
+
+    function PublicationPublishers() 
+    public view 
+    returns (address[] memory publicationPublishers) {
+        publicationPublishers = _publication.publishers;
+    }
+
+    function PublicationIdentificationsOfPublisher(address publicationPublisher) 
+    public view 
+    returns (bytes32[] memory publicationIdentificationsOfPublisher) {
+        publicationIdentificationsOfPublisher = _publication.identificationsOfPublisher[publicationPublisher];
+    }
+
+    function Me() 
+    public view 
+    returns (Me_StorageModel memory me) {
+        me = _me;
+    }
+
+    function AffiliateAccounts() 
+    public view 
+    returns (address[] memory affiliateAccounts) {
+        affiliateAccounts = _affiliate.accounts;
+    }
+
+    function Publication(bytes32 publicationIdentification) 
+    public view 
+    returns (Publication_Model memory publication) {
+        publication = Publication_Model(
+            abi.decode(_academicArticles.ArticleData(publicationIdentification), (Article_Model)),
+            _publication.publisher[publicationIdentification],
+            _publication.dateTime[publicationIdentification],
+            _publication.valid[publicationIdentification]
+        );
+    }
+
+    function PreviewPublications(uint256 startIndex, uint256 endIndex) 
+    public view 
+    returns (PublicationPreview_Model[] memory publicationsPreview, uint256 currentSize) {     
+        currentSize = _publication.identifications.length;
+
+        if (startIndex >= currentSize || startIndex > endIndex) {
+            publicationsPreview = new PublicationPreview_Model[](0);
+        }   else {
+                uint256 size = endIndex - startIndex + 1;
+                
+                size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+                publicationsPreview = new PublicationPreview_Model[](size);
+
+                for (uint256 i = 0; i < size; i++) {
+                    publicationsPreview[i] = PublicationPreview_Model(
+                        abi.decode(_academicArticles.ArticleData(_publication.identifications[startIndex + i]), (Article_Model)).title,
+                        _publication.valid[_publication.identifications[startIndex + i]],
+                        _publication.identifications[startIndex + i]
+                    );
+                }
+        }
+    }
+
+    function PublishArticles(Article_Model[] memory articles) 
     public payable {
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
         bytes32 publicationIdentification;
-        DuofranModel.Article memory article;
+        Article_Model memory article;
 
         for (uint256 i = 0; i < articles.length; i++) {
             article = articles[i];
@@ -25,7 +165,7 @@ abstract contract DuofranInteract is DuofranData {
                 _publication.publisher[publicationIdentification] = msg.sender;
                 _publication.dateTime[publicationIdentification] = block.timestamp;
                 _publication.blockNumber[publicationIdentification] = block.number;
-                _publication.valid[publicationIdentification] = OWNER == msg.sender|| DuofranCommon.IsAffiliateLinked(_affiliate, msg.sender);
+                _publication.valid[publicationIdentification] = OWNER == msg.sender|| bytes(_affiliate.name[msg.sender]).length > 0;
                 _publication.identificationsOfPublisher[msg.sender].push(publicationIdentification);
 
                 if (_publication.valid[publicationIdentification]) {
@@ -44,7 +184,7 @@ abstract contract DuofranInteract is DuofranData {
             }
         }
 
-        emit DuofranLog.ArticlesPublished(publicationIdentifications);
+        emit ArticlesPublished(publicationIdentifications);
     }
 
     function UnpublishArticles(bytes32[] calldata publicationIdentifications) 
@@ -101,12 +241,12 @@ abstract contract DuofranInteract is DuofranData {
             } 
         }
 
-        emit DuofranLog.ArticlesUnpublished(publicationIdentifications);
+        emit ArticlesUnpublished(publicationIdentifications);
     }
 
     function ValidateArticles(bytes32[] calldata publicationIdentifications) 
     public payable {
-        require(OWNER == msg.sender || DuofranCommon.IsAffiliateLinked(_affiliate, msg.sender));
+        require(OWNER == msg.sender || bytes(_affiliate.name[msg.sender]).length > 0);
 
         bytes32 publicationIdentification;
         
@@ -119,12 +259,12 @@ abstract contract DuofranInteract is DuofranData {
             }
         }
         
-        emit DuofranLog.ArticlesValidated(publicationIdentifications);
+        emit ArticlesValidated(publicationIdentifications);
     }
 
     function InvalidateArticles(bytes32[] calldata publicationIdentifications) 
     public payable {       
-        require(OWNER == msg.sender || DuofranCommon.IsAffiliateLinked(_affiliate, msg.sender));
+        require(OWNER == msg.sender || bytes(_affiliate.name[msg.sender]).length > 0);
 
         bytes32 publicationIdentification;
 
@@ -144,25 +284,18 @@ abstract contract DuofranInteract is DuofranData {
             }    
         }
 
-        emit DuofranLog.ArticlesInvalidated(publicationIdentifications);
+        emit ArticlesInvalidated(publicationIdentifications);
     }
 
-    function LinkAffiliates(address[] calldata affiliateAccounts) 
+    function LinkAffiliates(address affiliateAccount, string calldata affiliateName) 
     public payable {
         require(OWNER == msg.sender);
+        require(bytes(_affiliate.name[affiliateAccount]).length > 0);
 
-        address affiliateAccount;
-
-        for (uint256 i = 0; i < affiliateAccounts.length; i++) {
-            affiliateAccount = affiliateAccounts[i];
-
-            if (!_affiliate.binded[affiliateAccount]) {
-                _affiliate.binded[affiliateAccount] = true;
-                _affiliate.accounts.push(affiliateAccount);
-            }       
-        }
-
-        emit DuofranLog.AffiliatesLinked(affiliateAccounts);
+        _affiliate.accounts.push(affiliateAccount);
+        _affiliate.name[affiliateAccount] = affiliateName;  
+   
+        emit AffiliateLinked(affiliateAccount);
     }
 
     function UnlinkAffiliates(address[] calldata affiliateAccounts) 
@@ -174,7 +307,7 @@ abstract contract DuofranInteract is DuofranData {
         for (uint256 i = 0; i < affiliateAccounts.length; i++) {   
             affiliateAccount = affiliateAccounts[i];
 
-            if (_affiliate.binded[affiliateAccount]) {
+            if (bytes(_affiliate.name[affiliateAccount]).length > 0) {
                 for (uint256 ii = 0; ii < _affiliate.accounts.length; ii++) {       
                     if (_affiliate.accounts[ii] == affiliateAccount) {         
                         _affiliate.accounts[ii] = _affiliate.accounts[_affiliate.accounts.length - 1];
@@ -184,15 +317,15 @@ abstract contract DuofranInteract is DuofranData {
             }
         }
 
-        emit DuofranLog.AffiliatesUnlinked(affiliateAccounts);
+        emit AffiliatesUnlinked(affiliateAccounts);
     }
 
-    function ChangeMe(DuofranDataModel.Me calldata me) 
+    function ChangeMe(Me_StorageModel calldata me) 
     public payable {
         require(OWNER == msg.sender);
 
         _me = me;
        
-        emit DuofranLog.MeChanged();
+        emit MeChanged();
     }
 }
