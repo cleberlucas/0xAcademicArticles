@@ -2,10 +2,10 @@
 pragma solidity ^0.8.23;
 
 import "../main/interfaces/IAcademicArticles.sol";
-import "../main/interfaces/IAcademicArticlesSignature.sol";
+import "../main/interfaces/IConnected.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract Example is IAcademicArticlesSignature {
+abstract contract Example is IConnected {
     // To review
     constructor(address academicArticles) {
         OWNER = msg.sender;

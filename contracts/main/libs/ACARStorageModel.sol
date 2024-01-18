@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-library AcademicArticlesStorageModel {
+library ACARStorageModel {
     struct Article {   
         mapping(address contractAccount => bytes32[]) tokens;
         mapping(bytes32 token => address) contractAccount;

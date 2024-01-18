@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-library AcademicArticlesMessage {
+library ACARMessage {
     string public constant OWNER_ACTION = "owner action";
     string public constant CONNECTED_CONTRACT_ACTION = "connected contract action";
     string public constant ARTICLE_IS_EMPTY = "article is empty";

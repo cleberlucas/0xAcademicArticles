@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../main/interfaces/IAcademicArticles.sol";
-import "../main/interfaces/IAcademicArticlesSignature.sol";
+import "../main/interfaces/IACAR.sol";
+import "../main/interfaces/IACARConnection.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-contract Open is IAcademicArticlesSignature {
+contract Open is IACARConnection {
     // Created by Cleber Lucas
     constructor(address academicArticles) {
-        _academicArticles = IAcademicArticles(academicArticles);
+        _academicArticles = IACAR(academicArticles);
     }
 
-    IAcademicArticles internal _academicArticles;
+    IACAR internal _academicArticles;
+
     Publication_StorageModel internal _publication;
 
     struct Publication_Model {
@@ -56,6 +57,11 @@ contract Open is IAcademicArticlesSignature {
     external pure 
     returns (string memory signature) {
         signature = "Open";
+    }
+
+    function Wipe() 
+    external payable {
+       UnpublishArticles(_publication.identifications);
     }
 
     function PublicationIdentifications() 
@@ -108,7 +114,7 @@ contract Open is IAcademicArticlesSignature {
         }
     }
 
-    function PublishArticles(Article_Model[] memory articles) 
+    function PublishArticles(Article_Model[] calldata articles) 
     public payable {
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
         bytes32 publicationIdentification;
@@ -142,7 +148,7 @@ contract Open is IAcademicArticlesSignature {
         emit ArticlesPublished(publicationIdentifications);
     }
 
-    function UnpublishArticles(bytes32[] calldata publicationIdentifications) 
+    function UnpublishArticles(bytes32[] memory publicationIdentifications) 
     public payable {
         address publisher;
         bytes32 publicationIdentification;

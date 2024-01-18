@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./libs/AcademicArticlesLog.sol";
-import "./interfaces/IAcademicArticlesSignature.sol";
-import "./interfaces/IAcademicArticlesInteract.sol";
-import "./AcademicArticlesStorage.sol";
-import "./AcademicArticlesRules.sol";
+import "./libs/ACARLog.sol";
+import "./interfaces/IACARConnection.sol";
+import "./interfaces/IACARInteract.sol";
+import "./ACARStorage.sol";
+import "./ACARRules.sol";
 
-abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, AcademicArticlesStorage, AcademicArticlesRules {
+abstract contract ACARInteract is IACARInteract, ACARStorage, ACARRules {
     function PublishArticle(bytes calldata articleData)
     public payable
     OnlyContractConnected(_contract)
@@ -22,7 +22,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
         _article.publisher[articleToken] = articlePublisher;
         _article.data[articleToken] = articleData;
 
-        emit AcademicArticlesLog.ArticlePublished(articleToken);
+        emit ACARLog.ArticlePublished(articleToken);
     }
 
     function UnpublishArticle(bytes32 articleToken)
@@ -38,7 +38,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
                 _article.tokens[contractAccount][i] = _article.tokens[contractAccount][_article.tokens[contractAccount].length - 1];
                 _article.tokens[contractAccount].pop();
 
-                emit AcademicArticlesLog.ArticleUnpublished(articleToken);
+                emit ACARLog.ArticleUnpublished(articleToken);
                 return;
             }
         }
@@ -54,23 +54,26 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     IsContractSigned(contractAccount)
     IsNotContractConnected(_contract, contractAccount) {
         _contract.accounts.push(contractAccount);
-        _contract.signature[contractAccount] = IAcademicArticlesSignature(contractAccount).SIGNATURE();
+        _contract.signature[contractAccount] = IACARConnection(contractAccount).SIGNATURE();
 
-        emit AcademicArticlesLog.ContractConnected(contractAccount);
+        emit ACARLog.ContractConnected(contractAccount);
     }
 
     function DisconnectContract(address contractAccount)
     public payable
     OnlyOwner
     IsContractConnected(_contract, contractAccount) {
+        IACARConnection(contractAccount).Wipe();  
+
         for (uint256 i = 0; i < _contract.accounts.length; i++) {
             if (_contract.accounts[i] == contractAccount) {
                 bytes32[] storage articleTokens = _article.tokens[contractAccount];
+
                 _article.tokens[contractAccount] = new bytes32[](0); 
 
                 for (uint256 ii = 0; ii < articleTokens.length; ii++) {
                     bytes32 articleToken = articleTokens[ii];
-                    
+
                     _article.contractAccount[articleToken] = address(0);
                     _article.publisher[articleToken] = address(0);
                     _article.data[articleToken] = new bytes(0);
@@ -78,11 +81,12 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
 
                 _contract.accounts[i] = _contract.accounts[_contract.accounts.length - 1];
                 _contract.accounts.pop();
-                _contract.signature[contractAccount]  = "";     
+                _contract.signature[contractAccount]  = "";
 
-                emit AcademicArticlesLog.ContractDisconnected(contractAccount);
+                emit ACARLog.ContractDisconnected(contractAccount);
                 return;
             }
         }
+
     }
 }

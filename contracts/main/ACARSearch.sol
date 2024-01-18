@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./interfaces/IAcademicArticlesSearch.sol";
-import "./AcademicArticlesStorage.sol";
+import "./interfaces/IACARSearch.sol";
+import "./ACARStorage.sol";
 
-abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArticlesStorage {
+abstract contract ACARSearch is IACARSearch, ACARStorage {
     function ArticleTokens(address contractAccount) 
     public view 
     returns (bytes32[] memory articleTokens) {
