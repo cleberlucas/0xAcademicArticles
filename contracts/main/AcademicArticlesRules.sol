@@ -48,6 +48,11 @@ abstract contract AcademicArticlesRules {
         _;
     }
 
+    modifier IsArticlePublishedByContract(AcademicArticlesStorageModel.Article storage _article, bytes32 articleToken) {
+        require(_article.contractAccount[articleToken] == msg.sender, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_THIS_CONTRACT);
+        _;
+    }
+
     modifier IsArticlePublishedByMe(AcademicArticlesStorageModel.Article storage _article, bytes32 articleToken) {
         require(_article.publisher[articleToken] == tx.origin, AcademicArticlesMessage.ARTICLE_IS_NOT_PUBLISHED_BY_YOU);
         _;

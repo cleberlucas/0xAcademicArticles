@@ -13,10 +13,12 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     OnlyContractConnected(_contract)
     IsNotArticleEmpty(articleData)
     IsNotArticlePublished(_article, keccak256(articleData)) {
+        address contractAccount = msg.sender;
         address articlePublisher = tx.origin;
         bytes32 articleToken = keccak256(articleData);
 
-        _article.tokens[msg.sender].push(articleToken);
+        _article.tokens[contractAccount].push(articleToken);
+        _article.contractAccount[articleToken] = contractAccount;
         _article.publisher[articleToken] = articlePublisher;
         _article.data[articleToken] = articleData;
 
@@ -27,6 +29,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     public payable
     OnlyContractConnected(_contract)
     IsArticlePublished(_article, articleToken)
+    IsArticlePublishedByContract(_article, articleToken)
     IsArticlePublishedByMe(_article, articleToken) {
         address contractAccount = msg.sender;
 
@@ -40,6 +43,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
             }
         }
 
+        _article.contractAccount[articleToken] = address(0);
         _article.publisher[articleToken] = address(0);
         _article.data[articleToken] = new bytes(0);
     }
@@ -61,19 +65,20 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     IsContractConnected(_contract, contractAccount) {
         for (uint256 i = 0; i < _contract.accounts.length; i++) {
             if (_contract.accounts[i] == contractAccount) {
-                _contract.accounts[i] = _contract.accounts[_contract.accounts.length - 1];
-                _contract.accounts.pop();
+                bytes32[] storage articleTokens = _article.tokens[contractAccount];
+                _article.tokens[contractAccount] = new bytes32[](0); 
 
-                for (uint256 ii = 0; ii < _article.tokens[contractAccount].length; ii++) {
-                    bytes32 articleToken = _article.tokens[contractAccount][ii];
+                for (uint256 ii = 0; ii < articleTokens.length; ii++) {
+                    bytes32 articleToken = articleTokens[ii];
                     
+                    _article.contractAccount[articleToken] = address(0);
                     _article.publisher[articleToken] = address(0);
                     _article.data[articleToken] = new bytes(0);
                 }
 
-                _contract.signature[contractAccount]  = "";
-
-                _article.tokens[contractAccount] = new bytes32[](0);
+                _contract.accounts[i] = _contract.accounts[_contract.accounts.length - 1];
+                _contract.accounts.pop();
+                _contract.signature[contractAccount]  = "";     
 
                 emit AcademicArticlesLog.ContractDisconnected(contractAccount);
                 return;

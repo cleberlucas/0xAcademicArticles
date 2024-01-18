@@ -10,5 +10,6 @@ library AcademicArticlesMessage {
     string public constant CONTRACT_IS_NOT_CONNECTED = "contract is not connected";
     string public constant ARTICLE_ALREADY_PUBLISHED = "article already published";
     string public constant ARTICLE_IS_NOT_PUBLISHED = "article is not published";
+    string public constant ARTICLE_IS_NOT_PUBLISHED_BY_THIS_CONTRACT = "article is not published by this contract";
     string public constant ARTICLE_IS_NOT_PUBLISHED_BY_YOU = "article is not published by you";
 }
