@@ -2,6 +2,7 @@
 pragma solidity ^0.8.23;
 
 import "./libs/AcademicArticlesLog.sol";
+import "./interfaces/IAcademicArticlesSignature.sol";
 import "./interfaces/IAcademicArticlesInteract.sol";
 import "./AcademicArticlesStorage.sol";
 import "./AcademicArticlesRules.sol";
@@ -10,7 +11,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
     function PublishArticle(bytes calldata articleData)
     public payable
     OnlyContractConnected(_contract)
-    InputArticleDataIsNotEmpty(articleData)
+    IsNotArticleEmpty(articleData)
     IsNotArticlePublished(_article, keccak256(articleData)) {
         address articlePublisher = tx.origin;
         bytes32 articleToken = keccak256(articleData);
@@ -43,14 +44,13 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
         _article.data[articleToken] = new bytes(0);
     }
 
-    function ConnectContract(address contractAccount, string calldata contractName)
+    function ConnectContract(address contractAccount)
     public payable
     OnlyOwner
-    InputAccountIsAContract(contractAccount)
-    InputContractNameIsNotEmpty(contractName)
+    IsContractSigned(contractAccount)
     IsNotContractConnected(_contract, contractAccount) {
         _contract.accounts.push(contractAccount);
-        _contract.name[contractAccount] = contractName;
+        _contract.signature[contractAccount] = IAcademicArticlesSignature(contractAccount).SIGNATURE();
 
         emit AcademicArticlesLog.ContractConnected(contractAccount);
     }
@@ -71,7 +71,7 @@ abstract contract AcademicArticlesInteract is IAcademicArticlesInteract, Academi
                     _article.data[articleToken] = new bytes(0);
                 }
 
-                _contract.name[contractAccount]  = "";
+                _contract.signature[contractAccount]  = "";
 
                 _article.tokens[contractAccount] = new bytes32[](0);
 

@@ -29,9 +29,9 @@ abstract contract AcademicArticlesSearch is IAcademicArticlesSearch, AcademicArt
         contractAccounts = _contract.accounts;
     }
 
-    function ContractName(address contractAccount)
+    function ContractSignature(address contractAccount)
     public view
-    returns (string memory contractName) {
-        contractName = _contract.name[contractAccount];
+    returns (string memory contractSignature) {
+        contractSignature = _contract.signature[contractAccount];
     }
 }

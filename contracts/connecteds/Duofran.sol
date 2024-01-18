@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../../interfaces/IAcademicArticles.sol";
+import "../interfaces/IAcademicArticles.sol";
+import "../interfaces/IAcademicArticlesSignature.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract DuofranInteract {
+contract Duofran is IAcademicArticlesSignature {
     constructor(address academicArticles) {
         OWNER = msg.sender;
         _academicArticles = IAcademicArticles(academicArticles);
@@ -77,6 +78,11 @@ abstract contract DuofranInteract {
     event AffiliateLinked(address indexed affiliateAccount);
     event AffiliatesUnlinked(address[] indexed affiliateAccounts);
     event MeChanged();
+
+    function SIGNATURE() external pure 
+    returns (string memory signature) {
+        signature = "Duofran";
+    }
 
     function PublicationIdentifications() 
     public view 
@@ -196,49 +202,53 @@ abstract contract DuofranInteract {
             publicationIdentification = publicationIdentifications[i];
             publisher = _publication.publisher[publicationIdentification];
      
-            if (publisher != address(0)) {
-                _publication.publisher[publicationIdentification] = address(0);
-                _publication.dateTime[publicationIdentification] = 0;
-                _publication.blockNumber[publicationIdentification] = 0;
+            try _academicArticles.UnpublishArticle(publicationIdentification) {
+                if (publisher != address(0)) {
+                    _publication.publisher[publicationIdentification] = address(0);
+                    _publication.dateTime[publicationIdentification] = 0;
+                    _publication.blockNumber[publicationIdentification] = 0;
 
-                if (_publication.valid[publicationIdentification]) {
-                    _publication.valid[publicationIdentification] = false;
-                }
-
-                for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
-                    if (_publication.identifications[ii] == publicationIdentification) {
-                        _academicArticles.UnpublishArticle(publicationIdentification);
-
-                        _publication.identifications[ii] = _publication.identifications[_publication.identifications.length - 1];
-                        _publication.identifications.pop();             
+                    if (_publication.valid[publicationIdentification]) {
+                        _publication.valid[publicationIdentification] = false;
                     }
-                }
 
-                for (uint256 ii = 0; ii < _publication.identificationsValid.length; ii++) {
-                    if (_publication.identificationsValid[ii] == publicationIdentification) {
-                        _publication.identificationsValid[ii] = _publication.identificationsValid[_publication.identificationsValid.length - 1];
-                        _publication.identificationsValid.pop();             
-                    }
-                }
+                    for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
+                        if (_publication.identifications[ii] == publicationIdentification) {
+                            _academicArticles.UnpublishArticle(publicationIdentification);
 
-                if (_publication.identificationsOfPublisher[publisher].length == 1) {
-                    delete _publication.identificationsOfPublisher[publisher];
-
-                    for (uint256 ii = 0; ii < _publication.publishers.length; ii++) {
-                        if (_publication.publishers[ii] == publisher) {
-                            _publication.publishers[ii] = _publication.publishers[_publication.publishers.length - 1];
-                            _publication.publishers.pop();             
+                            _publication.identifications[ii] = _publication.identifications[_publication.identifications.length - 1];
+                            _publication.identifications.pop();             
                         }
                     }
-                }   else {
-                        for (uint256 ii = 0; ii < _publication.identificationsOfPublisher[publisher].length; ii++) {
-                            if (_publication.identificationsOfPublisher[publisher][ii] == publicationIdentification) {
-                                _publication.identificationsOfPublisher[publisher][ii] = _publication.identificationsOfPublisher[publisher][_publication.identificationsOfPublisher[publisher].length - 1];
-                                _publication.identificationsOfPublisher[publisher].pop();             
+
+                    for (uint256 ii = 0; ii < _publication.identificationsValid.length; ii++) {
+                        if (_publication.identificationsValid[ii] == publicationIdentification) {
+                            _publication.identificationsValid[ii] = _publication.identificationsValid[_publication.identificationsValid.length - 1];
+                            _publication.identificationsValid.pop();             
+                        }
+                    }
+
+                    if (_publication.identificationsOfPublisher[publisher].length == 1) {
+                        delete _publication.identificationsOfPublisher[publisher];
+
+                        for (uint256 ii = 0; ii < _publication.publishers.length; ii++) {
+                            if (_publication.publishers[ii] == publisher) {
+                                _publication.publishers[ii] = _publication.publishers[_publication.publishers.length - 1];
+                                _publication.publishers.pop();             
                             }
                         }
-                }
-            } 
+                    }   else {
+                            for (uint256 ii = 0; ii < _publication.identificationsOfPublisher[publisher].length; ii++) {
+                                if (_publication.identificationsOfPublisher[publisher][ii] == publicationIdentification) {
+                                    _publication.identificationsOfPublisher[publisher][ii] = _publication.identificationsOfPublisher[publisher][_publication.identificationsOfPublisher[publisher].length - 1];
+                                    _publication.identificationsOfPublisher[publisher].pop();             
+                                }
+                            }
+                    }
+                }        
+            }   catch Error(string memory errorMessage) {
+                    revert(errorMessage);
+            }
         }
 
         emit ArticlesUnpublished(publicationIdentifications);

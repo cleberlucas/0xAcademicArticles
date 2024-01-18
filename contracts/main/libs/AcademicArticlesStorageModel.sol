@@ -10,6 +10,6 @@ library AcademicArticlesStorageModel {
 
     struct Contract {  
         address[] accounts;
-        mapping(address account => string) name;
+        mapping(address account => string) signature;
     }
 }

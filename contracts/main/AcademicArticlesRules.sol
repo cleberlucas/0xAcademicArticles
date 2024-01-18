@@ -1,26 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+import "./interfaces/IAcademicArticlesSignature.sol";
 import "./libs/AcademicArticlesMessage.sol";
 import "./libs/AcademicArticlesStorageModel.sol";
 
 abstract contract AcademicArticlesRules {
     address internal immutable OWNER;
-
-    modifier InputArticleDataIsNotEmpty(bytes calldata articleData) {      
-        require(articleData.length > 0, AcademicArticlesMessage.ARTICLE_DATA_INPUTED_IS_EMPTY);
-        _;
-    }
-
-    modifier InputContractNameIsNotEmpty(string calldata contractName) {      
-        require(bytes(contractName).length > 0, AcademicArticlesMessage.CONTRACT_NAME_INPUTED_IS_EMPTY);
-        _;
-    }
-
-    modifier InputAccountIsAContract(address contractAccount) {
-        require (contractAccount.code.length > 0, AcademicArticlesMessage.CONTRACT_ACCOUNT_INPUTED_IS_NOT_A_CONTRACT);
-        _;
-    }
 
     modifier OnlyOwner() {
         require(OWNER == msg.sender, AcademicArticlesMessage.OWNER_ACTION);
@@ -28,17 +14,27 @@ abstract contract AcademicArticlesRules {
     }
 
     modifier OnlyContractConnected(AcademicArticlesStorageModel.Contract storage _contract) {
-        require(bytes(_contract.name[msg.sender]).length > 0, AcademicArticlesMessage.CONNECTED_CONTRACT_ACTION);
+        require(bytes(_contract.signature[msg.sender]).length > 0, AcademicArticlesMessage.CONNECTED_CONTRACT_ACTION);
+        _;
+    }
+
+    modifier IsNotArticleEmpty(bytes calldata articleData) {      
+        require(articleData.length > 0, AcademicArticlesMessage.ARTICLE_IS_EMPTY);
+        _;
+    }
+
+    modifier IsContractSigned(address contractAccount) {
+        require (bytes(IAcademicArticlesSignature(contractAccount).SIGNATURE()).length > 0, AcademicArticlesMessage.CONTRACT_IS_NOT_SIGNED);
         _;
     }
 
     modifier IsNotContractConnected(AcademicArticlesStorageModel.Contract storage _contract, address contractAccount) {
-        require(bytes(_contract.name[contractAccount]).length == 0, AcademicArticlesMessage.CONTRACT_ALREADY_CONNECTED);
+        require(bytes(_contract.signature[contractAccount]).length == 0, AcademicArticlesMessage.CONTRACT_ALREADY_CONNECTED);
         _;
     }
 
     modifier IsContractConnected(AcademicArticlesStorageModel.Contract storage _contract, address contractAccount) {
-        require(bytes(_contract.name[contractAccount]).length > 0, AcademicArticlesMessage.CONTRACT_IS_NOT_CONNECTED);
+        require(bytes(_contract.signature[contractAccount]).length > 0, AcademicArticlesMessage.CONTRACT_IS_NOT_CONNECTED);
         _;
     }
 
