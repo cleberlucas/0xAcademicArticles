@@ -1,19 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../main/interfaces/IAcademicArticles.sol";
-import "../main/interfaces/IConnected.sol";
+import "../main/interfaces/IACAR.sol";
+import "../main/interfaces/IACARSignature.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract Example is IConnected {
-    // To review
+/*
+    Created by Cleber Lucas
+    To review
+*/
+abstract contract Example is IACARSignature {
     constructor(address academicArticles) {
         OWNER = msg.sender;
-        _academicArticles = IAcademicArticles(academicArticles);
+        _academicArticles = IACAR(academicArticles);
+        _academicArticles.Initialize();
     }
 
     address internal immutable OWNER;
-    IAcademicArticles internal _academicArticles;
+    IACAR internal _academicArticles;
     Publication_StorageModel internal _publication;
     Affiliate_StorageModel internal _affiliate;
     Me_StorageModel internal _me;
@@ -154,14 +158,13 @@ abstract contract Example is IConnected {
         }
     }
 
-    function PublishArticles(Article_Model[] memory articles) 
+    function PublishArticles(Article_Model[] calldata articles) 
     public payable {
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
         bytes32 publicationIdentification;
-        Article_Model memory article;
 
         for (uint256 i = 0; i < articles.length; i++) {
-            article = articles[i];
+           Article_Model memory article = articles[i];
 
             try _academicArticles.PublishArticle(abi.encode(article)) {
                 publicationIdentification = keccak256(abi.encode(article));
@@ -193,7 +196,7 @@ abstract contract Example is IConnected {
         emit ArticlesPublished(publicationIdentifications);
     }
 
-    function UnpublishArticles(bytes32[] calldata publicationIdentifications) 
+    function UnpublishArticles(bytes32[] memory publicationIdentifications) 
     public payable {
         address publisher;
         bytes32 publicationIdentification;
@@ -308,7 +311,7 @@ abstract contract Example is IConnected {
         emit AffiliateLinked(affiliateAccount);
     }
 
-    function UnlinkAffiliates(address[] calldata affiliateAccounts) 
+    function UnlinkAffiliates(address[] memory affiliateAccounts) 
     public payable {
         require(OWNER == msg.sender);
 

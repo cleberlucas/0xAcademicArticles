@@ -34,4 +34,10 @@ abstract contract ACARSearch is IACARSearch, ACARStorage {
     returns (string memory contractSignature) {
         contractSignature = _contract.signature[contractAccount];
     }
+
+    function ContractAccount(string calldata contractSignature)
+    public view
+    returns (address contractAccount) {
+        contractAccount = _contract.account[contractSignature];
+    }
 }

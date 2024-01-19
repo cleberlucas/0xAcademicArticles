@@ -12,5 +12,6 @@ library ACARStorageModel {
     struct Contract {  
         address[] accounts;
         mapping(address account => string) signature;
+        mapping(string signature => address) account;
     }
 }

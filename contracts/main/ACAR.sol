@@ -2,15 +2,9 @@
 pragma solidity ^0.8.23;
 
 import "./interfaces/IACAR.sol";
+import "./ACARConnection.sol";
 import "./ACARInteract.sol";
 import "./ACARSearch.sol";
 
-contract ACAR is IACAR, ACARInteract, ACARSearch {
-    /*
-        ACAR - Academic Articles   
-        Created by Cleber Lucas
-    */
-    constructor() {
-        OWNER = msg.sender;
-    }
-}
+// Created by Cleber Lucas
+contract ACAR is IACAR, ACARConnection, ACARInteract, ACARSearch {}

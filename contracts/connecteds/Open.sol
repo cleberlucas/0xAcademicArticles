@@ -2,13 +2,15 @@
 pragma solidity ^0.8.23;
 
 import "../main/interfaces/IACAR.sol";
-import "../main/interfaces/IACARConnection.sol";
+import "../main/interfaces/IACAR.sol";
+import "../main/ACARConnection.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-contract Open is IACARConnection {
-    // Created by Cleber Lucas
+// Created by Cleber Lucas
+contract Open is IACARSignature {
     constructor(address academicArticles) {
         _academicArticles = IACAR(academicArticles);
+        _academicArticles.Initialize();
     }
 
     IACAR internal _academicArticles;
@@ -57,11 +59,6 @@ contract Open is IACARConnection {
     external pure 
     returns (string memory signature) {
         signature = "Open";
-    }
-
-    function Wipe() 
-    external payable {
-       UnpublishArticles(_publication.identifications);
     }
 
     function PublicationIdentifications() 
@@ -117,14 +114,12 @@ contract Open is IACARConnection {
     function PublishArticles(Article_Model[] calldata articles) 
     public payable {
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
-        bytes32 publicationIdentification;
-        Article_Model memory article;
 
         for (uint256 i = 0; i < articles.length; i++) {
-            article = articles[i];
+            Article_Model memory article = articles[i];
 
             try _academicArticles.PublishArticle(abi.encode(article)) {
-                publicationIdentification = keccak256(abi.encode(article));
+                bytes32 publicationIdentification = keccak256(abi.encode(article));
                 publicationIdentifications[i] = publicationIdentification;
 
                 _publication.identifications.push(publicationIdentification);
