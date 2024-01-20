@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-library ERCXMessages {
+library ERCXMessage {
     string public constant SENDER_IS_NOT_SIGNED = "sender is not signed";
     string public constant METADATA_EMPTY = "metadata is empty";
     string public constant SIGNATURE_EMPTY = "signature is empty";

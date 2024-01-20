@@ -14,12 +14,36 @@ abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCX
     IsNotSenderSigned(_interconnection) 
     IsNotSignatureUsed(_interconnection) {
         address sender = msg.sender;
-        string memory contractSignature = IERCXSignature(msg.sender).SIGNATURE();
+        string memory signature = IERCXSignature(sender).SIGNATURE();
 
         _interconnection.senders.push(sender); 
-        _interconnection.sender[contractSignature] = sender;
-        _interconnection.signature[sender] = contractSignature;
+        _interconnection.sender[signature] = sender;
+        _interconnection.signature[sender] = signature;
 
         emit ERCXLog.SenderSigned(sender);
+    }
+
+    function TransferSignature(address newSender)
+    external payable  
+    OnlySenderSigned(_interconnection) {
+        address oldSender = msg.sender;
+
+         for (uint256 i = 0; i < _interconnection.senders.length; i++) {
+            if (_interconnection.senders[i] == oldSender) {
+                string memory signature = IERCXSignature(oldSender).SIGNATURE();
+
+                _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
+                _interconnection.senders.pop();
+
+                _interconnection.signature[oldSender] = "";
+
+                _interconnection.senders.push(newSender); 
+                _interconnection.sender[signature] = newSender;
+                _interconnection.signature[newSender] = signature;
+
+                emit ERCXLog.SignatureTransferred(newSender);
+                return;
+            }
+        }
     }
 }

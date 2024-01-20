@@ -48,26 +48,39 @@ contract OpenAcademicArticles is IERCXSignature {
     event ArticlesPublished(bytes32[] indexed publicationIdentifications);
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
 
+    address immutable ERCX;
+    bool  connectedInERCX;
+
     IERCXSearch internal _articlesSearch;
     IERCXInteract internal _articlesInteract;
 
-    bool builded;
 
     Publication_StorageModel internal _publication;
 
-    function _constructor(address ERCX) 
+     constructor(address ercx) {
+        ERCX = ercx;
+        _articlesSearch = IERCXSearch(ercx);
+    }
+    
+    function ConnectToERCX() 
     external payable {
-        require(!builded);
+        require(!connectedInERCX);
+
         IERCXInterconnection(ERCX).Initialize();
-        _articlesSearch = IERCXSearch(ERCX);
         _articlesInteract = IERCXInteract(ERCX);
-        //builded = true;
+
+        connectedInERCX = true;
+    }
+
+    function TransferSignature(address newSender) 
+    external payable {
+        IERCXInterconnection(ERCX).TransferSignature(newSender);
     }
 
     function SIGNATURE() 
     external pure 
     returns (string memory signature) {
-        signature = "Open";
+        signature = "OpenAcademicArticles";
     }
 
     function PublicationIdentifications() 
