@@ -9,5 +9,5 @@ library ERCXMessage {
     string public constant OTHER_SENDER_IS_USING_THIS_SIGNATURE = "other sender is using this signature";
     string public constant METADATA_IS_ALREADY_SENDED = "metadata is already sended";
     string public constant METADATA_IS_NOT_SENDED = "metadata is not sended";
-    string public constant METADATA_IS_NOT_SENDED_BY_YOU = "metadata is not sent by you";
+    string public constant METADATA_IS_NOT_SENDED_BY_YOU = "metadata is not sented by you";
 }
