@@ -1,22 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../main/interfaces/IACAR.sol";
-import "../main/interfaces/IACAR.sol";
-import "../main/ACARConnection.sol";
+import "../main/interfaces/IERCXInteract.sol";
+import "../main/interfaces/IERCXInterconnection.sol";
+import "../main/interfaces/IERCXSearch.sol";
+import "../main/interfaces/IERCXSignature.sol";
+
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 // Created by Cleber Lucas
-contract Open is IACARSignature {
-    constructor(address academicArticles) {
-        _academicArticles = IACAR(academicArticles);
-        _academicArticles.Initialize();
-    }
-
-    IACAR internal _academicArticles;
-
-    Publication_StorageModel internal _publication;
-
+contract OpenAcademicArticles is IERCXSignature {
     struct Publication_Model {
         Article_Model article;
         address publisher;
@@ -55,6 +48,22 @@ contract Open is IACARSignature {
     event ArticlesPublished(bytes32[] indexed publicationIdentifications);
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
 
+    IERCXSearch internal _articlesSearch;
+    IERCXInteract internal _articlesInteract;
+
+    bool builded;
+
+    Publication_StorageModel internal _publication;
+
+    function _constructor(address ERCX) 
+    external payable {
+        require(!builded);
+        IERCXInterconnection(ERCX).Initialize();
+        _articlesSearch = IERCXSearch(ERCX);
+        _articlesInteract = IERCXInteract(ERCX);
+        //builded = true;
+    }
+
     function SIGNATURE() 
     external pure 
     returns (string memory signature) {
@@ -62,35 +71,35 @@ contract Open is IACARSignature {
     }
 
     function PublicationIdentifications() 
-    public view 
+    external view 
     returns (bytes32[] memory publicationIdentifications) {
         publicationIdentifications = _publication.identifications;
     }
 
     function PublicationPublishers() 
-    public view 
+    external view 
     returns (address[] memory publicationPublishers) {
         publicationPublishers = _publication.publishers;
     }
 
     function PublicationIdentificationsOfPublisher(address publicationPublisher) 
-    public view 
+    external view 
     returns (bytes32[] memory publicationIdentificationsOfPublisher) {
         publicationIdentificationsOfPublisher = _publication.identificationsOfPublisher[publicationPublisher];
     }
 
     function Publication(bytes32 publicationIdentification) 
-    public view 
+    external view 
     returns (Publication_Model memory publication) {
         publication = Publication_Model(
-            abi.decode(_academicArticles.ArticleData(publicationIdentification), (Article_Model)),
+            abi.decode(_articlesSearch.MetaData(publicationIdentification), (Article_Model)),
             _publication.publisher[publicationIdentification],
             _publication.dateTime[publicationIdentification]
         );
     }
 
     function PreviewPublications(uint256 startIndex, uint256 endIndex) 
-    public view 
+    external view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint256 currentSize) {     
         currentSize = _publication.identifications.length;
 
@@ -104,7 +113,7 @@ contract Open is IACARSignature {
 
                 for (uint256 i = 0; i < size; i++) {
                     publicationsPreview[i] = PublicationPreview_Model(
-                        abi.decode(_academicArticles.ArticleData(_publication.identifications[startIndex + i]), (Article_Model)).title,
+                        abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
                         _publication.identifications[startIndex + i]
                     );
                 }
@@ -112,13 +121,13 @@ contract Open is IACARSignature {
     }
 
     function PublishArticles(Article_Model[] calldata articles) 
-    public payable {
+    external payable {
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
 
         for (uint256 i = 0; i < articles.length; i++) {
             Article_Model memory article = articles[i];
 
-            try _academicArticles.PublishArticle(abi.encode(article)) {
+            try _articlesInteract.SendMetaData(abi.encode(article)) {
                 bytes32 publicationIdentification = keccak256(abi.encode(article));
                 publicationIdentifications[i] = publicationIdentification;
 
@@ -143,8 +152,8 @@ contract Open is IACARSignature {
         emit ArticlesPublished(publicationIdentifications);
     }
 
-    function UnpublishArticles(bytes32[] memory publicationIdentifications) 
-    public payable {
+    function CleanMetaDatas(bytes32[] memory publicationIdentifications) 
+    external payable {
         address publisher;
         bytes32 publicationIdentification;
 
@@ -152,7 +161,7 @@ contract Open is IACARSignature {
             publicationIdentification = publicationIdentifications[i];
             publisher = _publication.publisher[publicationIdentification];
      
-            try _academicArticles.UnpublishArticle(publicationIdentification) {
+            try _articlesInteract.CleanMetaData(publicationIdentification) {
                 if (publisher != address(0)) {
                     _publication.publisher[publicationIdentification] = address(0);
                     _publication.dateTime[publicationIdentification] = 0;
@@ -160,7 +169,7 @@ contract Open is IACARSignature {
 
                     for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
                         if (_publication.identifications[ii] == publicationIdentification) {
-                            _academicArticles.UnpublishArticle(publicationIdentification);
+                            _articlesInteract.CleanMetaData(publicationIdentification);
 
                             _publication.identifications[ii] = _publication.identifications[_publication.identifications.length - 1];
                             _publication.identifications.pop();             
