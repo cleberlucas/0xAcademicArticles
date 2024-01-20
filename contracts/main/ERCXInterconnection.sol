@@ -28,7 +28,7 @@ abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCX
     OnlySenderSigned(_interconnection) {
         address oldSender = msg.sender;
 
-         for (uint256 i = 0; i < _interconnection.senders.length; i++) {
+        for (uint256 i = 0; i < _interconnection.senders.length; i++) {
             if (_interconnection.senders[i] == oldSender) {
                 string memory signature = IERCXSignature(oldSender).SIGNATURE();
 

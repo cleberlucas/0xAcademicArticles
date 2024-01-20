@@ -34,12 +34,12 @@ abstract contract ERCXRules {
     }
 
     modifier IsNotMetadataSended(ERCXStorageModel.Data storage _data, bytes32 token) { 
-        require(bytes(_data.signature[token]).length > 0, ERCXMessage.METADATA_IS_ALREADY_SENDED);
+        require(bytes(_data.signature[token]).length == 0, ERCXMessage.METADATA_IS_ALREADY_SENDED);
         _;
     }
 
     modifier IsMetadataSended(ERCXStorageModel.Data storage _data, bytes32 token) {
-        require(bytes(_data.signature[token]).length == 0, ERCXMessage.METADATA_IS_NOT_SENDED);
+        require(bytes(_data.signature[token]).length > 0, ERCXMessage.METADATA_IS_NOT_SENDED);
         _;
     }
 

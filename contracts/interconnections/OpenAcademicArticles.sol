@@ -49,15 +49,14 @@ contract OpenAcademicArticles is IERCXSignature {
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
 
     address immutable ERCX;
-    bool  connectedInERCX;
+    bool connectedInERCX;
 
     IERCXSearch internal _articlesSearch;
     IERCXInteract internal _articlesInteract;
 
-
     Publication_StorageModel internal _publication;
 
-     constructor(address ercx) {
+    constructor(address ercx) {
         ERCX = ercx;
         _articlesSearch = IERCXSearch(ercx);
     }
