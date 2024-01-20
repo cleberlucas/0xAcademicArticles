@@ -164,7 +164,7 @@ contract OpenAcademicArticles is IERCXSignature {
         emit ArticlesPublished(publicationIdentifications);
     }
 
-    function CleanMetaDatas(bytes32[] memory publicationIdentifications) 
+    function UnpublishArticles(bytes32[] memory publicationIdentifications) 
     external payable {
         address publisher;
         bytes32 publicationIdentification;
@@ -181,8 +181,6 @@ contract OpenAcademicArticles is IERCXSignature {
 
                     for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
                         if (_publication.identifications[ii] == publicationIdentification) {
-                            _articlesInteract.CleanMetaData(publicationIdentification);
-
                             _publication.identifications[ii] = _publication.identifications[_publication.identifications.length - 1];
                             _publication.identifications.pop();             
                         }
