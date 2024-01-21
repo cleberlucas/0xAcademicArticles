@@ -79,7 +79,7 @@ contract OpenAcademicArticles is IAIOSignature {
     function SIGNATURE() 
     external pure 
     returns (string memory signature) {
-        signature = "OpenAcademicArticles2";
+        signature = "OpenAcademicArticles";
     }
 
     function PublicationIdentifications() 
@@ -134,6 +134,7 @@ contract OpenAcademicArticles is IAIOSignature {
 
     function PublishArticles(Article_Model[] calldata articles) 
     external payable {
+        address publisher = tx.origin;
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
 
         for (uint256 i = 0; i < articles.length; i++) {
@@ -144,13 +145,13 @@ contract OpenAcademicArticles is IAIOSignature {
                 publicationIdentifications[i] = publicationIdentification;
 
                 _publication.identifications.push(publicationIdentification);
-                _publication.publisher[publicationIdentification] = msg.sender;
+                _publication.publisher[publicationIdentification] = publisher;
                 _publication.dateTime[publicationIdentification] = block.timestamp;
                 _publication.blockNumber[publicationIdentification] = block.number;
-                _publication.identificationsOfPublisher[msg.sender].push(publicationIdentification);
+                _publication.identificationsOfPublisher[publisher].push(publicationIdentification);
 
-                if (_publication.identificationsOfPublisher[msg.sender].length == 1) {
-                    _publication.publishers.push(msg.sender);
+                if (_publication.identificationsOfPublisher[publisher].length == 1) {
+                    _publication.publishers.push(publisher);
                 }
             }   catch Error(string memory errorMessage) {
                     if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked("article already published"))) {                    
@@ -172,7 +173,8 @@ contract OpenAcademicArticles is IAIOSignature {
         for (uint256 i = 0; i < publicationIdentifications.length; i++) {
             publicationIdentification = publicationIdentifications[i];
             publisher = _publication.publisher[publicationIdentification];
-     
+            require (publisher == tx.origin);
+
             try _articlesInteract.CleanMetaData(publicationIdentification) {
                 if (publisher != address(0)) {
                     _publication.publisher[publicationIdentification] = address(0);
