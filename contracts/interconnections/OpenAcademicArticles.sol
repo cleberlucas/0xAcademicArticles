@@ -59,6 +59,7 @@ contract OpenAcademicArticles is IERCXSignature {
     constructor(address ercx) {
         ERCX = ercx;
         _articlesSearch = IERCXSearch(ercx);
+        _articlesInteract = IERCXInteract(ERCX);
     }
     
     function ConnectToERCX() 
@@ -66,7 +67,6 @@ contract OpenAcademicArticles is IERCXSignature {
         require(!connectedInERCX);
 
         IERCXInterconnection(ERCX).Initialize();
-        _articlesInteract = IERCXInteract(ERCX);
 
         connectedInERCX = true;
     }
@@ -79,7 +79,7 @@ contract OpenAcademicArticles is IERCXSignature {
     function SIGNATURE() 
     external pure 
     returns (string memory signature) {
-        signature = "OpenAcademicArticles1";
+        signature = "OpenAcademicArticles2";
     }
 
     function PublicationIdentifications() 
