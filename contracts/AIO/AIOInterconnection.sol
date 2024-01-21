@@ -7,12 +7,10 @@ import "./interfaces/IAIOSignature.sol";
 import "./AIOStorage.sol";
 import "./AIORules.sol";
 
-abstract contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
+contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
     function Initialize()
-    external payable  
-    EntryNotSignedEmpty
-    IsNotSenderSigned(_interconnection) 
-    IsNotSignatureUsed(_interconnection) {
+    external payable
+    InitializeRule(_interconnection) {
         address sender = msg.sender;
         string memory signature = IAIOSignature(sender).SIGNATURE();
 
@@ -24,10 +22,8 @@ abstract contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORule
     }
 
     function TransferSignature(address newSender)
-    external payable  
-    OnlySenderSigned(_interconnection)
-    EntryNewSenderDifferentMe(newSender)
-    EntryNewSenderSameSignature(newSender) {
+    external payable
+    TransferSignatureRule(_interconnection, newSender) {
         address oldSender = msg.sender;
 
         for (uint256 i = 0; i < _interconnection.senders.length; i++) {

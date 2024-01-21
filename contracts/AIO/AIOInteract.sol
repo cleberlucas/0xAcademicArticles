@@ -6,12 +6,10 @@ import "./interfaces/IAIOInteract.sol";
 import "./AIOStorage.sol";
 import "./AIORules.sol";
 
- contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
+contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
     function SendMetaData(bytes calldata metadata)
     external payable
-    OnlySenderSigned(_interconnection)
-    EntryNotMetadataEmpty(metadata)
-    IsNotMetadataSended(_data, keccak256(metadata)) {
+    SendMetaDataRule(_interconnection, _data, metadata)  {
         string memory signature = IAIOSignature(msg.sender).SIGNATURE();
         bytes32 token = keccak256(metadata);
 
@@ -24,9 +22,7 @@ import "./AIORules.sol";
 
     function CleanMetaData(bytes32 token)
     external payable
-    OnlySenderSigned(_interconnection)
-    IsMetadataSended(_data, token)
-    IsMetadataSendedBySender(_data, _interconnection, token) {
+    CleanMetaDataRule(_interconnection, _data, token) {
         string memory signature = IAIOSignature(msg.sender).SIGNATURE();
 
         for (uint256 i = 0; i < _data.tokens[signature].length; i++) {

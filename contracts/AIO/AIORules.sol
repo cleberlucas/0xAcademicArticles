@@ -7,54 +7,36 @@ import "./interfaces/IAIOSignature.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract AIORules {
-    modifier OnlySenderSigned(AIOStorageModel.Interconnection storage _interconnection) {
-        require(bytes(_interconnection.signature[msg.sender]).length > 0, AIOMessage.SENDER_IS_NOT_SIGNED);
-        _;
-    }
-
-    modifier EntryNotMetadataEmpty(bytes calldata metadata) {      
-        require(metadata.length > 0, AIOMessage.METADATA_EMPTY);
-        _;
-    }
-
-    modifier EntryNotSignedEmpty() {      
+abstract contract AIORules  {
+    modifier InitializeRule(AIOStorageModel.Interconnection storage _interconnection) {
+        require(address(this) != msg.sender, AIOMessage.AIO_NOT_EXEC);
         require(bytes(IAIOSignature(msg.sender).SIGNATURE()).length > 0, AIOMessage.SIGNATURE_EMPTY);
-        _;
-    }
-
-    modifier EntryNewSenderDifferentMe(address newSender) {
-        require(newSender != msg.sender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU);
-        _;
-    }
-
-    modifier EntryNewSenderSameSignature(address newSender) {
-        require(Strings.equal(IAIOSignature(msg.sender).SIGNATURE(), IAIOSignature(newSender).SIGNATURE()), AIOMessage.NEW_SENDER_NOT_HAVE_SAME_SIGNATURE_AS_YOU);
-        _;
-    }
-
-    modifier IsNotSenderSigned(AIOStorageModel.Interconnection storage _interconnection) {
         require(bytes(_interconnection.signature[msg.sender]).length == 0, AIOMessage.SENDER_ALREADY_SIGNED);
+        require(_interconnection.sender[IAIOSignature(msg.sender).SIGNATURE()] == address(0), AIOMessage.OTHER_SENDER_USING_SIGNATURE);
         _;
     }
 
-    modifier IsNotSignatureUsed(AIOStorageModel.Interconnection storage _interconnection) { 
-        require(_interconnection.sender[IAIOSignature(msg.sender).SIGNATURE()] == address(0), AIOMessage.OTHER_SENDER_IS_USING_THIS_SIGNATURE);
+    modifier TransferSignatureRule(AIOStorageModel.Interconnection storage _interconnection, address newSender) {
+        require(address(this) != msg.sender, AIOMessage.AIO_NOT_EXEC);
+        require(bytes(_interconnection.signature[msg.sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
+        require(newSender != msg.sender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU);
+        require(Strings.equal(IAIOSignature(msg.sender).SIGNATURE(), IAIOSignature(newSender).SIGNATURE()), AIOMessage.NEW_SENDER_NO_SAME_SIGNATURE);
         _;
     }
 
-    modifier IsNotMetadataSended(AIOStorageModel.Data storage _data, bytes32 token) { 
-        require(bytes(_data.signature[token]).length == 0, AIOMessage.METADATA_IS_ALREADY_SENDED);
+    modifier SendMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Data storage _data, bytes calldata metadata) {
+        require(address(this) != msg.sender, AIOMessage.AIO_NOT_EXEC);
+        require(bytes(_interconnection.signature[msg.sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
+        require(metadata.length > 0, AIOMessage.METADATA_EMPTY);
+        require(bytes(_data.signature[keccak256(metadata)]).length == 0, AIOMessage.METADATA_ALREADY_SENT);
         _;
     }
 
-    modifier IsMetadataSended(AIOStorageModel.Data storage _data, bytes32 token) {
-        require(bytes(_data.signature[token]).length > 0, AIOMessage.METADATA_IS_NOT_SENDED);
-        _;
-    }
-
-    modifier IsMetadataSendedBySender(AIOStorageModel.Data storage _data, AIOStorageModel.Interconnection storage _interconnection, bytes32 token) {
-        require(Strings.equal((_data.signature[token]), _interconnection.signature[msg.sender]), AIOMessage.METADATA_IS_NOT_SENDED_BY_YOU);
+    modifier CleanMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Data storage _data, bytes32 token) {
+        require(address(this) != msg.sender, AIOMessage.AIO_NOT_EXEC);
+        require(bytes(_interconnection.signature[msg.sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
+        require(bytes(_data.signature[token]).length > 0, AIOMessage.METADATA_NOT_SENT);
+        require(Strings.equal((_data.signature[token]), _interconnection.signature[msg.sender]), AIOMessage.METADATA_NOT_SENT_BY_YOU);
         _;
     }
 }
