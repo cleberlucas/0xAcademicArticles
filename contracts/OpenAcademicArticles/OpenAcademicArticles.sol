@@ -5,6 +5,7 @@ import "../AIO/interfaces/IAIOInteract.sol";
 import "../AIO/interfaces/IAIOInterconnection.sol";
 import "../AIO/interfaces/IAIOSearch.sol";
 import "../AIO/interfaces/IAIOSignature.sol";
+import "../AIO/libs/AIOMessage.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -117,30 +118,29 @@ contract OpenAcademicArticles is IAIOSignature {
 
         if (startIndex >= currentSize || startIndex > endIndex) {
             publicationsPreview = new PublicationPreview_Model[](0);
-        } else {
-            uint256 size = endIndex - startIndex + 1;
-            
-            size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
-            publicationsPreview = new PublicationPreview_Model[](size); 
+        }   else {
+                uint256 size = endIndex - startIndex + 1;
+                
+                size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+                publicationsPreview = new PublicationPreview_Model[](size); 
 
-            if (asc) {
-                for (uint256 i = 0; i < size; i++) {
-                    publicationsPreview[i] = PublicationPreview_Model(
-                        abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
-                        _publication.identifications[startIndex + i]
-                    );
+                if (asc) {
+                    for (uint256 i = 0; i < size; i++) {
+                        publicationsPreview[i] = PublicationPreview_Model(
+                            abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
+                            _publication.identifications[startIndex + i]
+                        );
+                    }
+                }   else {
+                        for (uint256 i = 0; i < size; i++) {
+                            publicationsPreview[i] = PublicationPreview_Model(
+                                abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + size - i - 1]), (Article_Model)).title,
+                                _publication.identifications[startIndex + size - i - 1]
+                            );
+                        }
                 }
-            } else {
-                for (uint256 i = size; i > 0; i--) {
-                    publicationsPreview[size - i] = PublicationPreview_Model(
-                        abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + size - i]), (Article_Model)).title,
-                        _publication.identifications[startIndex + size - i]
-                    );
-                }
-            }
         }
     }
-
 
     function PublishArticles(Article_Model[] calldata articles) 
     external payable {
@@ -165,8 +165,8 @@ contract OpenAcademicArticles is IAIOSignature {
 
                 publicationIdentifications[i] = publicationIdentification;
             }   catch Error(string memory errorMessage) {
-                    if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked("article already published"))) {                    
-                        revert(string.concat("article[", Strings.toString(i), "]: ", errorMessage));
+                    if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_ALREADY_SENT))) {                    
+                        revert(string.concat("article[", Strings.toString(i), "]: ", "Article already published"));
                     }
 
                     revert(errorMessage);
@@ -218,6 +218,14 @@ contract OpenAcademicArticles is IAIOSignature {
                     }
                 }        
             }   catch Error(string memory errorMessage) {
+                    if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT))) {                    
+                        revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published"));
+                    }   else {
+                            if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT_BY_YOU))) {                    
+                                revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published by you"));
+                            }
+                    }
+
                     revert(errorMessage);
             }
         }
