@@ -13,13 +13,18 @@ abstract contract ERCXRules {
         _;
     }
 
-    modifier IsNotMetadataEmpty(bytes calldata metadata) {      
+    modifier EntryNotMetadataEmpty(bytes calldata metadata) {      
         require(metadata.length > 0, ERCXMessage.METADATA_EMPTY);
         _;
     }
 
-    modifier IsNotSignedEmpty() {      
+    modifier EntryNotSignedEmpty() {      
         require(bytes(IERCXSignature(msg.sender).SIGNATURE()).length > 0, ERCXMessage.SIGNATURE_EMPTY);
+        _;
+    }
+
+    modifier EntryNewSenderSameSignature(address newSender) {
+        require(Strings.equal(IERCXSignature(msg.sender).SIGNATURE(), IERCXSignature(newSender).SIGNATURE()), ERCXMessage.NEW_SENDER_NOT_HAVE_SAME_SIGNATURE_AS_YOU);
         _;
     }
 
@@ -43,8 +48,8 @@ abstract contract ERCXRules {
         _;
     }
 
-    modifier IsMetadataSendedBySender(ERCXStorageModel.Data storage _data, bytes32 token) {
-        require(Strings.equal((_data.signature[token]), IERCXSignature(msg.sender).SIGNATURE()), ERCXMessage.METADATA_IS_NOT_SENDED_BY_YOU);
+    modifier IsMetadataSendedBySender(ERCXStorageModel.Data storage _data, ERCXStorageModel.Interconnection storage _interconnection, bytes32 token) {
+        require(Strings.equal((_data.signature[token]), _interconnection.signature[msg.sender]), ERCXMessage.METADATA_IS_NOT_SENDED_BY_YOU);
         _;
     }
 }

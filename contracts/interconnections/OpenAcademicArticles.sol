@@ -79,7 +79,7 @@ contract OpenAcademicArticles is IERCXSignature {
     function SIGNATURE() 
     external pure 
     returns (string memory signature) {
-        signature = "OpenAcademicArticles";
+        signature = "OpenAcademicArticles1";
     }
 
     function PublicationIdentifications() 

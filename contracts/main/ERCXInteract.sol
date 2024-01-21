@@ -10,7 +10,7 @@ import "./ERCXRules.sol";
     function SendMetaData(bytes calldata metadata)
     external payable
     OnlySenderSigned(_interconnection)
-    IsNotMetadataEmpty(metadata)
+    EntryNotMetadataEmpty(metadata)
     IsNotMetadataSended(_data, keccak256(metadata)) {
         string memory signature = IERCXSignature(msg.sender).SIGNATURE();
         bytes32 token = keccak256(metadata);
@@ -26,7 +26,7 @@ import "./ERCXRules.sol";
     external payable
     OnlySenderSigned(_interconnection)
     IsMetadataSended(_data, token)
-    IsMetadataSendedBySender(_data, token) {
+    IsMetadataSendedBySender(_data, _interconnection, token) {
         string memory signature = IERCXSignature(msg.sender).SIGNATURE();
 
         for (uint256 i = 0; i < _data.tokens[signature].length; i++) {

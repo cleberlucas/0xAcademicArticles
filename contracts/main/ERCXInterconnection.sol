@@ -10,7 +10,7 @@ import "./ERCXRules.sol";
 abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCXRules {
     function Initialize()
     external payable  
-    IsNotSignedEmpty
+    EntryNotSignedEmpty
     IsNotSenderSigned(_interconnection) 
     IsNotSignatureUsed(_interconnection) {
         address sender = msg.sender;
@@ -25,7 +25,8 @@ abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCX
 
     function TransferSignature(address newSender)
     external payable  
-    OnlySenderSigned(_interconnection) {
+    OnlySenderSigned(_interconnection) 
+    EntryNewSenderSameSignature(newSender) {
         address oldSender = msg.sender;
 
         for (uint256 i = 0; i < _interconnection.senders.length; i++) {
