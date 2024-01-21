@@ -51,8 +51,8 @@ contract OpenAcademicArticles is IAIOSignature {
     address immutable AIO;
     bool connectedInAIO;
 
-    IAIOSearch internal _articlesSearch;
-    IAIOInteract internal _articlesInteract;
+    IAIOSearch internal immutable _articlesSearch;
+    IAIOInteract internal immutable _articlesInteract;
 
     Publication_StorageModel internal _publication;
 
@@ -110,27 +110,37 @@ contract OpenAcademicArticles is IAIOSignature {
         );
     }
 
-    function PreviewPublications(uint256 startIndex, uint256 endIndex) 
+    function PreviewPublications(uint256 startIndex, uint256 endIndex, bool asc) 
     external view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint256 currentSize) {     
         currentSize = _publication.identifications.length;
 
         if (startIndex >= currentSize || startIndex > endIndex) {
             publicationsPreview = new PublicationPreview_Model[](0);
-        }   else {
-                uint256 size = endIndex - startIndex + 1;
-                
-                size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
-                publicationsPreview = new PublicationPreview_Model[](size);
+        } else {
+            uint256 size = endIndex - startIndex + 1;
+            
+            size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+            publicationsPreview = new PublicationPreview_Model[](size); 
 
+            if (asc) {
                 for (uint256 i = 0; i < size; i++) {
                     publicationsPreview[i] = PublicationPreview_Model(
                         abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
                         _publication.identifications[startIndex + i]
                     );
                 }
+            } else {
+                for (uint256 i = size; i > 0; i--) {
+                    publicationsPreview[size - i] = PublicationPreview_Model(
+                        abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + size - i]), (Article_Model)).title,
+                        _publication.identifications[startIndex + size - i]
+                    );
+                }
+            }
         }
     }
+
 
     function PublishArticles(Article_Model[] calldata articles) 
     external payable {
