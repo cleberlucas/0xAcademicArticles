@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-library ERCXStorageModel {
+library AIOStorageModel {
     struct Data {   
         mapping(string signature => bytes32[]) tokens;
         mapping(bytes32 token => string) signature;

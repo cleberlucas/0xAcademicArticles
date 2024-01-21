@@ -1,26 +1,26 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./libs/ERCXLog.sol";
-import "./interfaces/IERCXInterconnection.sol";
-import "./interfaces/IERCXSignature.sol";
-import "./ERCXStorage.sol";
-import "./ERCXRules.sol";
+import "./libs/AIOLog.sol";
+import "./interfaces/IAIOInterconnection.sol";
+import "./interfaces/IAIOSignature.sol";
+import "./AIOStorage.sol";
+import "./AIORules.sol";
 
-abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCXRules {
+abstract contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
     function Initialize()
     external payable  
     EntryNotSignedEmpty
     IsNotSenderSigned(_interconnection) 
     IsNotSignatureUsed(_interconnection) {
         address sender = msg.sender;
-        string memory signature = IERCXSignature(sender).SIGNATURE();
+        string memory signature = IAIOSignature(sender).SIGNATURE();
 
         _interconnection.senders.push(sender); 
         _interconnection.sender[signature] = sender;
         _interconnection.signature[sender] = signature;
 
-        emit ERCXLog.SenderSigned(sender);
+        emit AIOLog.SenderSigned(sender);
     }
 
     function TransferSignature(address newSender)
@@ -31,7 +31,7 @@ abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCX
 
         for (uint256 i = 0; i < _interconnection.senders.length; i++) {
             if (_interconnection.senders[i] == oldSender) {
-                string memory signature = IERCXSignature(oldSender).SIGNATURE();
+                string memory signature = IAIOSignature(oldSender).SIGNATURE();
 
                 _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
                 _interconnection.senders.pop();
@@ -42,7 +42,7 @@ abstract contract ERCXInterconnection is IERCXInterconnection, ERCXStorage, ERCX
                 _interconnection.sender[signature] = newSender;
                 _interconnection.signature[newSender] = signature;
 
-                emit ERCXLog.SignatureTransferred(newSender);
+                emit AIOLog.SignatureTransferred(newSender);
                 return;
             }
         }

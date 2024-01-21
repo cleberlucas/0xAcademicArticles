@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../main/interfaces/IERCXInteract.sol";
-import "../main/interfaces/IERCXInterconnection.sol";
-import "../main/interfaces/IERCXSearch.sol";
-import "../main/interfaces/IERCXSignature.sol";
+import "../main/interfaces/IAIOInteract.sol";
+import "../main/interfaces/IAIOInterconnection.sol";
+import "../main/interfaces/IAIOSearch.sol";
+import "../main/interfaces/IAIOSignature.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 // Created by Cleber Lucas
-contract OpenAcademicArticles is IERCXSignature {
+contract OpenAcademicArticles is IAIOSignature {
     struct Publication_Model {
         Article_Model article;
         address publisher;
@@ -48,32 +48,32 @@ contract OpenAcademicArticles is IERCXSignature {
     event ArticlesPublished(bytes32[] indexed publicationIdentifications);
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
 
-    address immutable ERCX;
-    bool connectedInERCX;
+    address immutable AIO;
+    bool connectedInAIO;
 
-    IERCXSearch internal _articlesSearch;
-    IERCXInteract internal _articlesInteract;
+    IAIOSearch internal _articlesSearch;
+    IAIOInteract internal _articlesInteract;
 
     Publication_StorageModel internal _publication;
 
-    constructor(address ercx) {
-        ERCX = ercx;
-        _articlesSearch = IERCXSearch(ercx);
-        _articlesInteract = IERCXInteract(ERCX);
+    constructor(address aio) {
+        AIO = aio;
+        _articlesSearch = IAIOSearch(AIO);
+        _articlesInteract = IAIOInteract(AIO);
     }
     
-    function ConnectToERCX() 
+    function ConnectToAIO() 
     external payable {
-        require(!connectedInERCX);
+        require(!connectedInAIO);
 
-        IERCXInterconnection(ERCX).Initialize();
+        IAIOInterconnection(AIO).Initialize();
 
-        connectedInERCX = true;
+        connectedInAIO = true;
     }
 
     function TransferSignature(address newSender) 
     external payable {
-        IERCXInterconnection(ERCX).TransferSignature(newSender);
+        IAIOInterconnection(AIO).TransferSignature(newSender);
     }
 
     function SIGNATURE() 
