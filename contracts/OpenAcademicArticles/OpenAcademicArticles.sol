@@ -144,7 +144,7 @@ contract OpenAcademicArticles is IAIOSignature {
 
     function PublishArticles(Article_Model[] calldata articles) 
     external payable {
-        address publisher = tx.origin;
+        address publisher = msg.sender;
         bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
 
         for (uint256 i = 0; i < articles.length; i++) {
@@ -152,7 +152,6 @@ contract OpenAcademicArticles is IAIOSignature {
 
             try _articlesInteract.SendMetaData(abi.encode(article)) {
                 bytes32 publicationIdentification = keccak256(abi.encode(article));
-                publicationIdentifications[i] = publicationIdentification;
 
                 _publication.identifications.push(publicationIdentification);
                 _publication.publisher[publicationIdentification] = publisher;
@@ -163,6 +162,8 @@ contract OpenAcademicArticles is IAIOSignature {
                 if (_publication.identificationsOfPublisher[publisher].length == 1) {
                     _publication.publishers.push(publisher);
                 }
+
+                publicationIdentifications[i] = publicationIdentification;
             }   catch Error(string memory errorMessage) {
                     if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked("article already published"))) {                    
                         revert(string.concat("article[", Strings.toString(i), "]: ", errorMessage));
@@ -183,7 +184,7 @@ contract OpenAcademicArticles is IAIOSignature {
         for (uint256 i = 0; i < publicationIdentifications.length; i++) {
             publicationIdentification = publicationIdentifications[i];
             publisher = _publication.publisher[publicationIdentification];
-            require (publisher == tx.origin);
+            require (publisher == msg.sender);
 
             try _articlesInteract.CleanMetaData(publicationIdentification) {
                 if (publisher != address(0)) {

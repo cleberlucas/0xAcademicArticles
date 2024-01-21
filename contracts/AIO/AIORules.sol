@@ -11,7 +11,7 @@ abstract contract AIORules  {
     modifier InitializeRule(AIOStorageModel.Interconnection storage _interconnection) {
         address sender = msg.sender;
 
-        require(address(this) != sender, AIOMessage.AIO_NOT_EXEC);
+        require(sender != tx.origin, AIOMessage.AIO_NOT_EXEC);
         try IAIOSignature(sender).SIGNATURE() {
             require(bytes(IAIOSignature(sender).SIGNATURE()).length > 0, AIOMessage.SIGNATURE_EMPTY);
             require(bytes(_interconnection.signature[sender]).length == 0, AIOMessage.SENDER_ALREADY_SIGNED);
@@ -25,7 +25,7 @@ abstract contract AIORules  {
     modifier TransferSignatureRule(AIOStorageModel.Interconnection storage _interconnection, address newSender) {
         address oldSender = msg.sender;
 
-        require(address(this) != oldSender, AIOMessage.AIO_NOT_EXEC);
+        require(oldSender != tx.origin, AIOMessage.AIO_NOT_EXEC);
         require(bytes(_interconnection.signature[oldSender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
         require(newSender != oldSender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU); 
         try IAIOSignature(newSender).SIGNATURE() {
