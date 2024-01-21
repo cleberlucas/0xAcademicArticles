@@ -25,7 +25,8 @@ abstract contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORule
 
     function TransferSignature(address newSender)
     external payable  
-    OnlySenderSigned(_interconnection) 
+    OnlySenderSigned(_interconnection)
+    EntryNewSenderDifferentMe(newSender)
     EntryNewSenderSameSignature(newSender) {
         address oldSender = msg.sender;
 

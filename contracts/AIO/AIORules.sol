@@ -23,6 +23,11 @@ abstract contract AIORules {
         _;
     }
 
+    modifier EntryNewSenderDifferentMe(address newSender) {
+        require(newSender != msg.sender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU);
+        _;
+    }
+
     modifier EntryNewSenderSameSignature(address newSender) {
         require(Strings.equal(IAIOSignature(msg.sender).SIGNATURE(), IAIOSignature(newSender).SIGNATURE()), AIOMessage.NEW_SENDER_NOT_HAVE_SAME_SIGNATURE_AS_YOU);
         _;
