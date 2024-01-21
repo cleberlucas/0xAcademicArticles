@@ -3,20 +3,20 @@
 ## OpenAcademicArticles
 
 ### Contract
-OpenAcademicArticles : contracts/interconnections/OpenAcademicArticles.sol
+OpenAcademicArticles : contracts/OpenAcademicArticles/OpenAcademicArticles.sol
 
  --- 
 ### Functions:
 ### constructor
 
 ```solidity
-constructor(address ercx) public
+constructor(address aio) public
 ```
 
-### ConnectToERCX
+### ConnectToAIO
 
 ```solidity
-function ConnectToERCX() external payable
+function ConnectToAIO() external payable
 ```
 
 ### TransferSignature
@@ -67,13 +67,13 @@ function PreviewPublications(uint256 startIndex, uint256 endIndex) external view
 function PublishArticles(struct OpenAcademicArticles.Article_Model[] articles) external payable
 ```
 
-### CleanMetaDatas
+### UnpublishArticles
 
 ```solidity
-function CleanMetaDatas(bytes32[] publicationIdentifications) external payable
+function UnpublishArticles(bytes32[] publicationIdentifications) external payable
 ```
 
-inherits IERCXSignature:
+inherits IAIOSignature:
 
  --- 
 ### Events:
@@ -89,5 +89,5 @@ event ArticlesPublished(bytes32[] publicationIdentifications)
 event ArticlesUnpublished(bytes32[] publicationIdentifications)
 ```
 
-inherits IERCXSignature:
+inherits IAIOSignature:
 

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../main/interfaces/IAIOInteract.sol";
-import "../main/interfaces/IAIOInterconnection.sol";
-import "../main/interfaces/IAIOSearch.sol";
-import "../main/interfaces/IAIOSignature.sol";
+import "../AIO/interfaces/IAIOInteract.sol";
+import "../AIO/interfaces/IAIOInterconnection.sol";
+import "../AIO/interfaces/IAIOSearch.sol";
+import "../AIO/interfaces/IAIOSignature.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 

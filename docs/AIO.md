@@ -1,13 +1,13 @@
 # Solidity API
 
-## ERCX
+## AIO
 
 ### Contract
-ERCX : contracts/main/ERCX.sol
+AIO : contracts/AIO/AIO.sol
 
  --- 
 ### Functions:
-inherits ERCXSearch:
+inherits AIOSearch:
 ### Tokens
 
 ```solidity
@@ -44,7 +44,7 @@ function Signature(address sender) external view returns (string signature)
 function Sender(string signature) external view returns (address sender)
 ```
 
-inherits ERCXInteract:
+inherits AIOInteract:
 ### SendMetaData
 
 ```solidity
@@ -57,7 +57,7 @@ function SendMetaData(bytes metadata) external payable
 function CleanMetaData(bytes32 token) external payable
 ```
 
-inherits ERCXInterconnection:
+inherits AIOInterconnection:
 ### Initialize
 
 ```solidity
@@ -70,16 +70,16 @@ function Initialize() external payable
 function TransferSignature(address newSender) external payable
 ```
 
-inherits ERCXRules:
-inherits ERCXStorage:
-inherits IERCXSearch:
-inherits IERCXInteract:
-inherits IERCXInterconnection:
+inherits AIORules:
+inherits AIOStorage:
+inherits IAIOSearch:
+inherits IAIOInteract:
+inherits IAIOInterconnection:
 
-## ERCXInteract
+## AIOInteract
 
 ### Contract
-ERCXInteract : contracts/main/ERCXInteract.sol
+AIOInteract : contracts/AIO/AIOInteract.sol
 
  --- 
 ### Functions:
@@ -95,14 +95,14 @@ function SendMetaData(bytes metadata) external payable
 function CleanMetaData(bytes32 token) external payable
 ```
 
-inherits ERCXRules:
-inherits ERCXStorage:
-inherits IERCXInteract:
+inherits AIORules:
+inherits AIOStorage:
+inherits IAIOInteract:
 
-## ERCXInterconnection
+## AIOInterconnection
 
 ### Contract
-ERCXInterconnection : contracts/main/ERCXInterconnection.sol
+AIOInterconnection : contracts/AIO/AIOInterconnection.sol
 
  --- 
 ### Functions:
@@ -118,69 +118,75 @@ function Initialize() external payable
 function TransferSignature(address newSender) external payable
 ```
 
-inherits ERCXRules:
-inherits ERCXStorage:
-inherits IERCXInterconnection:
+inherits AIORules:
+inherits AIOStorage:
+inherits IAIOInterconnection:
 
-## ERCXRules
+## AIORules
 
 ### Contract
-ERCXRules : contracts/main/ERCXRules.sol
+AIORules : contracts/AIO/AIORules.sol
 
  --- 
 ### Modifiers:
 ### OnlySenderSigned
 
 ```solidity
-modifier OnlySenderSigned(struct ERCXStorageModel.Interconnection _interconnection)
+modifier OnlySenderSigned(struct AIOStorageModel.Interconnection _interconnection)
 ```
 
-### IsNotMetadataEmpty
+### EntryNotMetadataEmpty
 
 ```solidity
-modifier IsNotMetadataEmpty(bytes metadata)
+modifier EntryNotMetadataEmpty(bytes metadata)
 ```
 
-### IsNotSignedEmpty
+### EntryNotSignedEmpty
 
 ```solidity
-modifier IsNotSignedEmpty()
+modifier EntryNotSignedEmpty()
+```
+
+### EntryNewSenderSameSignature
+
+```solidity
+modifier EntryNewSenderSameSignature(address newSender)
 ```
 
 ### IsNotSenderSigned
 
 ```solidity
-modifier IsNotSenderSigned(struct ERCXStorageModel.Interconnection _interconnection)
+modifier IsNotSenderSigned(struct AIOStorageModel.Interconnection _interconnection)
 ```
 
 ### IsNotSignatureUsed
 
 ```solidity
-modifier IsNotSignatureUsed(struct ERCXStorageModel.Interconnection _interconnection)
+modifier IsNotSignatureUsed(struct AIOStorageModel.Interconnection _interconnection)
 ```
 
 ### IsNotMetadataSended
 
 ```solidity
-modifier IsNotMetadataSended(struct ERCXStorageModel.Data _data, bytes32 token)
+modifier IsNotMetadataSended(struct AIOStorageModel.Data _data, bytes32 token)
 ```
 
 ### IsMetadataSended
 
 ```solidity
-modifier IsMetadataSended(struct ERCXStorageModel.Data _data, bytes32 token)
+modifier IsMetadataSended(struct AIOStorageModel.Data _data, bytes32 token)
 ```
 
 ### IsMetadataSendedBySender
 
 ```solidity
-modifier IsMetadataSendedBySender(struct ERCXStorageModel.Data _data, bytes32 token)
+modifier IsMetadataSendedBySender(struct AIOStorageModel.Data _data, struct AIOStorageModel.Interconnection _interconnection, bytes32 token)
 ```
 
-## ERCXSearch
+## AIOSearch
 
 ### Contract
-ERCXSearch : contracts/main/ERCXSearch.sol
+AIOSearch : contracts/AIO/AIOSearch.sol
 
  --- 
 ### Functions:
@@ -220,18 +226,18 @@ function Signature(address sender) external view returns (string signature)
 function Sender(string signature) external view returns (address sender)
 ```
 
-inherits ERCXStorage:
-inherits IERCXSearch:
+inherits AIOStorage:
+inherits IAIOSearch:
 
-## ERCXStorage
-
-### Contract
-ERCXStorage : contracts/main/ERCXStorage.sol
-
-## IERCXInteract
+## AIOStorage
 
 ### Contract
-IERCXInteract : contracts/main/interfaces/IERCXInteract.sol
+AIOStorage : contracts/AIO/AIOStorage.sol
+
+## IAIOInteract
+
+### Contract
+IAIOInteract : contracts/AIO/interfaces/IAIOInteract.sol
 
  --- 
 ### Functions:
@@ -247,10 +253,10 @@ function SendMetaData(bytes metadata) external payable
 function CleanMetaData(bytes32 token) external payable
 ```
 
-## IERCXInterconnection
+## IAIOInterconnection
 
 ### Contract
-IERCXInterconnection : contracts/main/interfaces/IERCXInterconnection.sol
+IAIOInterconnection : contracts/AIO/interfaces/IAIOInterconnection.sol
 
  --- 
 ### Functions:
@@ -266,10 +272,10 @@ function Initialize() external payable
 function TransferSignature(address newSender) external payable
 ```
 
-## IERCXSearch
+## IAIOSearch
 
 ### Contract
-IERCXSearch : contracts/main/interfaces/IERCXSearch.sol
+IAIOSearch : contracts/AIO/interfaces/IAIOSearch.sol
 
  --- 
 ### Functions:
@@ -309,10 +315,10 @@ function Signature(address sender) external view returns (string signature)
 function Sender(string signature) external view returns (address sender)
 ```
 
-## IERCXSignature
+## IAIOSignature
 
 ### Contract
-IERCXSignature : contracts/main/interfaces/IERCXSignature.sol
+IAIOSignature : contracts/AIO/interfaces/IAIOSignature.sol
 
  --- 
 ### Functions:
@@ -322,10 +328,10 @@ IERCXSignature : contracts/main/interfaces/IERCXSignature.sol
 function SIGNATURE() external pure returns (string signature)
 ```
 
-## ERCXLog
+## AIOLog
 
 ### Contract
-ERCXLog : contracts/main/libs/ERCXLog.sol
+AIOLog : contracts/AIO/libs/AIOLog.sol
 
  --- 
 ### Events:
@@ -353,13 +359,13 @@ event SenderSigned(address sender)
 event SignatureTransferred(address newSender)
 ```
 
-## ERCXMessage
+## AIOMessage
 
 ### Contract
-ERCXMessage : contracts/main/libs/ERCXMessage.sol
+AIOMessage : contracts/AIO/libs/AIOMessage.sol
 
-## ERCXStorageModel
+## AIOStorageModel
 
 ### Contract
-ERCXStorageModel : contracts/main/libs/ERCXStorageModel.sol
+AIOStorageModel : contracts/AIO/libs/AIOStorageModel.sol
 
