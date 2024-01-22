@@ -133,6 +133,28 @@ contract OpenAcademicArticles is IAIOSignature {
         }
     }
 
+    function PreviewPublicationsOfPublisher(address publicationPublisher, uint256 startIndex, uint256 endIndex) 
+    external view 
+    returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint256 currentSize) {     
+        currentSize = _publication.identificationsOfPublisher[publicationPublisher].length;
+
+        if (startIndex >= currentSize || startIndex > endIndex) {
+            previewPublicationsOfPublisher = new PublicationPreview_Model[](0);
+        }   else {
+                uint256 size = endIndex - startIndex + 1;
+                
+                size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+                previewPublicationsOfPublisher = new PublicationPreview_Model[](size); 
+                
+                for (uint256 i = 0; i < size; i++) {
+                    previewPublicationsOfPublisher[i] = PublicationPreview_Model(
+                        abi.decode(_articlesSearch.MetaData(_publication.identificationsOfPublisher[publicationPublisher][startIndex + i]), (Article_Model)).title,
+                        _publication.identificationsOfPublisher[publicationPublisher][startIndex + i]
+                    );
+                }
+        }
+    }
+
     function PublishArticles(Article_Model[] calldata articles) 
     external payable {
         address publisher = msg.sender;
