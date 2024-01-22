@@ -3,7 +3,7 @@
 ## AIO
 
 ### Contract
-AIO : contracts/AIO/AIO.sol
+AIO : AIO/contracts/AIO.sol
 
  --- 
 ### Functions:
@@ -79,7 +79,7 @@ inherits IAIOInterconnection:
 ## AIOInteract
 
 ### Contract
-AIOInteract : contracts/AIO/AIOInteract.sol
+AIOInteract : AIO/contracts/AIOInteract.sol
 
  --- 
 ### Functions:
@@ -102,7 +102,7 @@ inherits IAIOInteract:
 ## AIOInterconnection
 
 ### Contract
-AIOInterconnection : contracts/AIO/AIOInterconnection.sol
+AIOInterconnection : AIO/contracts/AIOInterconnection.sol
 
  --- 
 ### Functions:
@@ -125,68 +125,38 @@ inherits IAIOInterconnection:
 ## AIORules
 
 ### Contract
-AIORules : contracts/AIO/AIORules.sol
+AIORules : AIO/contracts/AIORules.sol
 
  --- 
 ### Modifiers:
-### OnlySenderSigned
+### InitializeRule
 
 ```solidity
-modifier OnlySenderSigned(struct AIOStorageModel.Interconnection _interconnection)
+modifier InitializeRule(struct AIOStorageModel.Interconnection _interconnection)
 ```
 
-### EntryNotMetadataEmpty
+### TransferSignatureRule
 
 ```solidity
-modifier EntryNotMetadataEmpty(bytes metadata)
+modifier TransferSignatureRule(struct AIOStorageModel.Interconnection _interconnection, address newSender)
 ```
 
-### EntryNotSignedEmpty
+### SendMetaDataRule
 
 ```solidity
-modifier EntryNotSignedEmpty()
+modifier SendMetaDataRule(struct AIOStorageModel.Interconnection _interconnection, struct AIOStorageModel.Data _data, bytes metadata)
 ```
 
-### EntryNewSenderSameSignature
+### CleanMetaDataRule
 
 ```solidity
-modifier EntryNewSenderSameSignature(address newSender)
-```
-
-### IsNotSenderSigned
-
-```solidity
-modifier IsNotSenderSigned(struct AIOStorageModel.Interconnection _interconnection)
-```
-
-### IsNotSignatureUsed
-
-```solidity
-modifier IsNotSignatureUsed(struct AIOStorageModel.Interconnection _interconnection)
-```
-
-### IsNotMetadataSended
-
-```solidity
-modifier IsNotMetadataSended(struct AIOStorageModel.Data _data, bytes32 token)
-```
-
-### IsMetadataSended
-
-```solidity
-modifier IsMetadataSended(struct AIOStorageModel.Data _data, bytes32 token)
-```
-
-### IsMetadataSendedBySender
-
-```solidity
-modifier IsMetadataSendedBySender(struct AIOStorageModel.Data _data, struct AIOStorageModel.Interconnection _interconnection, bytes32 token)
+modifier CleanMetaDataRule(struct AIOStorageModel.Interconnection _interconnection, struct AIOStorageModel.Data _data, bytes32 token)
 ```
 
 ## AIOSearch
 
 ### Contract
-AIOSearch : contracts/AIO/AIOSearch.sol
+AIOSearch : AIO/contracts/AIOSearch.sol
 
  --- 
 ### Functions:
@@ -232,12 +202,12 @@ inherits IAIOSearch:
 ## AIOStorage
 
 ### Contract
-AIOStorage : contracts/AIO/AIOStorage.sol
+AIOStorage : AIO/contracts/AIOStorage.sol
 
 ## IAIOInteract
 
 ### Contract
-IAIOInteract : contracts/AIO/interfaces/IAIOInteract.sol
+IAIOInteract : AIO/contracts/interfaces/IAIOInteract.sol
 
  --- 
 ### Functions:
@@ -256,7 +226,7 @@ function CleanMetaData(bytes32 token) external payable
 ## IAIOInterconnection
 
 ### Contract
-IAIOInterconnection : contracts/AIO/interfaces/IAIOInterconnection.sol
+IAIOInterconnection : AIO/contracts/interfaces/IAIOInterconnection.sol
 
  --- 
 ### Functions:
@@ -275,7 +245,7 @@ function TransferSignature(address newSender) external payable
 ## IAIOSearch
 
 ### Contract
-IAIOSearch : contracts/AIO/interfaces/IAIOSearch.sol
+IAIOSearch : AIO/contracts/interfaces/IAIOSearch.sol
 
  --- 
 ### Functions:
@@ -318,7 +288,7 @@ function Sender(string signature) external view returns (address sender)
 ## IAIOSignature
 
 ### Contract
-IAIOSignature : contracts/AIO/interfaces/IAIOSignature.sol
+IAIOSignature : AIO/contracts/interfaces/IAIOSignature.sol
 
  --- 
 ### Functions:
@@ -331,7 +301,7 @@ function SIGNATURE() external pure returns (string signature)
 ## AIOLog
 
 ### Contract
-AIOLog : contracts/AIO/libs/AIOLog.sol
+AIOLog : AIO/contracts/libs/AIOLog.sol
 
  --- 
 ### Events:
@@ -362,10 +332,10 @@ event SignatureTransferred(address newSender)
 ## AIOMessage
 
 ### Contract
-AIOMessage : contracts/AIO/libs/AIOMessage.sol
+AIOMessage : AIO/contracts/libs/AIOMessage.sol
 
 ## AIOStorageModel
 
 ### Contract
-AIOStorageModel : contracts/AIO/libs/AIOStorageModel.sol
+AIOStorageModel : AIO/contracts/libs/AIOStorageModel.sol
 

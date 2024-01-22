@@ -3,7 +3,7 @@
 ## OpenAcademicArticles
 
 ### Contract
-OpenAcademicArticles : contracts/OpenAcademicArticles/OpenAcademicArticles.sol
+OpenAcademicArticles : OpenAcademicArticles/contracts/OpenAcademicArticles.sol
 
  --- 
 ### Functions:
