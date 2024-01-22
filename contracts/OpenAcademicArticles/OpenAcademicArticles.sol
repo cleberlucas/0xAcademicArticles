@@ -125,7 +125,7 @@ contract OpenAcademicArticles is IAIOSignature {
                 publicationsPreview = new PublicationPreview_Model[](size); 
                 
                 for (uint256 i = 0; i < size; i++) {
-                    publicationsPreview[startIndex + i] = PublicationPreview_Model(
+                    publicationsPreview[i] = PublicationPreview_Model(
                         abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
                         _publication.identifications[startIndex + i]
                     );
