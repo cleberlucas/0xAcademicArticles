@@ -111,7 +111,7 @@ contract OpenAcademicArticles is IAIOSignature {
         );
     }
 
-    function PreviewPublications(uint256 startIndex, uint256 endIndex, bool asc) 
+    function PreviewPublications(uint256 startIndex, uint256 endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint256 currentSize) {     
         currentSize = _publication.identifications.length;
@@ -123,21 +123,12 @@ contract OpenAcademicArticles is IAIOSignature {
                 
                 size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
                 publicationsPreview = new PublicationPreview_Model[](size); 
-
-                if (asc) {
-                    for (uint256 i = 0; i < size; i++) {
-                        publicationsPreview[i] = PublicationPreview_Model(
-                            abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
-                            _publication.identifications[startIndex + i]
-                        );
-                    }
-                }   else {
-                        for (uint256 i = 0; i < size; i++) {
-                            publicationsPreview[i] = PublicationPreview_Model(
-                                abi.decode(_articlesSearch.MetaData(_publication.identifications[startIndex + size - i - 1]), (Article_Model)).title,
-                                _publication.identifications[startIndex + size - i - 1]
-                            );
-                        }
+                
+                for (uint256 i = 0; i < size; i++) {
+                    publicationsPreview[i] = PublicationPreview_Model(
+                        abi.decode(_articlesSearch.MetaData(_publication.identifications[i]), (Article_Model)).title,
+                        _publication.identifications[i]
+                    );
                 }
         }
     }
@@ -178,12 +169,9 @@ contract OpenAcademicArticles is IAIOSignature {
 
     function UnpublishArticles(bytes32[] memory publicationIdentifications) 
     external payable {
-        address publisher;
-        bytes32 publicationIdentification;
-
         for (uint256 i = 0; i < publicationIdentifications.length; i++) {
-            publicationIdentification = publicationIdentifications[i];
-            publisher = _publication.publisher[publicationIdentification];
+            bytes32 publicationIdentification = publicationIdentifications[i];
+            address publisher = _publication.publisher[publicationIdentification];
             require (publisher == msg.sender);
 
             try _articlesInteract.CleanMetaData(publicationIdentification) {
