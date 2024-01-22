@@ -7,7 +7,7 @@ import "./interfaces/IAIOSignature.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-abstract contract AIORules  {
+abstract contract AIORules {
     modifier InitializeRule(AIOStorageModel.Interconnection storage _interconnection) {
         address sender = msg.sender;
 
