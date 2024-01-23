@@ -7,22 +7,28 @@ OpenAcademicArticles : OpenAcademicArticles/contracts/OpenAcademicArticles.sol
 
  --- 
 ### Functions:
-### InitializeAIO
-
-```solidity
-function InitializeAIO(address account) external payable
-```
-
 ### SIGNATURE
 
 ```solidity
 function SIGNATURE() external pure returns (string signature)
 ```
 
-### TransferSignature
+### constructor
 
 ```solidity
-function TransferSignature(address newSender) external payable
+constructor() public
+```
+
+### ConnectToAIO
+
+```solidity
+function ConnectToAIO(address account) external payable
+```
+
+### TransferAIOSignature
+
+```solidity
+function TransferAIOSignature(address newSender) external payable
 ```
 
 ### Publication
@@ -69,6 +75,18 @@ event ArticlesPublished(bytes32[] publicationIdentifications)
 
 ```solidity
 event ArticlesUnpublished(bytes32[] publicationIdentifications)
+```
+
+### ConnectedToAIO
+
+```solidity
+event ConnectedToAIO(address account)
+```
+
+### TransferredAIOSignature
+
+```solidity
+event TransferredAIOSignature(address newSender)
 ```
 
 inherits IAIOSignature:
