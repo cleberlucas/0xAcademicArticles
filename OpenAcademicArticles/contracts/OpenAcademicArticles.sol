@@ -11,6 +11,12 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 // Created by Cleber Lucas
 contract OpenAcademicArticles is IAIOSignature {
+    function SIGNATURE() 
+    external pure 
+    returns (string memory signature) {
+        signature = "OpenAcademicArticles";
+    }
+
     struct Publication_Model {
         Article_Model article;
         address publisher;
@@ -65,12 +71,6 @@ contract OpenAcademicArticles is IAIOSignature {
         _aio.articlesSearch = IAIOSearch(account);
         _aio.articlesInteract = IAIOInteract(account);
         _aio.account = account;
-    }
-
-    function SIGNATURE() 
-    external pure 
-    returns (string memory signature) {
-        signature = "OpenAcademicArticles";
     }
 
     function TransferSignature(address newSender) 
