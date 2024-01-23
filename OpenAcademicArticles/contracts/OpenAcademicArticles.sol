@@ -61,21 +61,37 @@ contract OpenAcademicArticles is IAIOSignature {
 
     event ArticlesPublished(bytes32[] indexed publicationIdentifications);
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
+    event ConnectedToAIO(address indexed account);
+    event TransferredAIOSignature(address indexed newSender);
 
     Publication_StorageModel internal _publication;
     AIO_StorageModel internal _aio;
+
+    address immutable OWNER;
+
+    constructor(){
+        OWNER = msg.sender;
+    }
   
-    function InitializeAIO(address account) 
+    function ConnectToAIO(address account) 
     external payable {
+        require (OWNER == msg.sender, "Owner action");
+
         IAIOInterconnection(account).Initialize();
         _aio.articlesSearch = IAIOSearch(account);
         _aio.articlesInteract = IAIOInteract(account);
         _aio.account = account;
+
+        emit ConnectedToAIO(account);
     }
 
-    function TransferSignature(address newSender) 
+    function TransferAIOSignature(address newSender) 
     external payable {
-        IAIOInterconnection(_aio.account).TransferSignature(newSender);
+        require (OWNER == msg.sender, "Owner action");
+
+        IAIOInterconnection(address(this)).TransferSignature(newSender);
+
+        emit TransferredAIOSignature(newSender);
     }
 
     function Publication(bytes32 publicationIdentification) 
@@ -172,6 +188,7 @@ contract OpenAcademicArticles is IAIOSignature {
         for (uint256 i = 0; i < publicationIdentifications.length; i++) {
             bytes32 publicationIdentification = publicationIdentifications[i];
             address publisher = _publication.publisher[publicationIdentification];
+
             require (publisher != address(0), "Article is not published");
             require (publisher == msg.sender, "Article is not published by you");
 
