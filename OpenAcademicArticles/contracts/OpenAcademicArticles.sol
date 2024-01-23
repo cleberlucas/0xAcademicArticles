@@ -14,7 +14,8 @@ contract OpenAcademicArticles is IAIOSignature {
     struct Publication_Model {
         Article_Model article;
         address publisher;
-        uint256 datatime;
+        uint datetime;
+        uint blockNumber;
     }
 
     struct PublicationPreview_Model {
@@ -34,24 +35,24 @@ contract OpenAcademicArticles is IAIOSignature {
         string[] authors;
         string[] advisors;
         string[] examiningBoard;
-        int presentationYear;
+        uint16 presentationYear;
     }
 
     struct Publication_StorageModel {
         bytes32[] identifications;
         address[] publishers;
 		mapping(bytes32 identification => address) publisher;
-        mapping(bytes32 identification => uint256) dateTime;
-        mapping(bytes32 identification => uint256) blockNumber;
+        mapping(bytes32 identification => uint) datetime;
+        mapping(bytes32 identification => uint) blockNumber;
 		mapping(address publisher => bytes32[]) identificationsOfPublisher;
     }
 
     event ArticlesPublished(bytes32[] indexed publicationIdentifications);
     event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
 
-    address immutable AIO;
     bool connectedInAIO;
 
+    address immutable AIO;
     IAIOSearch internal immutable _articlesSearch;
     IAIOInteract internal immutable _articlesInteract;
 
@@ -65,7 +66,7 @@ contract OpenAcademicArticles is IAIOSignature {
     
     function ConnectToAIO() 
     external payable {
-        require(!connectedInAIO);
+        require(!connectedInAIO, "Already connected to the AIO");
 
         IAIOInterconnection(AIO).Initialize();
 
@@ -107,7 +108,8 @@ contract OpenAcademicArticles is IAIOSignature {
         publication = Publication_Model(
             abi.decode(_articlesSearch.MetaData(publicationIdentification), (Article_Model)),
             _publication.publisher[publicationIdentification],
-            _publication.dateTime[publicationIdentification]
+            _publication.datetime[publicationIdentification],
+            _publication.blockNumber[publicationIdentification]
         );
     }
 
@@ -168,7 +170,7 @@ contract OpenAcademicArticles is IAIOSignature {
 
                 _publication.identifications.push(publicationIdentification);
                 _publication.publisher[publicationIdentification] = publisher;
-                _publication.dateTime[publicationIdentification] = block.timestamp;
+                _publication.datetime[publicationIdentification] = block.timestamp;
                 _publication.blockNumber[publicationIdentification] = block.number;
                 _publication.identificationsOfPublisher[publisher].push(publicationIdentification);
 
@@ -194,12 +196,12 @@ contract OpenAcademicArticles is IAIOSignature {
         for (uint256 i = 0; i < publicationIdentifications.length; i++) {
             bytes32 publicationIdentification = publicationIdentifications[i];
             address publisher = _publication.publisher[publicationIdentification];
-            require (publisher == msg.sender);
+            require (publisher == msg.sender, "Article is not published by you");
 
             try _articlesInteract.CleanMetaData(publicationIdentification) {
                 if (publisher != address(0)) {
                     _publication.publisher[publicationIdentification] = address(0);
-                    _publication.dateTime[publicationIdentification] = 0;
+                    _publication.datetime[publicationIdentification] = 0;
                     _publication.blockNumber[publicationIdentification] = 0;
 
                     for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
@@ -232,7 +234,7 @@ contract OpenAcademicArticles is IAIOSignature {
                         revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published"));
                     }   else {
                             if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT_BY_YOU))) {                    
-                                revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published by you"));
+                                revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published here"));
                             }
                     }
 
