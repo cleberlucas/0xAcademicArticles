@@ -1,9 +1,3 @@
-// SPDX-License-Identifier: MIT
-
-/*
-    *** Flattened code
-    Original code in: https://github.com/cleberlucas/SmartContracts/tree/develop/OpenAcademicArticles
-*/
 
 // File: @openzeppelin/contracts/utils/math/SignedMath.sol
 
@@ -624,7 +618,7 @@ interface IAIOInteract {
     function SendMetaData(bytes calldata metadata) external payable;
     function CleanMetaData(bytes32 token) external payable;
 }
-// File: OpenAcademicArticles/contracts/OpenAcademicArticles.sol
+// File: AcademicArticles/contracts/AcademicArticles.sol
 
 
 pragma solidity ^0.8.23;
@@ -636,11 +630,11 @@ pragma solidity ^0.8.23;
 
 
 // Created by Cleber Lucas
-contract OpenAcademicArticles is IAIOSignature {
+contract AcademicArticles is IAIOSignature {
     function SIGNATURE() 
     external pure 
     returns (string memory signature) {
-        signature = "OpenAcademicArticles";
+        signature = "AcademicArticles";
     }
 
     struct Publication_Model {

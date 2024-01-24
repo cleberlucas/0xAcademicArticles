@@ -1,9 +1,9 @@
 # Solidity API
 
-## OpenAcademicArticles
+## AcademicArticles
 
 ### Contract
-OpenAcademicArticles : OpenAcademicArticles/contracts/OpenAcademicArticles.sol
+AcademicArticles : AcademicArticles/contracts/AcademicArticles.sol
 
  --- 
 ### Functions:
@@ -34,25 +34,25 @@ function TransferAIOSignature(address newSender) external payable
 ### Publication
 
 ```solidity
-function Publication(bytes32 publicationIdentification) external view returns (struct OpenAcademicArticles.Publication_Model publication)
+function Publication(bytes32 publicationIdentification) external view returns (struct AcademicArticles.Publication_Model publication)
 ```
 
 ### PreviewPublications
 
 ```solidity
-function PreviewPublications(uint256 startIndex, uint256 endIndex) external view returns (struct OpenAcademicArticles.PublicationPreview_Model[] publicationsPreview, uint256 currentSize)
+function PreviewPublications(uint256 startIndex, uint256 endIndex) external view returns (struct AcademicArticles.PublicationPreview_Model[] publicationsPreview, uint256 currentSize)
 ```
 
 ### PreviewPublicationsOfPublisher
 
 ```solidity
-function PreviewPublicationsOfPublisher(address publicationPublisher, uint256 startIndex, uint256 endIndex) external view returns (struct OpenAcademicArticles.PublicationPreview_Model[] previewPublicationsOfPublisher, uint256 currentSize)
+function PreviewPublicationsOfPublisher(address publicationPublisher, uint256 startIndex, uint256 endIndex) external view returns (struct AcademicArticles.PublicationPreview_Model[] previewPublicationsOfPublisher, uint256 currentSize)
 ```
 
 ### PublishArticles
 
 ```solidity
-function PublishArticles(struct OpenAcademicArticles.Article_Model[] articles) external payable
+function PublishArticles(struct AcademicArticles.Article_Model[] articles) external payable
 ```
 
 ### UnpublishArticles
