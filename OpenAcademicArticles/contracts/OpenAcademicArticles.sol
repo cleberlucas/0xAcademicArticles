@@ -9,6 +9,7 @@ import "../../AIO/contracts/libs/AIOMessage.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
+//
 // Created by Cleber Lucas
 contract OpenAcademicArticles is IAIOSignature {
     function SIGNATURE() 
