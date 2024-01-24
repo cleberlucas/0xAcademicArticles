@@ -9,8 +9,8 @@ import "./AIORules.sol";
 contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
     function SendMetaData(bytes calldata metadata)
     external payable
-    SendMetaDataRule(_interconnection, _data, metadata)  {
-        string memory signature = IAIOSignature(msg.sender).SIGNATURE();
+    SendMetaDataRule(_interconnection, _data, metadata) {
+        string storage signature = _interconnection.signature[msg.sender];
         bytes32 token = keccak256(metadata);
 
         _data.tokens[signature].push(token);
@@ -23,7 +23,7 @@ contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
     function CleanMetaData(bytes32 token)
     external payable
     CleanMetaDataRule(_interconnection, _data, token) {
-        string memory signature = IAIOSignature(msg.sender).SIGNATURE();
+        string storage signature = _interconnection.signature[msg.sender];
 
         for (uint256 i = 0; i < _data.tokens[signature].length; i++) {
             if (_data.tokens[signature][i] == token) {
@@ -34,7 +34,7 @@ contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
                 _data.metadata[token] = new bytes(0);
 
                 emit AIOLog.MetaDataCleaned(token);
-                return;
+                break;
             }
         }
     }

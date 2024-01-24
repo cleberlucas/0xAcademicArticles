@@ -40,7 +40,7 @@ contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
                 _interconnection.signature[newSender] = signature;
 
                 emit AIOLog.SignatureTransferred(newSender);
-                return;
+                break;
             }
         }
     }
