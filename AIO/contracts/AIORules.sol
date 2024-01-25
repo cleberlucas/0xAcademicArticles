@@ -36,23 +36,23 @@ abstract contract AIORules {
         _;
     }
 
-    modifier SendMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Data storage _data, bytes calldata metadata) {
+    modifier SendMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Token storage _token, bytes calldata metadata) {
         address sender = msg.sender;
 
         require(address(this) != sender, AIOMessage.NOT_EXEC_DIRECT_AIO);
         require(bytes(_interconnection.signature[sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
         require(metadata.length > 0, AIOMessage.METADATA_EMPTY);
-        require(bytes(_data.signature[keccak256(metadata)]).length == 0, AIOMessage.METADATA_ALREADY_SENT);
+        require(bytes(_token.signature[keccak256(metadata)]).length == 0, AIOMessage.METADATA_ALREADY_SENT);
         _;
     }
 
-    modifier CleanMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Data storage _data, bytes32 token) {
+    modifier CleanMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Token storage _token, bytes32 id) {
         address sender = msg.sender;
         
         require(address(this) != sender, AIOMessage.NOT_EXEC_DIRECT_AIO);
         require(bytes(_interconnection.signature[sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
-        require(bytes(_data.signature[token]).length > 0, AIOMessage.METADATA_NOT_SENT);
-        require(Strings.equal((_data.signature[token]), _interconnection.signature[sender]), AIOMessage.METADATA_NOT_SENT_BY_YOU);
+        require(bytes(_token.signature[id]).length > 0, AIOMessage.METADATA_NOT_SENT);
+        require(Strings.equal((_token.signature[id]), _interconnection.signature[sender]), AIOMessage.METADATA_NOT_SENT_BY_YOU);
         _;
     }
 }

@@ -5,22 +5,22 @@ import "./interfaces/IAIOSearch.sol";
 import "./AIOStorage.sol";
 
 abstract contract AIOSearch is IAIOSearch, AIOStorage {
-    function Tokens(string calldata signature) 
+    function Ids(string calldata signature) 
     external view 
-    returns (bytes32[] memory tokens) {
-        tokens = _data.tokens[signature];
+    returns (bytes32[] memory ids) {
+        ids = _token.ids[signature];
     }
 
-    function Signature(bytes32 token) 
+    function Signature(bytes32 id) 
     external view 
     returns (string memory signature) {
-        signature = _data.signature[token];
+        signature = _token.signature[id];
     }
 
-    function MetaData(bytes32 token) 
+    function MetaData(bytes32 id) 
     external view 
     returns (bytes memory metadata) {
-        metadata = _data.metadata[token];
+        metadata = _token.metadata[id];
     }
 
     function Senders()

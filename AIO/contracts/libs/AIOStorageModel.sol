@@ -2,10 +2,10 @@
 pragma solidity ^0.8.23;
 
 library AIOStorageModel {
-    struct Data {   
-        mapping(string signature => bytes32[]) tokens;
-        mapping(bytes32 token => string) signature;
-        mapping(bytes32 token => bytes) metadata;
+    struct Token {   
+        mapping(string signature => bytes32[]) ids;
+        mapping(bytes32 id => string) signature;
+        mapping(bytes32 id => bytes) metadata;
     }
 
     struct Interconnection {  

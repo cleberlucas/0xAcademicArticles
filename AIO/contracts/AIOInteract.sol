@@ -9,31 +9,31 @@ import "./AIORules.sol";
 contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
     function SendMetaData(bytes calldata metadata)
     external payable
-    SendMetaDataRule(_interconnection, _data, metadata) {
+    SendMetaDataRule(_interconnection, _token, metadata) {
         string storage signature = _interconnection.signature[msg.sender];
-        bytes32 token = keccak256(metadata);
+        bytes32 id = keccak256(metadata);
 
-        _data.tokens[signature].push(token);
-        _data.signature[token] = signature;
-        _data.metadata[token] = metadata;
+        _token.ids[signature].push(id);
+        _token.signature[id] = signature;
+        _token.metadata[id] = metadata;
 
-        emit AIOLog.MetaDataSended(token);
+        emit AIOLog.MetadataSended(id);
     }
 
-    function CleanMetaData(bytes32 token)
+    function CleanMetaData(bytes32 id)
     external payable
-    CleanMetaDataRule(_interconnection, _data, token) {
+    CleanMetaDataRule(_interconnection, _token, id) {
         string storage signature = _interconnection.signature[msg.sender];
 
-        for (uint256 i = 0; i < _data.tokens[signature].length; i++) {
-            if (_data.tokens[signature][i] == token) {
-                _data.tokens[signature][i] = _data.tokens[signature][_data.tokens[signature].length - 1];
-                _data.tokens[signature].pop();
+        for (uint256 i = 0; i < _token.ids[signature].length; i++) {
+            if (_token.ids[signature][i] == id) {
+                _token.ids[signature][i] = _token.ids[signature][_token.ids[signature].length - 1];
+                _token.ids[signature].pop();
 
-                _data.signature[token] = "";
-                _data.metadata[token] = new bytes(0);
+                _token.signature[id] = "";
+                _token.metadata[id] = new bytes(0);
 
-                emit AIOLog.MetaDataCleaned(token);
+                emit AIOLog.MetadataCleaned(id);
                 break;
             }
         }
