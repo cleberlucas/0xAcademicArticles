@@ -593,9 +593,9 @@ interface IAIOSignature {
 pragma solidity ^0.8.23;
 
 interface IAIOSearch {
-    function Tokens(string calldata signature) external view returns (bytes32[] memory tokens);
-    function Signature(bytes32 token) external view returns (string memory signature);
-    function MetaData(bytes32 token) external view returns (bytes memory metadata);
+    function Ids(string calldata signature) external view returns (bytes32[] memory ids);
+    function Signature(bytes32 id) external view returns (string memory signature);
+    function MetaData(bytes32 id) external view returns (bytes memory metadata);
     function Senders() external view returns (address[] memory senders);
     function Signature(address sender) external view returns (string memory signature);
     function Sender(string calldata signature) external view returns (address sender);
@@ -616,7 +616,7 @@ pragma solidity ^0.8.23;
 
 interface IAIOInteract {
     function SendMetaData(bytes calldata metadata) external payable;
-    function CleanMetaData(bytes32 token) external payable;
+    function CleanMetaData(bytes32 id) external payable;
 }
 // File: AcademicArticles/contracts/AcademicArticles.sol
 
@@ -646,7 +646,7 @@ contract AcademicArticles is IAIOSignature {
 
     struct PublicationPreview_Model {
         string title;
-        bytes32 identification;
+        bytes32 id;
     }
 
     struct Article_Model {
@@ -665,12 +665,12 @@ contract AcademicArticles is IAIOSignature {
     }
 
     struct Publication_StorageModel {
-        bytes32[] identifications;
+        bytes32[] ids;
         address[] publishers;
-        mapping(bytes32 identification => address) publisher;
-        mapping(bytes32 identification => uint) datetime;
-        mapping(bytes32 identification => uint) blockNumber;
-        mapping(address publisher => bytes32[]) identificationsOfPublisher;
+        mapping(bytes32 id => address) publisher;
+        mapping(bytes32 id => uint) datetime;
+        mapping(bytes32 id => uint) blockNumber;
+        mapping(address publisher => bytes32[]) idsOfPublisher;
     }
 
     struct AIO_StorageModel {     
@@ -679,8 +679,8 @@ contract AcademicArticles is IAIOSignature {
         IAIOInteract articlesInteract;
     }
 
-    event ArticlesPublished(bytes32[] indexed publicationIdentifications);
-    event ArticlesUnpublished(bytes32[] indexed publicationIdentifications);
+    event ArticlesPublished(bytes32[] indexed ids);
+    event ArticlesUnpublished(bytes32[] indexed ids);
     event ConnectedToAIO(address indexed account);
     event TransferredAIOSignature(address indexed newSender);
 
@@ -714,21 +714,21 @@ contract AcademicArticles is IAIOSignature {
         emit TransferredAIOSignature(newSender);
     }
 
-    function Publication(bytes32 publicationIdentification) 
+    function Publication(bytes32 id) 
     external view 
     returns (Publication_Model memory publication) {
         publication = Publication_Model(
-            abi.decode(_aio.articlesSearch.MetaData(publicationIdentification), (Article_Model)),
-            _publication.publisher[publicationIdentification],
-            _publication.datetime[publicationIdentification],
-            _publication.blockNumber[publicationIdentification]
+            abi.decode(_aio.articlesSearch.MetaData(id), (Article_Model)),
+            _publication.publisher[id],
+            _publication.datetime[id],
+            _publication.blockNumber[id]
         );
     }
 
     function PreviewPublications(uint256 startIndex, uint256 endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint256 currentSize) {     
-        currentSize = _publication.identifications.length;
+        currentSize = _publication.ids.length;
 
         if (startIndex >= currentSize || startIndex > endIndex) {
             publicationsPreview = new PublicationPreview_Model[](0);
@@ -740,8 +740,8 @@ contract AcademicArticles is IAIOSignature {
                 
                 for (uint256 i = 0; i < size; i++) {
                     publicationsPreview[i] = PublicationPreview_Model(
-                        abi.decode(_aio.articlesSearch.MetaData(_publication.identifications[startIndex + i]), (Article_Model)).title,
-                        _publication.identifications[startIndex + i]
+                        abi.decode(_aio.articlesSearch.MetaData(_publication.ids[startIndex + i]), (Article_Model)).title,
+                        _publication.ids[startIndex + i]
                     );
                 }
         }
@@ -750,7 +750,7 @@ contract AcademicArticles is IAIOSignature {
     function PreviewPublicationsOfPublisher(address publicationPublisher, uint256 startIndex, uint256 endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint256 currentSize) {     
-        currentSize = _publication.identificationsOfPublisher[publicationPublisher].length;
+        currentSize = _publication.idsOfPublisher[publicationPublisher].length;
 
         if (startIndex >= currentSize || startIndex > endIndex) {
             previewPublicationsOfPublisher = new PublicationPreview_Model[](0);
@@ -762,8 +762,8 @@ contract AcademicArticles is IAIOSignature {
                 
                 for (uint256 i = 0; i < size; i++) {
                     previewPublicationsOfPublisher[i] = PublicationPreview_Model(
-                        abi.decode(_aio.articlesSearch.MetaData(_publication.identificationsOfPublisher[publicationPublisher][startIndex + i]), (Article_Model)).title,
-                        _publication.identificationsOfPublisher[publicationPublisher][startIndex + i]
+                        abi.decode(_aio.articlesSearch.MetaData(_publication.idsOfPublisher[publicationPublisher][startIndex + i]), (Article_Model)).title,
+                        _publication.idsOfPublisher[publicationPublisher][startIndex + i]
                     );
                 }
         }
@@ -772,60 +772,60 @@ contract AcademicArticles is IAIOSignature {
     function PublishArticles(Article_Model[] calldata articles) 
     external payable {
         address publisher = msg.sender;
-        bytes32[] memory publicationIdentifications = new bytes32[](articles.length);
+        bytes32[] memory ids = new bytes32[](articles.length);
 
         for (uint256 i = 0; i < articles.length; i++) {
             Article_Model memory article = articles[i];
 
             try _aio.articlesInteract.SendMetaData(abi.encode(article)) {
-                bytes32 publicationIdentification = keccak256(abi.encode(article));
+                bytes32 id = keccak256(abi.encode(article));
 
-                _publication.identifications.push(publicationIdentification);
-                _publication.publisher[publicationIdentification] = publisher;
-                _publication.datetime[publicationIdentification] = block.timestamp;
-                _publication.blockNumber[publicationIdentification] = block.number;
-                _publication.identificationsOfPublisher[publisher].push(publicationIdentification);
+                _publication.ids.push(id);
+                _publication.publisher[id] = publisher;
+                _publication.datetime[id] = block.timestamp;
+                _publication.blockNumber[id] = block.number;
+                _publication.idsOfPublisher[publisher].push(id);
 
-                if (_publication.identificationsOfPublisher[publisher].length == 1) {
+                if (_publication.idsOfPublisher[publisher].length == 1) {
                     _publication.publishers.push(publisher);
                 }
 
-                publicationIdentifications[i] = publicationIdentification;
+                ids[i] = id;
             }   catch Error(string memory errorMessage) {
                     if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_ALREADY_SENT))) {                    
-                        revert(string.concat("article[", Strings.toString(i), "]: ", "Article already published"));
+                        revert(string.concat("Article[", Strings.toString(i), "]: already published"));
                     }
 
                     revert(errorMessage);
             }
         }
 
-        emit ArticlesPublished(publicationIdentifications);
+        emit ArticlesPublished(ids);
     }
 
-    function UnpublishArticles(bytes32[] memory publicationIdentifications) 
+    function UnpublishArticles(bytes32[] memory ids) 
     external payable {
-        for (uint256 i = 0; i < publicationIdentifications.length; i++) {
-            bytes32 publicationIdentification = publicationIdentifications[i];
-            address publisher = _publication.publisher[publicationIdentification];
+        for (uint256 i = 0; i < ids.length; i++) {
+            bytes32 id = ids[i];
+            address publisher = _publication.publisher[id];
 
             require (publisher != address(0), "Article is not published");
             require (publisher == msg.sender, "Article is not published by you");
 
-            try _aio.articlesInteract.CleanMetaData(publicationIdentification) {
-                _publication.publisher[publicationIdentification] = address(0);
-                _publication.datetime[publicationIdentification] = 0;
-                _publication.blockNumber[publicationIdentification] = 0;
+            try _aio.articlesInteract.CleanMetaData(id) {
+                _publication.publisher[id] = address(0);
+                _publication.datetime[id] = 0;
+                _publication.blockNumber[id] = 0;
 
-                for (uint256 ii = 0; ii < _publication.identifications.length; ii++) {
-                    if (_publication.identifications[ii] == publicationIdentification) {
-                        _publication.identifications[ii] = _publication.identifications[_publication.identifications.length - 1];
-                        _publication.identifications.pop();             
+                for (uint256 ii = 0; ii < _publication.ids.length; ii++) {
+                    if (_publication.ids[ii] == id) {
+                        _publication.ids[ii] = _publication.ids[_publication.ids.length - 1];
+                        _publication.ids.pop();             
                     }
                 }
 
-                if (_publication.identificationsOfPublisher[publisher].length == 1) {
-                    _publication.identificationsOfPublisher[publisher] = new bytes32[](0);
+                if (_publication.idsOfPublisher[publisher].length == 1) {
+                    _publication.idsOfPublisher[publisher] = new bytes32[](0);
 
                     for (uint256 ii = 0; ii < _publication.publishers.length; ii++) {
                         if (_publication.publishers[ii] == publisher) {
@@ -834,20 +834,20 @@ contract AcademicArticles is IAIOSignature {
                         }
                     }
                 }   else {
-                        for (uint256 ii = 0; ii < _publication.identificationsOfPublisher[publisher].length; ii++) {
-                            if (_publication.identificationsOfPublisher[publisher][ii] == publicationIdentification) {
-                                _publication.identificationsOfPublisher[publisher][ii] = _publication.identificationsOfPublisher[publisher][_publication.identificationsOfPublisher[publisher].length - 1];
-                                _publication.identificationsOfPublisher[publisher].pop();             
+                        for (uint256 ii = 0; ii < _publication.idsOfPublisher[publisher].length; ii++) {
+                            if (_publication.idsOfPublisher[publisher][ii] == id) {
+                                _publication.idsOfPublisher[publisher][ii] = _publication.idsOfPublisher[publisher][_publication.idsOfPublisher[publisher].length - 1];
+                                _publication.idsOfPublisher[publisher].pop();             
                             }
                         }
                 }
                       
             }   catch Error(string memory errorMessage) {
                     if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT))) {                    
-                        revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published"));
+                        revert(string.concat("Article[", Strings.toString(i), "]: is not published"));
                     }   else {
                             if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT_BY_YOU))) {                    
-                                revert(string.concat("article[", Strings.toString(i), "]: ", "Article is not published here"));
+                                revert(string.concat("Article[", Strings.toString(i), "]: is not published here"));
                             }
                     }
 
@@ -855,6 +855,6 @@ contract AcademicArticles is IAIOSignature {
             }
         }
 
-        emit ArticlesUnpublished(publicationIdentifications);
+        emit ArticlesUnpublished(ids);
     }
 }

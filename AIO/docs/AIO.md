@@ -8,22 +8,22 @@ AIO : AIO/contracts/AIO.sol
  --- 
 ### Functions:
 inherits AIOSearch:
-### Tokens
+### Ids
 
 ```solidity
-function Tokens(string signature) external view returns (bytes32[] tokens)
+function Ids(string signature) external view returns (bytes32[] ids)
 ```
 
 ### Signature
 
 ```solidity
-function Signature(bytes32 token) external view returns (string signature)
+function Signature(bytes32 id) external view returns (string signature)
 ```
 
 ### MetaData
 
 ```solidity
-function MetaData(bytes32 token) external view returns (bytes metadata)
+function MetaData(bytes32 id) external view returns (bytes metadata)
 ```
 
 ### Senders
@@ -54,7 +54,7 @@ function SendMetaData(bytes metadata) external payable
 ### CleanMetaData
 
 ```solidity
-function CleanMetaData(bytes32 token) external payable
+function CleanMetaData(bytes32 id) external payable
 ```
 
 inherits AIOInterconnection:
@@ -92,7 +92,7 @@ function SendMetaData(bytes metadata) external payable
 ### CleanMetaData
 
 ```solidity
-function CleanMetaData(bytes32 token) external payable
+function CleanMetaData(bytes32 id) external payable
 ```
 
 inherits AIORules:
@@ -144,13 +144,13 @@ modifier TransferSignatureRule(struct AIOStorageModel.Interconnection _interconn
 ### SendMetaDataRule
 
 ```solidity
-modifier SendMetaDataRule(struct AIOStorageModel.Interconnection _interconnection, struct AIOStorageModel.Data _data, bytes metadata)
+modifier SendMetaDataRule(struct AIOStorageModel.Interconnection _interconnection, struct AIOStorageModel.Token _token, bytes metadata)
 ```
 
 ### CleanMetaDataRule
 
 ```solidity
-modifier CleanMetaDataRule(struct AIOStorageModel.Interconnection _interconnection, struct AIOStorageModel.Data _data, bytes32 token)
+modifier CleanMetaDataRule(struct AIOStorageModel.Interconnection _interconnection, struct AIOStorageModel.Token _token, bytes32 id)
 ```
 
 ## AIOSearch
@@ -160,22 +160,22 @@ AIOSearch : AIO/contracts/AIOSearch.sol
 
  --- 
 ### Functions:
-### Tokens
+### Ids
 
 ```solidity
-function Tokens(string signature) external view returns (bytes32[] tokens)
+function Ids(string signature) external view returns (bytes32[] ids)
 ```
 
 ### Signature
 
 ```solidity
-function Signature(bytes32 token) external view returns (string signature)
+function Signature(bytes32 id) external view returns (string signature)
 ```
 
 ### MetaData
 
 ```solidity
-function MetaData(bytes32 token) external view returns (bytes metadata)
+function MetaData(bytes32 id) external view returns (bytes metadata)
 ```
 
 ### Senders
@@ -220,7 +220,7 @@ function SendMetaData(bytes metadata) external payable
 ### CleanMetaData
 
 ```solidity
-function CleanMetaData(bytes32 token) external payable
+function CleanMetaData(bytes32 id) external payable
 ```
 
 ## IAIOInterconnection
@@ -249,22 +249,22 @@ IAIOSearch : AIO/contracts/interfaces/IAIOSearch.sol
 
  --- 
 ### Functions:
-### Tokens
+### Ids
 
 ```solidity
-function Tokens(string signature) external view returns (bytes32[] tokens)
+function Ids(string signature) external view returns (bytes32[] ids)
 ```
 
 ### Signature
 
 ```solidity
-function Signature(bytes32 token) external view returns (string signature)
+function Signature(bytes32 id) external view returns (string signature)
 ```
 
 ### MetaData
 
 ```solidity
-function MetaData(bytes32 token) external view returns (bytes metadata)
+function MetaData(bytes32 id) external view returns (bytes metadata)
 ```
 
 ### Senders
@@ -305,16 +305,16 @@ AIOLog : AIO/contracts/libs/AIOLog.sol
 
  --- 
 ### Events:
-### MetaDataSended
+### MetadataSended
 
 ```solidity
-event MetaDataSended(bytes32 token)
+event MetadataSended(bytes32 id)
 ```
 
-### MetaDataCleaned
+### MetadataCleaned
 
 ```solidity
-event MetaDataCleaned(bytes32 token)
+event MetadataCleaned(bytes32 id)
 ```
 
 ### SenderSigned

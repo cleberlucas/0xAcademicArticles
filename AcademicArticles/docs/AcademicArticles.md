@@ -34,7 +34,7 @@ function TransferAIOSignature(address newSender) external payable
 ### Publication
 
 ```solidity
-function Publication(bytes32 publicationIdentification) external view returns (struct AcademicArticles.Publication_Model publication)
+function Publication(bytes32 id) external view returns (struct AcademicArticles.Publication_Model publication)
 ```
 
 ### PreviewPublications
@@ -58,7 +58,7 @@ function PublishArticles(struct AcademicArticles.Article_Model[] articles) exter
 ### UnpublishArticles
 
 ```solidity
-function UnpublishArticles(bytes32[] publicationIdentifications) external payable
+function UnpublishArticles(bytes32[] ids) external payable
 ```
 
 inherits IAIOSignature:
@@ -68,13 +68,13 @@ inherits IAIOSignature:
 ### ArticlesPublished
 
 ```solidity
-event ArticlesPublished(bytes32[] publicationIdentifications)
+event ArticlesPublished(bytes32[] ids)
 ```
 
 ### ArticlesUnpublished
 
 ```solidity
-event ArticlesUnpublished(bytes32[] publicationIdentifications)
+event ArticlesUnpublished(bytes32[] ids)
 ```
 
 ### ConnectedToAIO

@@ -585,10 +585,10 @@ library AIOMessage {
 pragma solidity ^0.8.23;
 
 library AIOStorageModel {
-    struct Data {   
-        mapping(string signature => bytes32[]) tokens;
-        mapping(bytes32 token => string) signature;
-        mapping(bytes32 token => bytes) metadata;
+    struct Token {   
+        mapping(string signature => bytes32[]) ids;
+        mapping(bytes32 id => string) signature;
+        mapping(bytes32 id => bytes) metadata;
     }
 
     struct Interconnection {  
@@ -604,7 +604,7 @@ pragma solidity ^0.8.23;
 
 
 abstract contract AIOStorage {
-    AIOStorageModel.Data internal _data;
+    AIOStorageModel.Token internal _token;
     AIOStorageModel.Interconnection internal _interconnection;
 }
 // File: AIO/contracts/interfaces/IAIOSignature.sol
@@ -653,23 +653,23 @@ abstract contract AIORules {
         _;
     }
 
-    modifier SendMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Data storage _data, bytes calldata metadata) {
+    modifier SendMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Token storage _token, bytes calldata metadata) {
         address sender = msg.sender;
 
         require(address(this) != sender, AIOMessage.NOT_EXEC_DIRECT_AIO);
         require(bytes(_interconnection.signature[sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
         require(metadata.length > 0, AIOMessage.METADATA_EMPTY);
-        require(bytes(_data.signature[keccak256(metadata)]).length == 0, AIOMessage.METADATA_ALREADY_SENT);
+        require(bytes(_token.signature[keccak256(metadata)]).length == 0, AIOMessage.METADATA_ALREADY_SENT);
         _;
     }
 
-    modifier CleanMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Data storage _data, bytes32 token) {
+    modifier CleanMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Token storage _token, bytes32 id) {
         address sender = msg.sender;
         
         require(address(this) != sender, AIOMessage.NOT_EXEC_DIRECT_AIO);
         require(bytes(_interconnection.signature[sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
-        require(bytes(_data.signature[token]).length > 0, AIOMessage.METADATA_NOT_SENT);
-        require(Strings.equal((_data.signature[token]), _interconnection.signature[sender]), AIOMessage.METADATA_NOT_SENT_BY_YOU);
+        require(bytes(_token.signature[id]).length > 0, AIOMessage.METADATA_NOT_SENT);
+        require(Strings.equal((_token.signature[id]), _interconnection.signature[sender]), AIOMessage.METADATA_NOT_SENT_BY_YOU);
         _;
     }
 }
@@ -688,8 +688,8 @@ interface IAIOInterconnection {
 pragma solidity ^0.8.23;
 
 library AIOLog {
-    event MetaDataSended(bytes32 indexed token);
-    event MetaDataCleaned(bytes32 indexed token);
+    event MetadataSended(bytes32 indexed id);
+    event MetadataCleaned(bytes32 indexed id);
     event SenderSigned(address indexed sender);
     event SignatureTransferred(address indexed newSender);
 }
@@ -747,9 +747,9 @@ contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
 pragma solidity ^0.8.23;
 
 interface IAIOSearch {
-    function Tokens(string calldata signature) external view returns (bytes32[] memory tokens);
-    function Signature(bytes32 token) external view returns (string memory signature);
-    function MetaData(bytes32 token) external view returns (bytes memory metadata);
+    function Ids(string calldata signature) external view returns (bytes32[] memory ids);
+    function Signature(bytes32 id) external view returns (string memory signature);
+    function MetaData(bytes32 id) external view returns (bytes memory metadata);
     function Senders() external view returns (address[] memory senders);
     function Signature(address sender) external view returns (string memory signature);
     function Sender(string calldata signature) external view returns (address sender);
@@ -762,22 +762,22 @@ pragma solidity ^0.8.23;
 
 
 abstract contract AIOSearch is IAIOSearch, AIOStorage {
-    function Tokens(string calldata signature) 
+    function Ids(string calldata signature) 
     external view 
-    returns (bytes32[] memory tokens) {
-        tokens = _data.tokens[signature];
+    returns (bytes32[] memory ids) {
+        ids = _token.ids[signature];
     }
 
-    function Signature(bytes32 token) 
+    function Signature(bytes32 id) 
     external view 
     returns (string memory signature) {
-        signature = _data.signature[token];
+        signature = _token.signature[id];
     }
 
-    function MetaData(bytes32 token) 
+    function MetaData(bytes32 id) 
     external view 
     returns (bytes memory metadata) {
-        metadata = _data.metadata[token];
+        metadata = _token.metadata[id];
     }
 
     function Senders()
@@ -805,7 +805,7 @@ pragma solidity ^0.8.23;
 
 interface IAIOInteract {
     function SendMetaData(bytes calldata metadata) external payable;
-    function CleanMetaData(bytes32 token) external payable;
+    function CleanMetaData(bytes32 id) external payable;
 }
 // File: AIO/contracts/AIOInteract.sol
 
@@ -819,31 +819,31 @@ pragma solidity ^0.8.23;
 contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
     function SendMetaData(bytes calldata metadata)
     external payable
-    SendMetaDataRule(_interconnection, _data, metadata) {
+    SendMetaDataRule(_interconnection, _token, metadata) {
         string storage signature = _interconnection.signature[msg.sender];
-        bytes32 token = keccak256(metadata);
+        bytes32 id = keccak256(metadata);
 
-        _data.tokens[signature].push(token);
-        _data.signature[token] = signature;
-        _data.metadata[token] = metadata;
+        _token.ids[signature].push(id);
+        _token.signature[id] = signature;
+        _token.metadata[id] = metadata;
 
-        emit AIOLog.MetaDataSended(token);
+        emit AIOLog.MetadataSended(id);
     }
 
-    function CleanMetaData(bytes32 token)
+    function CleanMetaData(bytes32 id)
     external payable
-    CleanMetaDataRule(_interconnection, _data, token) {
+    CleanMetaDataRule(_interconnection, _token, id) {
         string storage signature = _interconnection.signature[msg.sender];
 
-        for (uint256 i = 0; i < _data.tokens[signature].length; i++) {
-            if (_data.tokens[signature][i] == token) {
-                _data.tokens[signature][i] = _data.tokens[signature][_data.tokens[signature].length - 1];
-                _data.tokens[signature].pop();
+        for (uint256 i = 0; i < _token.ids[signature].length; i++) {
+            if (_token.ids[signature][i] == id) {
+                _token.ids[signature][i] = _token.ids[signature][_token.ids[signature].length - 1];
+                _token.ids[signature].pop();
 
-                _data.signature[token] = "";
-                _data.metadata[token] = new bytes(0);
+                _token.signature[id] = "";
+                _token.metadata[id] = new bytes(0);
 
-                emit AIOLog.MetaDataCleaned(token);
+                emit AIOLog.MetadataCleaned(id);
                 break;
             }
         }
