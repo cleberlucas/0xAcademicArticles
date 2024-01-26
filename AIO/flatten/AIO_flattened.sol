@@ -1,4 +1,77 @@
 
+// File: AIO/contracts/interfaces/IAIOSearch.sol
+
+
+pragma solidity ^0.8.23;
+
+/**
+ * @title IAIOSearch
+ * @notice Interface for searching and retrieving information related to the AIO (All In One) system.
+ */
+interface IAIOSearch {
+    /**
+     * @dev Get the unique identifiers (IDs) associated with a given signature.
+     * @param signature The signature for which IDs are to be retrieved.
+     * @return ids An array of unique identifiers (IDs) associated with the given signature.
+     */
+    function Ids(string calldata signature) external view returns (bytes32[] memory ids);
+
+    /**
+     * @dev Get the signature associated with a specific ID.
+     * @param id The unique identifier (ID) for which the associated signature is to be retrieved.
+     * @return signature The signature associated with the given ID.
+     */
+    function Signature(bytes32 id) external view returns (string memory signature);
+
+    /**
+     * @dev Get the metadata associated with a specific ID.
+     * @param id The unique identifier (ID) for which the associated metadata is to be retrieved.
+     * @return metadata The metadata associated with the given ID.
+     */
+    function MetaData(bytes32 id) external view returns (bytes memory metadata);
+
+    /**
+     * @dev Get the list of all senders in the AIO system.
+     * @return senders An array containing all sender addresses in the AIO system.
+     */
+    function Senders() external view returns (address[] memory senders);
+
+    /**
+     * @dev Get the signature associated with a specific sender address.
+     * @param sender The address for which the associated signature is to be retrieved.
+     * @return signature The signature associated with the given sender address.
+     */
+    function Signature(address sender) external view returns (string memory signature);
+
+    /**
+     * @dev Get the sender address associated with a specific signature.
+     * @param signature The signature for which the associated sender address is to be retrieved.
+     * @return sender The sender address associated with the given signature.
+     */
+    function Sender(string calldata signature) external view returns (address sender);
+}
+// File: AIO/contracts/interfaces/IAIOInteract.sol
+
+
+pragma solidity ^0.8.23;
+
+/**
+ * @title IAIOInteract
+ * @notice Interface defining functions for sending and cleaning metadata in the AIO (All In One) system.
+ */
+interface IAIOInteract {
+    /**
+     * @dev Sends metadata in the AIO system.
+     * @param metadata The metadata to be sent.
+     */
+    function SendMetaData(bytes calldata metadata) external;
+
+    /**
+     * @dev Cleans metadata associated with a specific ID in the AIO system.
+     * @param id The ID of the metadata to be cleaned.
+     */
+    function CleanMetaData(bytes32 id) external;
+}
 // File: @openzeppelin/contracts/utils/math/SignedMath.sol
 
 
@@ -564,19 +637,51 @@ library Strings {
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIOMessage
+ * @notice Library for defining standardized error messages in the AIO (All In One) system.
+ */
 library AIOMessage {
-    string public constant NOT_EXEC_DIRECT_AIO = "This action cannot be executed directly from AIO";
+    // Error message indicating that metadata is already sent
     string public constant METADATA_ALREADY_SENT = "Metadata is already sent";
+
+    // Error message indicating that metadata is empty
     string public constant METADATA_EMPTY = "Metadata is empty";
+
+    // Error message indicating that metadata is not sent
     string public constant METADATA_NOT_SENT = "Metadata is not sent";
+
+    // Error message indicating that metadata is not sent by the sender
     string public constant METADATA_NOT_SENT_BY_YOU = "Metadata is not sent by you";
+
+    // Error message indicating that the new sender cannot be the current sender
     string public constant NEW_SENDER_CANNOT_BE_YOU = "New sender cannot be you";
+
+    // Error message indicating that the new sender is not a contract
+    string public constant NEW_SENDER_NOT_CONTRACT = "New sender is not a contract";
+
+    // Error message indicating that the new sender does not have the same signature
     string public constant NEW_SENDER_NO_SAME_SIGNATURE = "New sender does not have the same signature as you";
+
+    // Error message indicating that the new sender does not have a signature
     string public constant NEW_SENDER_NO_SIGNATURE = "New sender does not have a signature";
+
+    // Error message indicating that only contracts can execute a specific action
+    string public constant ONLY_CONTRACT = "Only contracts can execute this action";
+
+    // Error message indicating that only the signed sender can execute a specific action
     string public constant ONLY_SIGNED_EXEC = "Only sender signed can execute this action";
+
+    // Error message indicating that another sender is already using the same signature
     string public constant OTHER_SENDER_USING_SIGNATURE = "Other sender signed is using this signature";
+
+    // Error message indicating that the sender is already signed
     string public constant SENDER_ALREADY_SIGNED = "Sender is already signed";
+
+    // Error message indicating that the sender does not have a signature
     string public constant SENDER_NO_SIGNATURE = "Sender does not have a signature";
+
+    // Error message indicating that the signature cannot be empty
     string public constant SIGNATURE_EMPTY = "Your signature cannot be empty";
 }
 // File: AIO/contracts/libs/AIOStorageModel.sol
@@ -584,16 +689,32 @@ library AIOMessage {
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIOStorageModel
+ * @notice Library defining the storage model for the AIO (All In One) system.
+ */
 library AIOStorageModel {
+    // Struct defining the token-related storage
     struct Token {   
+        // Mapping from a signature to an array of associated token IDs
         mapping(string signature => bytes32[]) ids;
+
+        // Mapping from a token ID to its associated signature
         mapping(bytes32 id => string) signature;
+
+        // Mapping from a token ID to its associated metadata
         mapping(bytes32 id => bytes) metadata;
     }
 
+    // Struct defining the interconnection-related storage
     struct Interconnection {  
+        // Array containing all registered senders
         address[] senders;
+
+        // Mapping from a sender's address to their associated signature
         mapping(address sender => string) signature;
+
+        // Mapping from a signature to the associated sender's address
         mapping(string signature => address) sender;
     }
 }
@@ -602,17 +723,117 @@ library AIOStorageModel {
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIOStorage
+ * @notice This abstract contract provides internal storage instances for the AIO system.
+ */
+
+// Import the AIOStorageModel library for defining the storage structure
+
 
 abstract contract AIOStorage {
+    // Internal storage instance for token-related data
     AIOStorageModel.Token internal _token;
+    // Internal storage instance for interconnection-related data
     AIOStorageModel.Interconnection internal _interconnection;
+}
+// File: AIO/contracts/AIOSearch.sol
+
+
+pragma solidity ^0.8.23;
+
+/**
+ * @title AIOSearch
+ * @notice This abstract contract provides functions for searching and retrieving data from the AIOStorage contract.
+ */
+ 
+// Import the interface for AIO search functionality
+
+// Import the AIOStorage contract for accessing stored data
+
+
+abstract contract AIOSearch is IAIOSearch, AIOStorage {
+    /**
+     * @dev Retrieves the IDs associated with a given signature.
+     * @param signature The signature to query.
+     * @return ids An array of IDs associated with the provided signature.
+     */
+    function Ids(string calldata signature) 
+    external view 
+    returns (bytes32[] memory ids) {
+        ids = _token.ids[signature];
+    }
+
+    /**
+     * @dev Retrieves the signature associated with a given ID.
+     * @param id The ID to query.
+     * @return signature The signature associated with the provided ID.
+     */
+    function Signature(bytes32 id) 
+    external view 
+    returns (string memory signature) {
+        signature = _token.signature[id];
+    }
+
+    /**
+     * @dev Retrieves the metadata associated with a given ID.
+     * @param id The ID to query.
+     * @return metadata The metadata associated with the provided ID.
+     */
+    function MetaData(bytes32 id) 
+    external view 
+    returns (bytes memory metadata) {
+        metadata = _token.metadata[id];
+    }
+
+    /**
+     * @dev Retrieves the array of all senders registered in the AIO system.
+     * @return senders An array containing all registered senders.
+     */
+    function Senders()
+    external view
+    returns (address[] memory senders) {
+        senders = _interconnection.senders;
+    }
+
+    /**
+     * @dev Retrieves the signature associated with a given sender's address.
+     * @param sender The sender's address to query.
+     * @return signature The signature associated with the provided sender's address.
+     */
+    function Signature(address sender)
+    external view
+    returns (string memory signature) {
+        signature = _interconnection.signature[sender];
+    }
+
+    /**
+     * @dev Retrieves the sender's address associated with a given signature.
+     * @param signature The signature to query.
+     * @return sender The sender's address associated with the provided signature.
+     */
+    function Sender(string calldata signature)
+    external view
+    returns (address sender) {
+        sender = _interconnection.sender[signature];
+    }
 }
 // File: AIO/contracts/interfaces/IAIOSignature.sol
 
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title IAIOSignature
+ * @notice This interface defines a function to retrieve a fixed signature associated with the sender.
+ * @dev This interface should be inherited by the sender contract.
+ */
 interface IAIOSignature {
+    /**
+     * @dev Returns a fixed signature for the sender that the AIO contract will read later to use as
+     * the signature for its initialization and transfer.
+     * @return signature A string representing the fixed signature of the sender.
+     */
     function SIGNATURE() external pure returns (string memory signature);
 }
 // File: AIO/contracts/AIORules.sol
@@ -620,56 +841,124 @@ interface IAIOSignature {
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIORules
+ * @notice This abstract contract provides modifiers for initializing, transferring signatures, and managing metadata in the AIO system.
+ */
+ 
+// Import the messaging library for AIORules
 
+// Import the storage model for AIORules
 
+// Import the interface for AIO signature functionality
+
+// Import the OpenZeppelin Strings utility library
 
 
 abstract contract AIORules {
+    /**
+     * @dev Modifier for initializing the sender's signature.
+     * @param _interconnection The storage instance for interconnection-related data.
+     */
     modifier InitializeRule(AIOStorageModel.Interconnection storage _interconnection) {
         address sender = msg.sender;
 
-        require(sender != tx.origin, AIOMessage.NOT_EXEC_DIRECT_AIO);
+        // Check if the sender is a contract
+        require(sender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+
         try IAIOSignature(sender).SIGNATURE() {
+            // Check if the sender has a non-empty signature
             require(bytes(IAIOSignature(sender).SIGNATURE()).length > 0, AIOMessage.SIGNATURE_EMPTY);
+
+            // Check if the sender is not already signed
             require(bytes(_interconnection.signature[sender]).length == 0, AIOMessage.SENDER_ALREADY_SIGNED);
+
+            // Check if the signature is not already used by another sender
             require(_interconnection.sender[IAIOSignature(sender).SIGNATURE()] == address(0), AIOMessage.OTHER_SENDER_USING_SIGNATURE);
-        }   catch {
-                revert(AIOMessage.SENDER_NO_SIGNATURE);
-        } 
+        } catch {
+            // Revert if the sender has no signature
+            revert(AIOMessage.SENDER_NO_SIGNATURE);
+        }
+
         _;
     }
 
+    /**
+     * @dev Modifier for transferring the signature from the old sender to the new sender.
+     * @param _interconnection The storage instance for interconnection-related data.
+     * @param newSender The address of the new sender.
+     */
     modifier TransferSignatureRule(AIOStorageModel.Interconnection storage _interconnection, address newSender) {
         address oldSender = msg.sender;
 
-        require(oldSender != tx.origin, AIOMessage.NOT_EXEC_DIRECT_AIO);
+        // Check if the old sender is a contract
+        require(oldSender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+
+        // Check if the new sender is a contract
+        require(newSender.code.length > 0, AIOMessage.NEW_SENDER_NOT_CONTRACT);
+
+        // Check if the old sender is signed
         require(bytes(_interconnection.signature[oldSender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
-        require(newSender != oldSender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU); 
+
+        // Check if the new sender is not the same as the old sender
+        require(newSender != oldSender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU);
+
         try IAIOSignature(newSender).SIGNATURE() {
+            // Check if the signatures of old and new senders are the same
             require(Strings.equal(IAIOSignature(oldSender).SIGNATURE(), IAIOSignature(newSender).SIGNATURE()), AIOMessage.NEW_SENDER_NO_SAME_SIGNATURE);
-        }   catch {
-                revert(AIOMessage.NEW_SENDER_NO_SIGNATURE);
-        }    
+        } catch {
+            // Revert if the new sender has no signature
+            revert(AIOMessage.NEW_SENDER_NO_SIGNATURE);
+        }
+
         _;
     }
 
+    /**
+     * @dev Modifier for sending metadata.
+     * @param _interconnection The storage instance for interconnection-related data.
+     * @param _token The storage instance for token-related data.
+     * @param metadata The metadata to be sent.
+     */
     modifier SendMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Token storage _token, bytes calldata metadata) {
         address sender = msg.sender;
 
-        require(address(this) != sender, AIOMessage.NOT_EXEC_DIRECT_AIO);
+        // Check if the sender is a contract
+        require(sender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+
+        // Check if the sender is signed
         require(bytes(_interconnection.signature[sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
+
+        // Check if the metadata is not empty
         require(metadata.length > 0, AIOMessage.METADATA_EMPTY);
+
+        // Check if the metadata is not already sent
         require(bytes(_token.signature[keccak256(metadata)]).length == 0, AIOMessage.METADATA_ALREADY_SENT);
+
         _;
     }
 
+    /**
+     * @dev Modifier for cleaning metadata.
+     * @param _interconnection The storage instance for interconnection-related data.
+     * @param _token The storage instance for token-related data.
+     * @param id The ID of the metadata to be cleaned.
+     */
     modifier CleanMetaDataRule(AIOStorageModel.Interconnection storage _interconnection, AIOStorageModel.Token storage _token, bytes32 id) {
         address sender = msg.sender;
-        
-        require(address(this) != sender, AIOMessage.NOT_EXEC_DIRECT_AIO);
+
+        // Check if the sender is a contract
+        require(sender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+
+        // Check if the sender is signed
         require(bytes(_interconnection.signature[sender]).length > 0, AIOMessage.ONLY_SIGNED_EXEC);
+
+        // Check if the metadata with the given ID is sent
         require(bytes(_token.signature[id]).length > 0, AIOMessage.METADATA_NOT_SENT);
+
+        // Check if the metadata is sent by the sender
         require(Strings.equal((_token.signature[id]), _interconnection.signature[sender]), AIOMessage.METADATA_NOT_SENT_BY_YOU);
+
         _;
     }
 }
@@ -678,172 +967,194 @@ abstract contract AIORules {
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title IAIOInterconnection
+ * @notice Interface defining functions for initializing and transferring signatures in the AIO (All In One) system.
+ */
 interface IAIOInterconnection {
-    function Initialize() external payable;
-    function TransferSignature(address newSender) external payable;
+    /**
+     * @dev Initializes the sender by signing them up in the AIO system.
+     */
+    function Initialize() external;
+
+    /**
+     * @dev Transfers the signature from the current sender to a new sender.
+     * @param newSender The address of the new sender.
+     */
+    function TransferSignature(address newSender) external;
 }
 // File: AIO/contracts/libs/AIOLog.sol
 
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIOLog
+ * @notice Library for logging events related to the AIO (All In One) system.
+ */
 library AIOLog {
+    /**
+     * @dev Emitted when metadata is successfully sent.
+     * @param id The unique identifier of the metadata.
+     */
     event MetadataSended(bytes32 indexed id);
+
+    /**
+     * @dev Emitted when metadata is successfully cleaned.
+     * @param id The unique identifier of the cleaned metadata.
+     */
     event MetadataCleaned(bytes32 indexed id);
+
+    /**
+     * @dev Emitted when a new sender is successfully signed.
+     * @param sender The address of the newly signed sender.
+     */
     event SenderSigned(address indexed sender);
+
+    /**
+     * @dev Emitted when a signature is successfully transferred to a new sender.
+     * @param newSender The address of the new sender who now holds the signature.
+     */
     event SignatureTransferred(address indexed newSender);
-}
-// File: AIO/contracts/AIOInterconnection.sol
-
-
-pragma solidity ^0.8.23;
-
-
-
-
-
-
-contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
-    function Initialize()
-    external payable
-    InitializeRule(_interconnection) {
-        address sender = msg.sender;
-        string memory signature = IAIOSignature(sender).SIGNATURE();
-
-        _interconnection.senders.push(sender); 
-        _interconnection.sender[signature] = sender;
-        _interconnection.signature[sender] = signature;
-
-        emit AIOLog.SenderSigned(sender);
-    }
-
-    function TransferSignature(address newSender)
-    external payable
-    TransferSignatureRule(_interconnection, newSender) {
-        address oldSender = msg.sender;
-
-        for (uint256 i = 0; i < _interconnection.senders.length; i++) {
-            if (_interconnection.senders[i] == oldSender) {
-                string memory signature = IAIOSignature(oldSender).SIGNATURE();
-
-                _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
-                _interconnection.senders.pop();
-
-                _interconnection.signature[oldSender] = "";
-
-                _interconnection.senders.push(newSender); 
-                _interconnection.sender[signature] = newSender;
-                _interconnection.signature[newSender] = signature;
-
-                emit AIOLog.SignatureTransferred(newSender);
-                break;
-            }
-        }
-    }
-}
-// File: AIO/contracts/interfaces/IAIOSearch.sol
-
-
-pragma solidity ^0.8.23;
-
-interface IAIOSearch {
-    function Ids(string calldata signature) external view returns (bytes32[] memory ids);
-    function Signature(bytes32 id) external view returns (string memory signature);
-    function MetaData(bytes32 id) external view returns (bytes memory metadata);
-    function Senders() external view returns (address[] memory senders);
-    function Signature(address sender) external view returns (string memory signature);
-    function Sender(string calldata signature) external view returns (address sender);
-}
-// File: AIO/contracts/AIOSearch.sol
-
-
-pragma solidity ^0.8.23;
-
-
-
-abstract contract AIOSearch is IAIOSearch, AIOStorage {
-    function Ids(string calldata signature) 
-    external view 
-    returns (bytes32[] memory ids) {
-        ids = _token.ids[signature];
-    }
-
-    function Signature(bytes32 id) 
-    external view 
-    returns (string memory signature) {
-        signature = _token.signature[id];
-    }
-
-    function MetaData(bytes32 id) 
-    external view 
-    returns (bytes memory metadata) {
-        metadata = _token.metadata[id];
-    }
-
-    function Senders()
-    external view
-    returns (address[] memory senders) {
-        senders = _interconnection.senders;
-    }
-
-    function Signature(address sender)
-    external view
-    returns (string memory signature) {
-        signature = _interconnection.signature[sender];
-    }
-
-    function Sender(string calldata signature)
-    external view
-    returns (address sender) {
-        sender = _interconnection.sender[signature];
-    }
-}
-// File: AIO/contracts/interfaces/IAIOInteract.sol
-
-
-pragma solidity ^0.8.23;
-
-interface IAIOInteract {
-    function SendMetaData(bytes calldata metadata) external payable;
-    function CleanMetaData(bytes32 id) external payable;
 }
 // File: AIO/contracts/AIOInteract.sol
 
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIOInteract
+ * @notice This contract handles the interaction with metadata in the AIO system.
+ */
 
+// Import the logging library for AIOInteract
 
+// Import the interface for AIO interaction functionality
+
+// Import the AIOStorage contract for accessing stored data
+
+// Import the rules and modifiers for AIO functionality
 
 
 contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
+    /**
+     * @dev Sends metadata to the AIO contract.
+     * @param metadata The metadata to be sent.
+     */
     function SendMetaData(bytes calldata metadata)
-    external payable
+    external
     SendMetaDataRule(_interconnection, _token, metadata) {
+        // Retrieve the sender's signature from the interconnection mapping
         string storage signature = _interconnection.signature[msg.sender];
+        // Generate an ID using the metadata and store it in the token mappings
         bytes32 id = keccak256(metadata);
 
         _token.ids[signature].push(id);
         _token.signature[id] = signature;
         _token.metadata[id] = metadata;
 
+        // Emit an event indicating that metadata has been successfully sent
         emit AIOLog.MetadataSended(id);
     }
 
+    /**
+     * @dev Cleans metadata based on its ID.
+     * @param id The ID of the metadata to be cleaned.
+     */
     function CleanMetaData(bytes32 id)
-    external payable
+    external
     CleanMetaDataRule(_interconnection, _token, id) {
+        // Retrieve the sender's signature from the interconnection mapping
         string storage signature = _interconnection.signature[msg.sender];
 
-        for (uint256 i = 0; i < _token.ids[signature].length; i++) {
+        // Iterate through the array of IDs associated with the sender's signature
+        for (uint256 i = 0; i < _token.ids[signature].length; i++) {            
             if (_token.ids[signature][i] == id) {
+                // Find the matching ID and remove it from the array
                 _token.ids[signature][i] = _token.ids[signature][_token.ids[signature].length - 1];
                 _token.ids[signature].pop();
 
+                // Clear the corresponding entries in the token mappings
                 _token.signature[id] = "";
                 _token.metadata[id] = new bytes(0);
 
+                // Emit an event indicating that metadata has been successfully cleaned
                 emit AIOLog.MetadataCleaned(id);
+                break;
+            }
+        }
+    }
+}
+// File: AIO/contracts/AIOInterconnection.sol
+
+
+pragma solidity ^0.8.23;
+
+/**
+ * @title AIOInterconnection
+ * @notice This contract handles the initialization and transfer of signatures in the AIO system.
+ */
+
+// Import the logging library for AIOInterconnection
+
+// Import the interface for AIO interconnection functionality
+
+// Import the interface for AIO signature functionality
+
+// Import the AIOStorage contract for accessing stored data
+
+// Import the rules and modifiers for AIO functionality
+
+
+contract AIOInterconnection is IAIOInterconnection, AIOStorage, AIORules {
+    /**
+     * @dev Initializes the sender by signing with a unique signature.
+     */
+    function Initialize()
+    external
+    InitializeRule(_interconnection) {
+        // Get the sender's address and retrieve the associated fixed signature
+        address sender = msg.sender;
+        string memory signature = IAIOSignature(sender).SIGNATURE();
+
+        // Update interconnection mappings with sender information
+        _interconnection.senders.push(sender); 
+        _interconnection.sender[signature] = sender;
+        _interconnection.signature[sender] = signature;
+
+        // Emit an event indicating that the sender has been signed
+        emit AIOLog.SenderSigned(sender);
+    }
+
+    /**
+     * @dev Transfers the signature from the old sender to the new sender.
+     * @param newSender The address of the new sender.
+     */
+    function TransferSignature(address newSender)
+    external
+    TransferSignatureRule(_interconnection, newSender) {
+        // Get the old sender's address
+        address oldSender = msg.sender;
+
+        // Iterate through the array of senders to find the old sender
+        for (uint256 i = 0; i < _interconnection.senders.length; i++) {
+            if (_interconnection.senders[i] == oldSender) {
+                string memory signature = IAIOSignature(oldSender).SIGNATURE();
+
+                // Find the matching old sender and remove it from the array
+                _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
+                _interconnection.senders.pop();
+
+                // Clear the old sender's signature in the mapping
+                _interconnection.signature[oldSender] = "";
+
+                // Update the interconnection mappings with the new sender information
+                _interconnection.senders.push(newSender); 
+                _interconnection.sender[signature] = newSender;
+                _interconnection.signature[newSender] = signature;
+
+                // Emit an event indicating that the signature has been transferred
+                emit AIOLog.SignatureTransferred(newSender);
                 break;
             }
         }
@@ -854,14 +1165,22 @@ contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
 
 pragma solidity ^0.8.23;
 
+/**
+ * @title AIO (All In One) Contract
+ * @author Cleber Lucas
+ * @notice This contract serves as the central point in the AIO system with data traceability.
+ * - Combines functionalities from AIOInterconnection, AIOInteract, and AIOSearch contracts.
+ * - Acts as the central component providing a unified interface for interaction, interconnection, data retrieval, and traceability within the AIO system.
+ * - Designed to facilitate continuous communication and collaboration among various components in the AIO ecosystem.
+ * - Users can interact, transfer signatures, send and search metadata, and perform other actions through this unified contract.
+ *
+ */
+
+// Import the contract providing functionality for interconnecting senders
+
+// Import the contract providing functionality for sender interactions
+
+// Import the contract providing functionality for searching and retrieving data
 
 
-
-
-
-/*
-    AIO - All in One
-    Created by Cleber Lucas
-    Proposal: Stores data from different contracts in just one central contract, facilitating extensions of external contracts
-*/
 contract AIO is AIOInterconnection, AIOInteract, AIOSearch {}
