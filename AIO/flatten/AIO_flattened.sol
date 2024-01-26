@@ -862,6 +862,6 @@ pragma solidity ^0.8.23;
 /*
     AIO - All in One
     Created by Cleber Lucas
-    Proposal: stores data from different contracts in just one central contract, facilitating extensions of external contracts
+    Proposal: Stores data from different contracts in just one central contract, facilitating extensions of external contracts
 */
 contract AIO is AIOInterconnection, AIOInteract, AIOSearch {}
