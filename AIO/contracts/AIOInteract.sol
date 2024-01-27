@@ -1,64 +1,100 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-/**
- * @title AIOInteract
- * @notice This contract handles the interaction with metadata in the AIO system.
- */
-
-// Import the logging library for AIOInteract
 import "./libs/AIOLog.sol";
-// Import the interface for AIO interaction functionality
 import "./interfaces/IAIOInteract.sol";
-// Import the AIOStorage contract for accessing stored data
 import "./AIOStorage.sol";
-// Import the rules and modifiers for AIO functionality
 import "./AIORules.sol";
 
-contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
-    /**
-     * @dev Sends metadata to the AIO contract.
-     * @param metadata The metadata to be sent.
-     */
-    function SendMetaData(bytes calldata metadata)
+abstract contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
+    function Initialize()
     external
-    SendMetaDataRule(_interconnection, _token, metadata) {
-        // Retrieve the sender's signature from the interconnection mapping
-        string storage signature = _interconnection.signature[msg.sender];
-        // Generate an ID using the metadata and store it in the token mappings
-        bytes32 id = keccak256(metadata);
+    InitializeRule(_interconnection) {
+        address sender = msg.sender;
+        bytes32 signature = IAIOSignature(sender).SIGNATURE();
 
-        _token.ids[signature].push(id);
-        _token.signature[id] = signature;
-        _token.metadata[id] = metadata;
+        _interconnection.senders.push(sender); 
+        _interconnection.sender[signature] = sender;
+        _interconnection.signature[sender] = signature;
 
-        // Emit an event indicating that metadata has been successfully sent
-        emit AIOLog.MetadataSended(id);
+        emit AIOLog.SenderSigned(sender);
     }
 
-    /**
-     * @dev Cleans metadata based on its ID.
-     * @param id The ID of the metadata to be cleaned.
-     */
-    function CleanMetaData(bytes32 id)
+    function TransferSignature(address newSender)
     external
-    CleanMetaDataRule(_interconnection, _token, id) {
-        // Retrieve the sender's signature from the interconnection mapping
-        string storage signature = _interconnection.signature[msg.sender];
+    TransferSignatureRule(_interconnection, newSender) {
+        address oldSender = msg.sender;
 
-        // Iterate through the array of IDs associated with the sender's signature
-        for (uint256 i = 0; i < _token.ids[signature].length; i++) {            
-            if (_token.ids[signature][i] == id) {
-                // Find the matching ID and remove it from the array
-                _token.ids[signature][i] = _token.ids[signature][_token.ids[signature].length - 1];
-                _token.ids[signature].pop();
+        for (uint i = 0; i < _interconnection.senders.length; i++) {
+            if (_interconnection.senders[i] == oldSender) {
+                bytes32 signature = IAIOSignature(oldSender).SIGNATURE();
 
-                // Clear the corresponding entries in the token mappings
-                _token.signature[id] = "";
-                _token.metadata[id] = new bytes(0);
+                _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
+                _interconnection.senders.pop();
 
-                // Emit an event indicating that metadata has been successfully cleaned
-                emit AIOLog.MetadataCleaned(id);
+                _interconnection.signature[oldSender] = "";
+
+                _interconnection.senders.push(newSender); 
+                _interconnection.sender[signature] = newSender;
+                _interconnection.signature[newSender] = signature;
+
+                emit AIOLog.SignatureTransferred(newSender);
+                break;
+            }
+        }
+    }
+
+    function SendMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
+    external
+    SendMetadataRule(_interconnection, _token, classification, key, metadata) {
+        bytes32 signature = _interconnection.signature[msg.sender];
+
+        if (_token.keys[signature][classification].length == 0) {
+            _token.classifications[signature].push(classification);
+        }
+
+        _token.keys[signature][classification].push(key);
+        _token.metadata[signature][classification][key] = metadata;
+        _token.states[signature][classification][key].push(keccak256(metadata));
+
+        emit AIOLog.MetadataSended(signature, classification, key, keccak256(metadata));
+    }
+
+    function UpdateMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
+    external
+    UpdateMetadataRule(_interconnection, _token, classification, key, metadata) {
+        bytes32 signature = _interconnection.signature[msg.sender];
+
+        _token.metadata[signature][classification][key] = metadata;
+        _token.states[signature][classification][key].push(keccak256(metadata));
+
+        emit AIOLog.MetadataUpdated(signature, classification, key, keccak256(metadata));
+    }
+
+    function CleanMetadata(bytes32 classification, bytes32 key)
+    external
+    CleanMetadataRule(_interconnection, _token, classification, key) {
+        bytes32 signature = _interconnection.signature[msg.sender];
+
+        if (_token.keys[signature][classification].length == 1 ) {
+            for (uint i = 0; i < _token.classifications[signature].length; i++) {            
+                if (_token.classifications[signature][i] == classification) {
+                    _token.classifications[signature][i] = _token.classifications[signature][_token.classifications[signature].length - 1];
+                    _token.classifications[signature].pop();
+                    
+                    break;
+                }
+            }
+        }
+
+        for (uint i = 0; i < _token.keys[signature][classification].length; i++) {            
+            if (_token.keys[signature][classification][i] == key) {
+                _token.keys[signature][classification][i] = _token.keys[signature][classification][_token.keys[signature][classification].length - 1];
+                _token.keys[signature][classification].pop();
+
+                _token.metadata[signature][classification][key] = new bytes(0);
+
+                emit AIOLog.MetadataCleaned(signature, classification, key);
                 break;
             }
         }
