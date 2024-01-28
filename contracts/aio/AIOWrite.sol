@@ -2,11 +2,11 @@
 pragma solidity ^0.8.23;
 
 import "./libs/AIOLog.sol";
-import "./interfaces/IAIOInteract.sol";
+import "./interfaces/IAIOWrite.sol";
 import "./AIOStorage.sol";
 import "./AIORules.sol";
 
-abstract contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
+abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
     function Initialize()
     external
     InitializeRule(_interconnection) {

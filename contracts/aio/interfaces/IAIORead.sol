@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-interface IAIOSearch {
+interface IAIORead {
     function Senders() external view returns (address[] memory senders);
     function Signature(address sender) external view returns (bytes32 signature);
     function Sender(bytes32 signature) external view returns (address sender);

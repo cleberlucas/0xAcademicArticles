@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-interface IAIOInteract {
+interface IAIOWrite {
     function Initialize() external;
     function TransferSignature(address newSender) external;
     function SendMetadata(bytes32 classification, bytes32 key, bytes calldata metadata) external;
