@@ -51,7 +51,7 @@ abstract contract AIORules {
         require(sender.code.length > 0, AIOMessage.ONLY_CONTRACT);
         require(_interconnection.signature[sender] != bytes32(0), AIOMessage.ONLY_SIGNED_EXEC);
         require(metadata.length > 0, AIOMessage.METADATA_EMPTY);
-        require(_token.metadata[_interconnection.signature[sender]][classification][key].length > 0, AIOMessage.METADATA_NOT_SENT);
+        require(_token.metadata[_interconnection.signature[sender]][classification][key].length > 0, AIOMessage.METADATA_NOT_SENT_TO_UPDATE);
         require(!(keccak256(_token.metadata[_interconnection.signature[sender]][classification][key]) == keccak256(metadata) &&
             _token.metadata[_interconnection.signature[sender]][classification][key].length == metadata.length), AIOMessage.SAME_METADATA_ALREADY_SENT);
         _;

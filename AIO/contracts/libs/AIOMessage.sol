@@ -5,6 +5,7 @@ library AIOMessage {
     string public constant METADATA_ALREADY_SENT = "Metadata is already sent";
     string public constant METADATA_EMPTY = "Metadata is empty";
     string public constant METADATA_NOT_SENT = "Metadata is not sent";
+    string public constant METADATA_NOT_SENT_TO_UPDATE = "Metadata not sent to update";
     string public constant NEW_SENDER_CANNOT_BE_YOU = "New sender cannot be you";
     string public constant NEW_SENDER_NOT_CONTRACT = "New sender is not a contract";
     string public constant NEW_SENDER_NO_SAME_SIGNATURE = "New sender does not have the same signature as you";
