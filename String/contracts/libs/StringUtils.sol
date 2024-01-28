@@ -4,16 +4,20 @@ pragma solidity ^0.8.23;
 /**
  * @title StringUtils
  * @notice A library for string manipulation functions in Solidity.
+ * @dev This library provides functions for string manipulation, including converting strings to lowercase and checking for the presence of a word in another string.
  */
 library StringUtils {
+
     /**
-     * @dev Converts all characters in a string to lowercase.
-     * @param str The input string.
-     * @return A new string with all characters in lowercase.
+     * @dev Converts the input string to lowercase.
+     * @param str The input string to be converted.
+     * @return toLower The resulting lowercase string.
+     * @dev This function is based on the implementation available at: https://gist.github.com/ottodevs/c43d0a8b4b891ac2da675f825b1d1dbf?permalink_comment_id=3310614#gistcomment-3310614
      */
-    function toLower(string memory str) public pure returns (string memory) {
+    function ToLower(string memory str) internal pure returns (string memory toLower) {
         bytes memory bStr = bytes(str);
         bytes memory bLower = new bytes(bStr.length);
+
         for (uint i = 0; i < bStr.length; i++) {
             if ((uint8(bStr[i]) >= 65) && (uint8(bStr[i]) <= 90)) {
                 bLower[i] = bytes1(uint8(bStr[i]) + 32);
@@ -21,33 +25,38 @@ library StringUtils {
                 bLower[i] = bStr[i];
             }
         }
-        return string(bLower);
+        
+        toLower =  string(bLower);
     }
 
     /**
-    * @dev Checks if a substring is present within a base string.
-    * @param str The base string.
-    * @param _substr The substring to search for.
-    * @return True if the substring is found, false otherwise.
-    */
-    function contains(string memory str, string memory _substr) public pure returns (bool) {
-        bytes memory strBytes = bytes(str);
-        bytes memory valueBytes = bytes(_substr);  
-        if (keccak256(bytes(str)) == keccak256(bytes(_substr))) return true;
-        bool found = false;
-        for(uint i = 0; i < strBytes.length - valueBytes.length; i++) {
-            bool flag = true;
-            for(uint j = 0; j < valueBytes.length; j++) {
-                if(strBytes[i + j] != valueBytes[j]) {
-                    flag = false;
+     * @dev Checks if a specific word is contained within another string.
+     * @param what The word to check for.
+     * @param where The string in which to check for the word.
+     * @return found A boolean indicating whether the word was found in the string.
+     * @dev This function is based on the implementation available at: https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol
+     */
+    function ContainWord(string memory what, string memory where) internal pure returns (bool found){
+        bytes memory whatBytes = bytes(what);
+        bytes memory whereBytes = bytes(where);
+
+        if (whereBytes.length < whatBytes.length){ 
+            found = false; 
+        }
+        else {
+            found = false;
+            for (uint i = 0; i <= whereBytes.length - whatBytes.length; i++) {
+                bool flag = true;
+                for (uint j = 0; j < whatBytes.length; j++)
+                    if (whereBytes[i + j] != whatBytes[j]) {
+                        flag = false;
+                        break;
+                    }
+                if (flag) {
+                    found = true;
                     break;
                 }
             }
-            if(flag) {
-                found = true;
-                break;
-            }
         }
-        return found;
     }
 }

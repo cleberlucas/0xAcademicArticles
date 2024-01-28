@@ -234,9 +234,9 @@ contract AcademicArticles is IAIOSignature{
         for (uint i = 0; i < publicationKeys.length && previewCount < limit; i++) {
             bytes32 id = publicationKeys[i];
             Publication_AIOModel memory publication = abi.decode(_aio.search.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION, id), (Publication_AIOModel));
-            string memory articleTitle = StringUtils.toLower(publication.article.title);
+            string memory articleTitle = StringUtils.ToLower(publication.article.title);
 
-            if (StringUtils.contains(articleTitle, StringUtils.toLower(title))) {
+            if (StringUtils.ContainWord(articleTitle, StringUtils.ToLower(title))) {
                 publicationsPreview[previewCount] = PublicationPreview_Model(articleTitle, id);
                 previewCount++;
             }
