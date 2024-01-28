@@ -14,7 +14,7 @@ contract AcademicArticles is IAIOSignature{
     function SIGNATURE() 
     public pure 
     returns (bytes32 signature) {
-        signature = "AcademicArticles";
+        signature = "AcademicArticles111111111";
     }
 
     struct AIO_StorageModel {     
@@ -68,7 +68,7 @@ contract AcademicArticles is IAIOSignature{
     }
   
     function ConnectToAIO(address account) 
-    external payable {
+    external {
         require (OWNER == msg.sender, "Owner action");
 
         IAIOInteract(account).Initialize();
@@ -80,7 +80,7 @@ contract AcademicArticles is IAIOSignature{
     }
 
     function TransferAIOSignature(address newSender) 
-    external payable {
+    external {
         require (OWNER == msg.sender, "Owner action");
 
         IAIOInteract(address(this)).TransferSignature(newSender);
@@ -89,11 +89,11 @@ contract AcademicArticles is IAIOSignature{
     }
 
     function PublishArticles(Article_Model[] calldata articles) 
-    external payable {
+    external {
+        Publisher_AIOModel memory publisherAIO;
         address publisher = msg.sender;
         bytes32[] memory ids = new bytes32[](articles.length);
         bytes memory publisherAIOEncoded = _aio.search.Metadata(SIGNATURE(), "Publisher", bytes32(abi.encode(publisher)));
-        Publisher_AIOModel memory publisherAIO;
 
         for (uint i = 0; i < articles.length; i++) {
             bytes32 id = keccak256(abi.encode(articles[i]));
@@ -117,9 +117,9 @@ contract AcademicArticles is IAIOSignature{
         }
 
         if (publisherAIOEncoded.length > 0) {
-            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
-
             bytes32[] memory newIds = new bytes32[](publisherAIO.ids.length + ids.length);
+
+            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
 
             for (uint i = 0; i < newIds.length; i++) {
                 if (i < publisherAIO.ids.length) {
@@ -134,8 +134,8 @@ contract AcademicArticles is IAIOSignature{
             _aio.interact.UpdateMetadata("Publisher", bytes32(abi.encode(publisher)), abi.encode(publisherAIO));
         } else {
             publisherAIO.ids = ids;
-
             publisherAIOEncoded = abi.encode(publisherAIO);
+
             _aio.interact.SendMetadata("Publisher", bytes32(abi.encode(publisher)), abi.encode(publisherAIO));
         }
 
@@ -144,64 +144,114 @@ contract AcademicArticles is IAIOSignature{
 
 
     function UnpublishArticles(bytes32[] memory ids) 
-    external payable {
+    external {
         Publisher_AIOModel memory publisherAIO ;
         bytes memory publisherAIOEncoded = _aio.search.Metadata(SIGNATURE(), "Publisher", bytes32(abi.encode(msg.sender)));
 
-        if(publisherAIOEncoded.length > 0) publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+        if(publisherAIOEncoded.length > 0) {
+            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+        } else {
+            revert ("You have nothing to unpublish");
+        }
 
         for (uint i = 0; i < ids.length; i++) {
-            bytes32 id = ids[i];
-            
+            bytes32 id = ids[i]; 
             bytes memory publicationEncode = _aio.search.Metadata(SIGNATURE(), "Publication", id);
-            require (publicationEncode.length > 0, string.concat("Article[", Strings.toString(i), "] is not published"));
-
             Publication_AIOModel memory publicationAIO = abi.decode(publicationEncode, (Publication_AIOModel));
+
+            require (publicationEncode.length > 0, string.concat("Article[", Strings.toString(i), "] is not published"));
             require (publicationAIO.publisher == msg.sender, string.concat("Article[", Strings.toString(i), "] is not published by you"));
 
-            try _aio.interact.CleanMetadata("Publication", id) {
-                if (publisherAIO.ids.length == ids.length && i == 0) {
-                    _aio.interact.CleanMetadata("Publisher", bytes32(abi.encode(msg.sender)));
-                } else if (publisherAIO.ids.length != ids.length) {
-             
-                    uint indexToRemove;
+            _aio.interact.CleanMetadata("Publication", id);     
+        }
 
-                    for (uint ii = 0; ii < publisherAIO.ids.length; ii++) {
-                        if (publisherAIO.ids[ii] == id) {
-                            indexToRemove = ii;
-                            break;
-                        }
+        if (publisherAIO.ids.length == ids.length) {
+            _aio.interact.CleanMetadata("Publisher", bytes32(abi.encode(msg.sender)));
+        } else {  
+            bytes32[] memory newIds = new bytes32[](publisherAIO.ids.length - ids.length);
+            bool useId;
+            uint i_;
+
+            for (uint i = 0; i < publisherAIO.ids.length; i++) {
+                useId = true;
+
+                for (uint ii = 0; ii < ids.length; ii++) {
+                    if (ids[ii] == publisherAIO.ids[i]) {
+                        useId = false;
+
+                        break;
                     }
+                }
 
-                    if (indexToRemove < publisherAIO.ids.length) {
-                        bytes32[] memory newIds = new bytes32[](publisherAIO.ids.length - 1);
+                if (useId) {
+                    newIds[i_] = publisherAIO.ids[i];
+                    i_ ++;
+                }
 
-                        for (uint ii = 0; ii < indexToRemove; ii++) {
-                            newIds[ii] = publisherAIO.ids[ii];
-                        }
-
-                        for (uint ii = indexToRemove + 1; ii < publisherAIO.ids.length; ii++) {
-                            newIds[ii - 1] = publisherAIO.ids[ii];
-                        }
-
-                        publisherAIO.ids = newIds;
-                    }
-                } 
-            } catch Error(string memory errorMessage) {
-                revert(string.concat(errorMessage));
+                if (i_ == newIds.length) {
+                    break;
+                }
             }
 
+            publisherAIO.ids = newIds;
             _aio.interact.UpdateMetadata("Publisher", bytes32(abi.encode(msg.sender)), abi.encode(publisherAIO));
         }
 
         emit ArticlesUnpublished(ids);
     }
 
-/*
+    function PublisherAIO(address publisher) 
+    external view 
+    returns (Publisher_AIOModel memory publisherAIO) {
+        bytes memory publisherAIOEncoded = _aio.search.Metadata(SIGNATURE(), "Publisher", bytes32(abi.encode(publisher)));
+
+        if(publisherAIOEncoded.length > 0) {
+            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+        }
+    }
+
     function Publication(bytes32 id) 
     external view 
     returns (Publication_AIOModel memory publication) {
-        publication = abi.decode(_aio.search.Metadata(SIGNATURE(), "Publication", id), (Publication_AIOModel));
+        bytes memory publicationAIOEncoded = _aio.search.Metadata(SIGNATURE(), "Publication", id);
+
+        if(publicationAIOEncoded.length > 0) {
+            publication = abi.decode(publicationAIOEncoded, (Publication_AIOModel));
+        }
+    }
+
+    function PreviewPublicationsWithTitle(string memory title, uint limit) 
+    external view  
+    returns (PublicationPreview_Model[] memory publicationsPreview) {
+        bytes32[] memory publicationKeys = _aio.search.Keys(SIGNATURE(), "Publication");
+
+        publicationsPreview = new PublicationPreview_Model[](limit);
+
+        uint previewCount;
+        for (uint i = 0; i < publicationKeys.length && previewCount < limit; i++) {
+            bytes32 id = publicationKeys[i];
+            Publication_AIOModel memory publication = abi.decode(_aio.search.Metadata(SIGNATURE(), "Publication", id), (Publication_AIOModel));
+            string memory articleTitle = StringUtils.toLower(publication.article.title);
+
+            if (StringUtils.contains(articleTitle, StringUtils.toLower(title))) {
+                publicationsPreview[previewCount] = PublicationPreview_Model(articleTitle, id);
+                previewCount++;
+            }
+        }
+
+        if (previewCount < limit) {
+            PublicationPreview_Model[] memory publicationsPreviewCopy = publicationsPreview;
+
+            publicationsPreview = new PublicationPreview_Model[](previewCount);
+            
+            for (uint i = 0; i < previewCount; i++) {
+                if (publicationsPreviewCopy[i].id != bytes32(0)) {
+                    publicationsPreview[i] = publicationsPreviewCopy[i];
+                } else {
+                    break;
+                }
+            }
+        }
     }
 
     function PreviewPublications(uint startIndex, uint endIndex) 
@@ -226,137 +276,31 @@ contract AcademicArticles is IAIOSignature{
         }
     }
 
-    function PreviewPublicationsWithTitle(string memory pattern, uint limit) 
-    external view 
-    returns (PublicationPreview_Model[] memory publicationsPreview) {
-        uint size;
-        for (uint i = 0; i < _aio.search.Keys(SIGNATURE(), "Publication").length; i++) {
-            if (limit == size) break;
-
-            string memory title = abi.decode(
-                _aio.search.Metadata(
-                    SIGNATURE(),
-                    "Publication", 
-                    _aio.search.Keys(SIGNATURE(), "Publication")[i]
-                ), (Publication_AIOModel)
-            ).article.title;
-
-            if (StringUtils.contains(StringUtils.toLower(title), StringUtils.toLower(pattern))) {
-                publicationsPreview[i] = PublicationPreview_Model(title, _aio.search.Keys(SIGNATURE(), "Publication")[i]);
-                size ++;
-            }
-        }       
-    }
-
-    function PreviewPublicationsOfPublisher(address publicationPublisher, uint startIndex, uint endIndex) 
+    function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint currentSize) {
-        Publisher_AIOModel memory publisherAIO = abi.decode(_aio.search.Metadata("Publisher"),(Publisher_AIOModel));
+        bytes memory publisherAIOEncoded = _aio.search.Metadata(SIGNATURE(), "Publisher", bytes32(abi.encode(publisher)));
 
-        currentSize = publisherAIO.ids.length;
-
-        if (startIndex >= currentSize || startIndex > endIndex) {
-            previewPublicationsOfPublisher = new PublicationPreview_Model[](0);
-        } else {
-            uint size = endIndex - startIndex + 1;
+        if(publisherAIOEncoded.length > 0) {
+            Publisher_AIOModel memory publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
             
-            size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
-            previewPublicationsOfPublisher = new PublicationPreview_Model[](size); 
-            
-            for (uint i = 0; i < size; i++) {
-                previewPublicationsOfPublisher[i] = PublicationPreview_Model(
-                    abi.decode(_aio.search.Metadata(publisherAIO.ids[startIndex + i]), (Publication_AIOModel)).article.title,
-                    publisherAIO.ids[startIndex + i]
-                );
-            }
-        }
-    }
+            currentSize = publisherAIO.ids.length;
 
-    function PublishArticles(Article_Model[] calldata articles) 
-    external payable {
-        Publisher_AIOModel memory publisherAIO = abi.decode(_aio.search.Metadata("AcademicArticles.Publisher"),(Publisher_AIOModel));
-        address publisher = msg.sender;
-        bytes32[] memory ids = new bytes32[](articles.length);
-
-        for (uint i = 0; i < articles.length; i++) {
-            Publication_AIOModel memory publication;
-
-            publication.article = articles[i];
-            publication.publisher = publisher;
-            publication.datetime = block.timestamp;
-            publication.blockNumber = block.number;
-
-            try _aio.interact.SendMetadata(keccak256(abi.encode(publication)), abi.encode(publication)) {
-                bytes32 id = keccak256(abi.encode(publication));
-
-                publisherAIO.ids[0] = (id);
-
-                if (publisherAIO.ids.length == 1) {
-                    publisherAIO.ids[0] = (id);
+            if (startIndex >= currentSize || startIndex > endIndex) {
+                previewPublicationsOfPublisher = new PublicationPreview_Model[](0);
+            } else {
+                uint size = endIndex - startIndex + 1;
+                
+                size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+                previewPublicationsOfPublisher = new PublicationPreview_Model[](size); 
+                
+                for (uint i = 0; i < size; i++) {
+                    previewPublicationsOfPublisher[i] = PublicationPreview_Model(
+                        abi.decode(_aio.search.Metadata(SIGNATURE(), "Publication", publisherAIO.ids[startIndex + i]), (Publication_AIOModel)).article.title,
+                        publisherAIO.ids[startIndex + i]
+                    );
                 }
-
-                ids[i] = id;
-            } catch Error(string memory errorMessage) {
-                if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_ALREADY_SENT))) {                    
-                    revert(string.concat("Article[", Strings.toString(i), "]: already published"));
-                }
-
-                revert(errorMessage);
             }
-        }
-
-        emit ArticlesPublished(ids);
+        } 
     }
-
-
-    function UnpublishArticles(bytes32[] memory ids) 
-    external payable {
-        Publisher_AIOModel memory publisherAIO = abi.decode(_aio.search.Metadata("AcademicArticles.Publisher"),(Publisher_AIOModel));
-
-        for (uint i = 0; i < ids.length; i++) {
-            bytes32 id = ids[i];
-            address publisher = abi.decode(_aio.search.Metadata(SIGNATURE(), "Publication", id), (Publication_AIOModel)).publisher;
-
-            require (publisher != address(0), "Article is not published");
-            require (publisher == msg.sender, "Article is not published by you");
-
-            try _aio.interact.CleanMetadata(SIGNATURE(), "Publication", id) {
-                if (publisherAIO.ids.length == 1) {
-                    publisherAIO.ids = new bytes32[](0);
-
-                    for (uint ii = 0; ii < publisherAIO.accounts.length; ii++) {
-                        if (publisherAIO.accounts[ii] == publisher) {
-                            publisherAIO.accounts[ii] = publisherAIO.accounts[publisherAIO.accounts.length - 1];
-                            publisherAIO.accounts.pop();
-
-                            break;   
-                        }
-                    }
-                } else {
-                    for (uint ii = 0; ii < publisherAIO.ids.length; ii++) {
-                        if (publisherAIO.ids[ii] == id) {
-                            publisherAIO.ids[ii] = publisherAIO.ids[publisherAIO.ids.length - 1];
-                            publisherAIO.ids.pop();
-
-                            break;        
-                        }
-                    }
-                }              
-            } catch Error(string memory errorMessage) {
-                if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT))) {                    
-                    revert(string.concat("Article[", Strings.toString(i), "]: is not published"));
-                } else {
-                    if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_NOT_SENT_BY_YOU))) {                    
-                        revert(string.concat("Article[", Strings.toString(i), "]: is not published here"));
-                    }
-                }
-
-                revert(errorMessage);
-            }
-        }
-
-        emit ArticlesUnpublished(ids);
-    }
-
-    */
 }

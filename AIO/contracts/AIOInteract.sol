@@ -98,5 +98,9 @@ abstract contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
                 break;
             }
         }
+
+        _token.states[signature][classification][key].push(bytes32(0));
+
+        emit AIOLog.MetadataCleaned(signature, classification, key);
     }
 }
