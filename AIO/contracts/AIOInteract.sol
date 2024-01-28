@@ -55,9 +55,8 @@ abstract contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
 
         _token.keys[signature][classification].push(key);
         _token.metadata[signature][classification][key] = metadata;
-        _token.states[signature][classification][key].push(keccak256(metadata));
 
-        emit AIOLog.MetadataSended(signature, classification, key, keccak256(metadata));
+        emit AIOLog.MetadataSended(signature, classification, key);
     }
 
     function UpdateMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
@@ -66,9 +65,8 @@ abstract contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
         bytes32 signature = _interconnection.signature[msg.sender];
 
         _token.metadata[signature][classification][key] = metadata;
-        _token.states[signature][classification][key].push(keccak256(metadata));
 
-        emit AIOLog.MetadataUpdated(signature, classification, key, keccak256(metadata));
+        emit AIOLog.MetadataUpdated(signature, classification, key);
     }
 
     function CleanMetadata(bytes32 classification, bytes32 key)
@@ -98,8 +96,6 @@ abstract contract AIOInteract is IAIOInteract, AIOStorage, AIORules {
                 break;
             }
         }
-
-        _token.states[signature][classification][key].push(bytes32(0));
 
         emit AIOLog.MetadataCleaned(signature, classification, key);
     }
