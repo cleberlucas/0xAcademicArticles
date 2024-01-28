@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 /**
  * @title StringUtils
- * @notice A library for string manipulation functions in Solidity.
+ * @notice This is a library for string manipulation functions.
  * @dev This library provides functions for string manipulation, including converting strings to lowercase and checking for the presence of a word in another string.
  */
 library StringUtils {

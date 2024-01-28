@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
+// Import necessary interfaces and libraries
 import "./aio/interfaces/IAIOWrite.sol";
 import "./aio/interfaces/IAIORead.sol";
 import "./aio/interfaces/IAIOSignature.sol";
@@ -9,8 +10,13 @@ import "./StringUtils.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-// Created by Cleber Lucas
-contract AcademicArticles is IAIOSignature{
+/**
+ * @title Academic Articles
+ * @notice This is a platform for publishing academic articles
+ * @dev Smart contract managing academic articles with integration to the AIO (All in one) platform.
+ * @author Cleber Lucas
+ */
+contract AcademicArticles is IAIOSignature {
     function SIGNATURE() 
     public pure 
     returns (bytes32 signature) {
@@ -55,48 +61,55 @@ contract AcademicArticles is IAIOSignature{
     }
 
     event ArticlesPublished(bytes32[] indexed ids);
+
     event ArticlesUnpublished(bytes32[] indexed ids);
-    event ConnectedToAIO(address indexed account);
-    event TransferredAIOSignature(address indexed newSender);
 
     AIO_StorageModel internal _aio;
 
+    bytes32 constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
     bytes32 constant AIO_CLASSIFICATION_PUBLISHER = "Publisher";
     bytes32 constant AIO_CLASSIFICATION_PUBLICATION = "Publication";
+
+    bool connectToAIO;
+    bool transferredSignature;
 
     address immutable OWNER;
 
     constructor(){
         OWNER = msg.sender;
     }
-  
+
     function ConnectToAIO(address account) 
     external {
         require (OWNER == msg.sender, "Owner action");
+        require (!connectToAIO, "Already connect to AIO");
 
         IAIOWrite(account).Initialize();
         _aio.read = IAIORead(account);
         _aio.write = IAIOWrite(account);
         _aio.account = account;
 
-        emit ConnectedToAIO(account);
+        connectToAIO = true;
     }
 
-    function TransferAIOSignature(address newSender) 
+    function TransferAIOSignature(address newSender, bytes calldata secretKey) 
     external {
         require (OWNER == msg.sender, "Owner action");
+        require (SECRETKEY == keccak256(secretKey), "Invalid secretKey");
+        require (!transferredSignature, "Already transferred signature");
 
-        IAIOWrite(address(this)).TransferSignature(newSender);
+        transferredSignature = true;
 
-        emit TransferredAIOSignature(newSender);
+        _aio.write.TransferSignature(newSender);
     }
 
     function PublishArticles(Article_Model[] calldata articles) 
     external {
         Publisher_AIOModel memory publisherAIO;
         address publisher = msg.sender;
+        bytes32 publisherAIOKey = bytes32(abi.encode(publisher));
         bytes32[] memory ids = new bytes32[](articles.length);
-        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey);
 
         for (uint i = 0; i < articles.length; i++) {
             bytes32 id = keccak256(abi.encode(articles[i]));
@@ -134,22 +147,23 @@ contract AcademicArticles is IAIOSignature{
 
             publisherAIO.ids = newIds;
             
-            _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)), abi.encode(publisherAIO));
+            _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
         } else {
             publisherAIO.ids = ids;
             publisherAIOEncoded = abi.encode(publisherAIO);
 
-            _aio.write.SendMetadata(AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)), abi.encode(publisherAIO));
+            _aio.write.SendMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
         }
 
         emit ArticlesPublished(ids);
     }
 
 
-    function UnpublishArticles(bytes32[] memory ids) 
+    function UnpublishArticles(bytes32[] calldata ids) 
     external {
         Publisher_AIOModel memory publisherAIO ;
-        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(msg.sender)));
+        bytes32 publisherAIOKey = bytes32(abi.encode(msg.sender));
+        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey);
 
         if(publisherAIOEncoded.length > 0) {
             publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
@@ -169,7 +183,7 @@ contract AcademicArticles is IAIOSignature{
         }
 
         if (publisherAIO.ids.length == ids.length) {
-            _aio.write.CleanMetadata(AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(msg.sender)));
+            _aio.write.CleanMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey);
         } else {  
             bytes32[] memory newIds = new bytes32[](publisherAIO.ids.length - ids.length);
             bool useId;
@@ -197,7 +211,7 @@ contract AcademicArticles is IAIOSignature{
             }
 
             publisherAIO.ids = newIds;
-            _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(msg.sender)), abi.encode(publisherAIO));
+            _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
         }
 
         emit ArticlesUnpublished(ids);
