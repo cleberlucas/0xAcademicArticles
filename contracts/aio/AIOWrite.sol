@@ -10,32 +10,32 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
     function Initialize()
     external
     InitializeRule(_interconnection) {
-        address sender = msg.sender;
-        bytes32 signature = IAIOSignature(sender).SIGNATURE();
+        address newSender = msg.sender;
+        bytes32 newSignature = IAIOSignature(newSender).SIGNATURE();
 
-        _interconnection.senders.push(sender); 
-        _interconnection.sender[signature] = sender;
-        _interconnection.signature[sender] = signature;
+        _interconnection.senders.push(newSender); 
+        _interconnection.sender[newSignature] = newSender;
+        _interconnection.signature[newSender] = newSignature;
 
-        emit AIOLog.SenderSigned(sender);
+        emit AIOLog.SenderSigned(newSender);
     }
 
     function TransferSignature(address newSender)
     external
     TransferSignatureRule(_interconnection, newSender) {
-        address oldSender = msg.sender;
-        bytes32 signature = IAIOSignature(oldSender).SIGNATURE();
+        address sender = msg.sender;
+        bytes32 signature = _interconnection.signature[sender];
 
         for (uint i = 0; i < _interconnection.senders.length; i++) {
-            if (_interconnection.senders[i] == oldSender) {
+            if (_interconnection.senders[i] == sender) {
                 _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
                 _interconnection.senders.pop();
                 break;
             }
         }
 
-        _interconnection.signature[oldSender] = "";
-        
+        _interconnection.signature[sender] = "";
+
         _interconnection.senders.push(newSender); 
         _interconnection.sender[signature] = newSender;
         _interconnection.signature[newSender] = signature;

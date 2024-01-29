@@ -7,13 +7,15 @@ import "./interfaces/IAIOSignature.sol";
 
 abstract contract AIORules {
     modifier InitializeRule(AIOStorageModel.Interconnection storage _interconnection) {
-        address sender = msg.sender;
+        address newSender = msg.sender;
 
-        require(sender.code.length > 0, AIOMessage.ONLY_CONTRACT);
-        try IAIOSignature(sender).SIGNATURE() {
-            require(IAIOSignature(sender).SIGNATURE() != bytes32(0), AIOMessage.SIGNATURE_EMPTY);
-            require(_interconnection.signature[sender] == bytes32(0), AIOMessage.SENDER_ALREADY_SIGNED);
-            require(_interconnection.sender[IAIOSignature(sender).SIGNATURE()] == address(0), AIOMessage.OTHER_SENDER_USING_SIGNATURE);
+        require(newSender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+        try IAIOSignature(newSender).SIGNATURE() {
+            bytes32 newSignature = IAIOSignature(newSender).SIGNATURE();
+
+            require(newSignature != bytes32(0), AIOMessage.SIGNATURE_EMPTY);
+            require(_interconnection.signature[newSender] == bytes32(0), AIOMessage.SENDER_ALREADY_SIGNED);
+            require(_interconnection.sender[newSignature] == address(0), AIOMessage.OTHER_SENDER_USING_SIGNATURE);
         } catch {
             revert(AIOMessage.SENDER_NO_SIGNATURE);
         }
@@ -21,14 +23,14 @@ abstract contract AIORules {
     }
 
     modifier TransferSignatureRule(AIOStorageModel.Interconnection storage _interconnection, address newSender) {
-        address oldSender = msg.sender;
+        address sender = msg.sender;
 
-        require(oldSender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+        require(sender.code.length > 0, AIOMessage.ONLY_CONTRACT);
+        require(_interconnection.signature[sender] != bytes32(0), AIOMessage.ONLY_SIGNED_EXEC);
         require(newSender.code.length > 0, AIOMessage.NEW_SENDER_NOT_CONTRACT);
-        require(_interconnection.signature[oldSender] != bytes32(0), AIOMessage.ONLY_SIGNED_EXEC);
-        require(newSender != oldSender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU);
+        require(newSender != sender, AIOMessage.NEW_SENDER_CANNOT_BE_YOU);
         try IAIOSignature(newSender).SIGNATURE() {
-            require(IAIOSignature(oldSender).SIGNATURE() == IAIOSignature(newSender).SIGNATURE(), AIOMessage.NEW_SENDER_NO_SAME_SIGNATURE);
+            require(_interconnection.signature[sender] == IAIOSignature(newSender).SIGNATURE(), AIOMessage.NEW_SENDER_NO_SAME_SIGNATURE);
         } catch {
             revert(AIOMessage.NEW_SENDER_NO_SIGNATURE);
         }
