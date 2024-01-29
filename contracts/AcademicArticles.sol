@@ -24,7 +24,6 @@ contract AcademicArticles is IAIOSignature {
     }
 
     struct AIO_StorageModel {     
-        address account;
         IAIORead read;
         IAIOWrite write;
     }
@@ -60,47 +59,72 @@ contract AcademicArticles is IAIOSignature {
         bytes32 id;
     }
 
-    event ArticlesPublished(bytes32[] indexed ids);
+    /**
+     * @notice Instance of a bridge for storage on the AIO platform.
+     */
+    AIO_StorageModel private _aio;
 
-    event ArticlesUnpublished(bytes32[] indexed ids);
+    // Internal control variables
+    /**
+     * @notice Secret key used for signature transfer.
+     */
+    bytes32 private constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
+    /**
+     * @notice Fixed keys used as classification on the AIO platform.
+     */
+    bytes32 private constant AIO_CLASSIFICATION_PUBLISHER = "Publisher";
+    bytes32 private constant AIO_CLASSIFICATION_PUBLICATION = "Publication";
 
-    AIO_StorageModel internal _aio;
+    /**
+     * @notice Variable to prevent double connection of AIO signature.
+     */
+    bool private connectToAIO;
+    /**
+     * @notice Variable to prevent double transfer of AIO signature.
+     */
+    bool private transferAIOSignature;
 
-    bytes32 constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
-    bytes32 constant AIO_CLASSIFICATION_PUBLISHER = "Publisher";
-    bytes32 constant AIO_CLASSIFICATION_PUBLICATION = "Publication";
+    /**
+     * @notice Owner of the contract.
+     */
+    address private immutable OWNER;
 
-    bool connectToAIO;
-    bool transferredSignature;
-
-    address immutable OWNER;
-
-    constructor(){
+    /**
+     * @notice Constructor initializes the contract with the deploying address as the owner.
+     */
+    constructor() {
         OWNER = msg.sender;
     }
 
-    function ConnectToAIO(address account) 
-    external {
-        require (OWNER == msg.sender, "Owner action");
-        require (!connectToAIO, "Already connect to AIO");
+    /**
+     * @notice Allows connection to the AIO platform.
+     * @param account The address of the AIO account to connect to.
+     */
+    function ConnectToAIO(address account) external {
+        require(OWNER == msg.sender, "Owner action");
+        require(!connectToAIO, "Already connected to AIO");
 
         IAIOWrite(account).Initialize();
         _aio.read = IAIORead(account);
         _aio.write = IAIOWrite(account);
-        _aio.account = account;
 
         connectToAIO = true;
     }
 
-    function TransferAIOSignature(address newSender, bytes calldata secretKey) 
-    external {
-        require (OWNER == msg.sender, "Owner action");
-        require (SECRETKEY == keccak256(secretKey), "Invalid secretKey");
-        require (!transferredSignature, "Already transferred signature");
-
-        transferredSignature = true;
+    /**
+     * @notice Transfers the AIO signature to a new address.
+     * @param newSender The new address to receive the AIO signature.
+     * @param secretKey The secret key for the transfer. 
+     * @dev Caution! Can be used only once; revealing its value during the transaction.
+     */
+    function TransferAIOSignature(address newSender, bytes calldata secretKey) external {
+        require(OWNER == msg.sender, "Owner action");
+        require(SECRETKEY == keccak256(secretKey), "Invalid secretKey");
+        require(!transferAIOSignature, "Already transferred AIO signature");
 
         _aio.write.TransferSignature(newSender);
+
+        transferAIOSignature = true;
     }
 
     function PublishArticles(Article_Model[] calldata articles) 
@@ -154,8 +178,6 @@ contract AcademicArticles is IAIOSignature {
 
             _aio.write.SendMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
         }
-
-        emit ArticlesPublished(ids);
     }
 
 
@@ -213,8 +235,6 @@ contract AcademicArticles is IAIOSignature {
             publisherAIO.ids = newIds;
             _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
         }
-
-        emit ArticlesUnpublished(ids);
     }
 
     function PublisherAIO(address publisher) 
@@ -276,9 +296,7 @@ contract AcademicArticles is IAIOSignature {
     returns (PublicationPreview_Model[] memory publicationsPreview, uint currentSize) {     
         currentSize = _aio.read.Keys(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION).length;
 
-        if (startIndex >= currentSize || startIndex > endIndex) {
-            publicationsPreview = new PublicationPreview_Model[](0);
-        } else {
+        if (!(startIndex >= currentSize || startIndex > endIndex)) {
             uint size = endIndex - startIndex + 1;
             
             size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
@@ -303,9 +321,7 @@ contract AcademicArticles is IAIOSignature {
             
             currentSize = publisherAIO.ids.length;
 
-            if (startIndex >= currentSize || startIndex > endIndex) {
-                previewPublicationsOfPublisher = new PublicationPreview_Model[](0);
-            } else {
+            if (!(startIndex >= currentSize || startIndex > endIndex)) {
                 uint size = endIndex - startIndex + 1;
                 
                 size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;

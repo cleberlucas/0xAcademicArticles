@@ -24,24 +24,23 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
     external
     TransferSignatureRule(_interconnection, newSender) {
         address oldSender = msg.sender;
+        bytes32 signature = IAIOSignature(oldSender).SIGNATURE();
 
         for (uint i = 0; i < _interconnection.senders.length; i++) {
             if (_interconnection.senders[i] == oldSender) {
-                bytes32 signature = IAIOSignature(oldSender).SIGNATURE();
-
                 _interconnection.senders[i] = _interconnection.senders[_interconnection.senders.length - 1];
                 _interconnection.senders.pop();
-
-                _interconnection.signature[oldSender] = "";
-
-                _interconnection.senders.push(newSender); 
-                _interconnection.sender[signature] = newSender;
-                _interconnection.signature[newSender] = signature;
-
-                emit AIOLog.SignatureTransferred(newSender);
                 break;
             }
         }
+
+        _interconnection.signature[oldSender] = "";
+        
+        _interconnection.senders.push(newSender); 
+        _interconnection.sender[signature] = newSender;
+        _interconnection.signature[newSender] = signature;
+
+        emit AIOLog.SignatureTransferred(newSender);
     }
 
     function SendMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
@@ -78,8 +77,7 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
             for (uint i = 0; i < _token.classifications[signature].length; i++) {            
                 if (_token.classifications[signature][i] == classification) {
                     _token.classifications[signature][i] = _token.classifications[signature][_token.classifications[signature].length - 1];
-                    _token.classifications[signature].pop();
-                    
+                    _token.classifications[signature].pop();             
                     break;
                 }
             }
@@ -88,14 +86,12 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
         for (uint i = 0; i < _token.keys[signature][classification].length; i++) {            
             if (_token.keys[signature][classification][i] == key) {
                 _token.keys[signature][classification][i] = _token.keys[signature][classification][_token.keys[signature][classification].length - 1];
-                _token.keys[signature][classification].pop();
-
-                _token.metadata[signature][classification][key] = new bytes(0);
-
-                emit AIOLog.MetadataCleaned(signature, classification, key);
+                _token.keys[signature][classification].pop();           
                 break;
             }
         }
+
+        _token.metadata[signature][classification][key] = new bytes(0);
 
         emit AIOLog.MetadataCleaned(signature, classification, key);
     }
