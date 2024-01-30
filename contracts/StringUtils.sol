@@ -6,7 +6,6 @@ pragma solidity ^0.8.23;
  * @notice This is a library for string manipulation functions.
  */
 library StringUtils {
-
     /**
      * @notice Converts the input string to lowercase.
      * @param str The input string to be converted.

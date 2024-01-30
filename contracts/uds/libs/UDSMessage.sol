@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-library AIOMessage {
+library UDSMessage {
     string public constant METADATA_ALREADY_SENT = "Metadata has already been sent, try updating them";
     string public constant METADATA_EMPTY = "Metadata entry is empty, add a non-empty entry";
     string public constant METADATA_NOT_SENT_TO_DELETE = "No metadata to be deleted";

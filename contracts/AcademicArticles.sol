@@ -2,10 +2,10 @@
 pragma solidity ^0.8.23;
 
 // Import necessary interfaces and libraries
-import "./aio/interfaces/IAIOWrite.sol";
-import "./aio/interfaces/IAIORead.sol";
-import "./aio/interfaces/IAIOSignature.sol";
-import "./aio/libs/AIOMessage.sol";
+import "./uds/interfaces/IUDSWrite.sol";
+import "./uds/interfaces/IUDSRead.sol";
+import "./uds/interfaces/IUDSSignature.sol";
+import "./uds/libs/UDSMessage.sol";
 import "./StringUtils.sol";
 
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
@@ -13,29 +13,29 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 /**
  * @title Academic Articles
  * @notice This is a platform for publishing academic articles
- * @dev Smart contract managing academic articles with integration to the AIO (All in one) platform.
+ * @dev Smart contract managing academic articles with integration to the UDS (Unified data storage) platform.
  * @author Cleber Lucas
  */
-contract AcademicArticles is IAIOSignature {
+contract AcademicArticles is IUDSSignature {
     function SIGNATURE() 
     public pure 
     returns (bytes32 signature) {
         signature = "AcademicArticles";
     }
 
-    struct AIO_StorageModel {     
-        IAIORead read;
-        IAIOWrite write;
+    struct UDS_StorageModel {     
+        IUDSRead read;
+        IUDSWrite write;
     }
 
-    struct Publication_AIOModel {
+    struct Publication_UDSModel {
         Article_Model article;
         address publisher;
         uint datetime;
         uint blockNumber;
     }
 
-    struct Publisher_AIOModel {
+    struct Publisher_UDSModel {
         bytes32[] ids;
     }
 
@@ -60,9 +60,9 @@ contract AcademicArticles is IAIOSignature {
     }
 
     /**
-     * @notice Instance of a bridge for storage on the AIO platform.
+     * @notice Instance of a bridge for storage on the UDS platform.
      */
-    AIO_StorageModel private _aio;
+    UDS_StorageModel private _uds;
 
     // Internal control variables
     /**
@@ -70,19 +70,19 @@ contract AcademicArticles is IAIOSignature {
      */
     bytes32 private constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
     /**
-     * @notice Fixed keys used as classification on the AIO platform.
+     * @notice Fixed keys used as classification on the UDS platform.
      */
-    bytes32 private constant AIO_CLASSIFICATION_PUBLISHER = "Publisher";
-    bytes32 private constant AIO_CLASSIFICATION_PUBLICATION = "Publication";
+    bytes32 private constant UDS_CLASSIFICATION_PUBLISHER = "Publisher";
+    bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
 
     /**
-     * @notice Variable to prevent double connection of AIO signature.
+     * @notice Variable to prevent double connection of UDS signature.
      */
-    bool private connectToAIO;
+    bool private connectToUDS;
     /**
-     * @notice Variable to prevent double transfer of AIO signature.
+     * @notice Variable to prevent double transfer of UDS signature.
      */
-    bool private transferAIOSignature;
+    bool private transferUDSSignature;
 
     /**
      * @notice Owner of the contract.
@@ -97,56 +97,56 @@ contract AcademicArticles is IAIOSignature {
     }
 
     /**
-     * @notice Allows connection to the AIO platform.
-     * @param account The address of the AIO account to connect to.
+     * @notice Allows connection to the UDS platform.
+     * @param account The address of the UDS account to connect to.
      */
-    function ConnectToAIO(address account) external {
+    function ConnectToUDS(address account) external {
         require(OWNER == msg.sender, "Owner action");
-        require(!connectToAIO, "Already connected to AIO");
+        require(!connectToUDS, "Already connected to UDS");
 
-        IAIOWrite(account).Initialize();
-        _aio.read = IAIORead(account);
-        _aio.write = IAIOWrite(account);
+        IUDSWrite(account).Initialize();
+        _uds.read = IUDSRead(account);
+        _uds.write = IUDSWrite(account);
 
-        connectToAIO = true;
+        connectToUDS = true;
     }
 
     /**
-     * @notice Transfers the AIO signature to a new address.
-     * @param newSender The new address to receive the AIO signature.
+     * @notice Transfers the UDS signature to a new address.
+     * @param newSender The new address to receive the UDS signature.
      * @param secretKey The secret key for the transfer. 
-     * @dev Caution! Can be used only once; revealing its value during the transaction.
+     * @dev Can be used only once; revealing its value during the transaction.
      */
-    function TransferAIOSignature(address newSender, bytes calldata secretKey) external {
+    function TransferUDSSignature(address newSender, bytes calldata secretKey) external {
         require(OWNER == msg.sender, "Owner action");
         require(SECRETKEY == keccak256(secretKey), "Invalid secretKey");
-        require(!transferAIOSignature, "Already transferred AIO signature");
+        require(!transferUDSSignature, "Already transferred UDS signature");
 
-        _aio.write.TransferSignature(newSender);
+        _uds.write.TransferSignature(newSender);
 
-        transferAIOSignature = true;
+        transferUDSSignature = true;
     }
 
     function PublishArticles(Article_Model[] calldata articles) 
     external {
-        Publisher_AIOModel memory publisherAIO;
+        Publisher_UDSModel memory publisherUDS;
         address publisher = msg.sender;
-        bytes32 publisherAIOKey = bytes32(abi.encode(publisher));
+        bytes32 publisherUDSKey = bytes32(abi.encode(publisher));
         bytes32[] memory ids = new bytes32[](articles.length);
-        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey);
+        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey);
 
         for (uint i = 0; i < articles.length; i++) {
             bytes32 id = keccak256(abi.encode(articles[i]));
-            Publication_AIOModel memory publication;
+            Publication_UDSModel memory publication;
 
             publication.article = articles[i];
             publication.publisher = publisher;
             publication.datetime = block.timestamp;
             publication.blockNumber = block.number;
 
-            try _aio.write.SendMetadata(AIO_CLASSIFICATION_PUBLICATION, id, abi.encode(publication)) {
+            try _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLICATION, id, abi.encode(publication)) {
             } catch Error(string memory errorMessage) {
-                if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(AIOMessage.METADATA_ALREADY_SENT))) {
+                if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(UDSMessage.METADATA_ALREADY_SENT))) {
                     revert(string.concat("Article[", Strings.toString(i), "] already published"));          
                 } else {
                     revert( errorMessage);
@@ -156,66 +156,66 @@ contract AcademicArticles is IAIOSignature {
             ids[i] = id;
         }
 
-        if (publisherAIOEncoded.length > 0) {
-            bytes32[] memory newIds = new bytes32[](publisherAIO.ids.length + ids.length);
+        if (publisherUDSEncoded.length > 0) {
+            bytes32[] memory newIds = new bytes32[](publisherUDS.ids.length + ids.length);
 
-            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+            publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
 
             for (uint i = 0; i < newIds.length; i++) {
-                if (i < publisherAIO.ids.length) {
-                    newIds[i] = publisherAIO.ids[i];
+                if (i < publisherUDS.ids.length) {
+                    newIds[i] = publisherUDS.ids[i];
                 } else {
-                    newIds[i] = publisherAIO.ids[i - publisherAIO.ids.length];
+                    newIds[i] = publisherUDS.ids[i - publisherUDS.ids.length];
                 }
             }
 
-            publisherAIO.ids = newIds;
+            publisherUDS.ids = newIds;
             
-            _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
+            _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey, abi.encode(publisherUDS));
         } else {
-            publisherAIO.ids = ids;
-            publisherAIOEncoded = abi.encode(publisherAIO);
+            publisherUDS.ids = ids;
+            publisherUDSEncoded = abi.encode(publisherUDS);
 
-            _aio.write.SendMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
+            _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey, abi.encode(publisherUDS));
         }
     }
 
 
     function UnpublishArticles(bytes32[] calldata ids) 
     external {
-        Publisher_AIOModel memory publisherAIO ;
-        bytes32 publisherAIOKey = bytes32(abi.encode(msg.sender));
-        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey);
+        Publisher_UDSModel memory publisherUDS ;
+        bytes32 publisherUDSKey = bytes32(abi.encode(msg.sender));
+        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey);
 
-        if(publisherAIOEncoded.length > 0) {
-            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+        if(publisherUDSEncoded.length > 0) {
+            publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
         } else {
             revert ("You have nothing to unpublish");
         }
 
         for (uint i = 0; i < ids.length; i++) {
             bytes32 id = ids[i]; 
-            bytes memory publicationEncode = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION, id);
-            Publication_AIOModel memory publicationAIO = abi.decode(publicationEncode, (Publication_AIOModel));
+            bytes memory publicationEncode = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, id);
+            Publication_UDSModel memory publicationUDS = abi.decode(publicationEncode, (Publication_UDSModel));
 
             require (publicationEncode.length > 0, string.concat("Article[", Strings.toString(i), "] is not published"));
-            require (publicationAIO.publisher == msg.sender, string.concat("Article[", Strings.toString(i), "] is not published by you"));
+            require (publicationUDS.publisher == msg.sender, string.concat("Article[", Strings.toString(i), "] is not published by you"));
 
-            _aio.write.CleanMetadata(AIO_CLASSIFICATION_PUBLICATION, id);     
+            _uds.write.CleanMetadata(UDS_CLASSIFICATION_PUBLICATION, id);     
         }
 
-        if (publisherAIO.ids.length == ids.length) {
-            _aio.write.CleanMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey);
+        if (publisherUDS.ids.length == ids.length) {
+            _uds.write.CleanMetadata(UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey);
         } else {  
-            bytes32[] memory newIds = new bytes32[](publisherAIO.ids.length - ids.length);
+            bytes32[] memory newIds = new bytes32[](publisherUDS.ids.length - ids.length);
             bool useId;
             uint i_;
 
-            for (uint i = 0; i < publisherAIO.ids.length; i++) {
+            for (uint i = 0; i < publisherUDS.ids.length; i++) {
                 useId = true;
 
                 for (uint ii = 0; ii < ids.length; ii++) {
-                    if (ids[ii] == publisherAIO.ids[i]) {
+                    if (ids[ii] == publisherUDS.ids[i]) {
                         useId = false;
 
                         break;
@@ -223,7 +223,7 @@ contract AcademicArticles is IAIOSignature {
                 }
 
                 if (useId) {
-                    newIds[i_] = publisherAIO.ids[i];
+                    newIds[i_] = publisherUDS.ids[i];
                     i_ ++;
                 }
 
@@ -232,42 +232,42 @@ contract AcademicArticles is IAIOSignature {
                 }
             }
 
-            publisherAIO.ids = newIds;
-            _aio.write.UpdateMetadata(AIO_CLASSIFICATION_PUBLISHER, publisherAIOKey, abi.encode(publisherAIO));
+            publisherUDS.ids = newIds;
+            _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey, abi.encode(publisherUDS));
         }
     }
 
-    function PublisherAIO(address publisher) 
+    function PublisherUDS(address publisher) 
     external view 
-    returns (Publisher_AIOModel memory publisherAIO) {
-        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+    returns (Publisher_UDSModel memory publisherUDS) {
+        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
-        if(publisherAIOEncoded.length > 0) {
-            publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+        if(publisherUDSEncoded.length > 0) {
+            publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
         }
     }
 
     function Publication(bytes32 id) 
     external view 
-    returns (Publication_AIOModel memory publication) {
-        bytes memory publicationAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION, id);
+    returns (Publication_UDSModel memory publication) {
+        bytes memory publicationUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, id);
 
-        if(publicationAIOEncoded.length > 0) {
-            publication = abi.decode(publicationAIOEncoded, (Publication_AIOModel));
+        if(publicationUDSEncoded.length > 0) {
+            publication = abi.decode(publicationUDSEncoded, (Publication_UDSModel));
         }
     }
 
     function PreviewPublicationsWithTitle(string memory title, uint limit) 
     external view  
     returns (PublicationPreview_Model[] memory publicationsPreview) {
-        bytes32[] memory publicationKeys = _aio.read.Keys(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory publicationKeys = _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION);
 
         publicationsPreview = new PublicationPreview_Model[](limit);
 
         uint previewCount;
         for (uint i = 0; i < publicationKeys.length && previewCount < limit; i++) {
             bytes32 id = publicationKeys[i];
-            Publication_AIOModel memory publication = abi.decode(_aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION, id), (Publication_AIOModel));
+            Publication_UDSModel memory publication = abi.decode(_uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, id), (Publication_UDSModel));
             string memory articleTitle = StringUtils.ToLower(publication.article.title);
 
             if (StringUtils.ContainWord(articleTitle, StringUtils.ToLower(title))) {
@@ -294,7 +294,7 @@ contract AcademicArticles is IAIOSignature {
     function PreviewPublications(uint startIndex, uint endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint currentSize) {     
-        currentSize = _aio.read.Keys(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION).length;
+        currentSize = _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION).length;
 
         if (!(startIndex >= currentSize || startIndex > endIndex)) {
             uint size = endIndex - startIndex + 1;
@@ -304,8 +304,8 @@ contract AcademicArticles is IAIOSignature {
             
             for (uint i = 0; i < size; i++) {
                 publicationsPreview[i] = PublicationPreview_Model(
-                    abi.decode(_aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION, _aio.read.Keys(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION)[startIndex + i]), (Publication_AIOModel)).article.title,
-                    _aio.read.Keys(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION)[startIndex + i]
+                    abi.decode(_uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION)[startIndex + i]), (Publication_UDSModel)).article.title,
+                    _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION)[startIndex + i]
                 );
             }
         }
@@ -314,12 +314,12 @@ contract AcademicArticles is IAIOSignature {
     function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint currentSize) {
-        bytes memory publisherAIOEncoded = _aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
-        if(publisherAIOEncoded.length > 0) {
-            Publisher_AIOModel memory publisherAIO = abi.decode(publisherAIOEncoded, (Publisher_AIOModel));
+        if(publisherUDSEncoded.length > 0) {
+            Publisher_UDSModel memory publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
             
-            currentSize = publisherAIO.ids.length;
+            currentSize = publisherUDS.ids.length;
 
             if (!(startIndex >= currentSize || startIndex > endIndex)) {
                 uint size = endIndex - startIndex + 1;
@@ -329,8 +329,8 @@ contract AcademicArticles is IAIOSignature {
                 
                 for (uint i = 0; i < size; i++) {
                     previewPublicationsOfPublisher[i] = PublicationPreview_Model(
-                        abi.decode(_aio.read.Metadata(SIGNATURE(), AIO_CLASSIFICATION_PUBLICATION, publisherAIO.ids[startIndex + i]), (Publication_AIOModel)).article.title,
-                        publisherAIO.ids[startIndex + i]
+                        abi.decode(_uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, publisherUDS.ids[startIndex + i]), (Publication_UDSModel)).article.title,
+                        publisherUDS.ids[startIndex + i]
                     );
                 }
             }

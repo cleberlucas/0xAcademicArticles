@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./libs/AIOLog.sol";
-import "./interfaces/IAIOWrite.sol";
-import "./AIOStorage.sol";
-import "./AIORules.sol";
+import "./libs/UDSLog.sol";
+import "./interfaces/IUDSWrite.sol";
+import "./UDSStorage.sol";
+import "./UDSRules.sol";
 
-abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
+abstract contract UDSWrite is IUDSWrite, UDSStorage, UDSRules {
     function Initialize()
     external
     InitializeRule(_interconnection) {
         address newSender = msg.sender;
-        bytes32 newSignature = IAIOSignature(newSender).SIGNATURE();
+        bytes32 newSignature = IUDSSignature(newSender).SIGNATURE();
 
         _interconnection.senders.push(newSender); 
         _interconnection.sender[newSignature] = newSender;
         _interconnection.signature[newSender] = newSignature;
 
-        emit AIOLog.SenderSigned(newSender);
+        emit UDSLog.SenderSigned(newSender);
     }
 
     function TransferSignature(address newSender)
@@ -40,7 +40,7 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
         _interconnection.sender[signature] = newSender;
         _interconnection.signature[newSender] = signature;
 
-        emit AIOLog.SignatureTransferred(newSender);
+        emit UDSLog.SignatureTransferred(newSender);
     }
 
     function SendMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
@@ -55,7 +55,7 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
         _token.keys[signature][classification].push(key);
         _token.metadata[signature][classification][key] = metadata;
 
-        emit AIOLog.MetadataSended(signature, classification, key);
+        emit UDSLog.MetadataSended(signature, classification, key);
     }
 
     function UpdateMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
@@ -65,7 +65,7 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
 
         _token.metadata[signature][classification][key] = metadata;
 
-        emit AIOLog.MetadataUpdated(signature, classification, key);
+        emit UDSLog.MetadataUpdated(signature, classification, key);
     }
 
     function CleanMetadata(bytes32 classification, bytes32 key)
@@ -93,6 +93,6 @@ abstract contract AIOWrite is IAIOWrite, AIOStorage, AIORules {
 
         _token.metadata[signature][classification][key] = new bytes(0);
 
-        emit AIOLog.MetadataCleaned(signature, classification, key);
+        emit UDSLog.MetadataCleaned(signature, classification, key);
     }
 }

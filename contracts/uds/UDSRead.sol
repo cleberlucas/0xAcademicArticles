@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./interfaces/IAIORead.sol";
-import "./AIOStorage.sol";
+import "./interfaces/IUDSRead.sol";
+import "./UDSStorage.sol";
 
-abstract contract AIORead is IAIORead, AIOStorage {
+abstract contract UDSRead is IUDSRead, UDSStorage {
     function Senders()
     external view
     returns (address[] memory senders) {
