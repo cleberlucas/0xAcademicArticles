@@ -4,7 +4,6 @@ pragma solidity ^0.8.23;
 // Import necessary interfaces and libraries
 import "./uds/interfaces/IUDSWrite.sol";
 import "./uds/interfaces/IUDSRead.sol";
-import "./uds/interfaces/IUDSSignature.sol";
 import "./uds/libs/UDSMessage.sol";
 import "./StringUtils.sol";
 
@@ -16,13 +15,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
  * @dev Smart contract managing academic articles with integration to the UDS (Unified data storage) platform.
  * @author Cleber Lucas
  */
-contract AcademicArticles is IUDSSignature {
-    function SIGNATURE() 
-    public pure 
-    returns (bytes32 signature) {
-        signature = "AcademicArticles";
-    }
-
+contract AcademicArticles{
     struct UDS_StorageModel {     
         IUDSRead read;
         IUDSWrite write;
@@ -72,6 +65,7 @@ contract AcademicArticles is IUDSSignature {
     /**
      * @notice Fixed keys used as classification on the UDS platform.
      */
+    bytes32 private constant UDS_SIGNATURE = "AcademicArticles";
     bytes32 private constant UDS_CLASSIFICATION_PUBLISHER = "Publisher";
     bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
 
@@ -104,7 +98,7 @@ contract AcademicArticles is IUDSSignature {
         require(OWNER == msg.sender, "Owner action");
         require(!connectToUDS, "Already connected to UDS");
 
-        IUDSWrite(account).Initialize();
+        IUDSWrite(account).Sign(UDS_SIGNATURE);
         _uds.read = IUDSRead(account);
         _uds.write = IUDSWrite(account);
 
@@ -113,28 +107,27 @@ contract AcademicArticles is IUDSSignature {
 
     /**
      * @notice Transfers the UDS signature to a new address.
-     * @param newSender The new address to receive the UDS signature.
+     * @param sender The new address to receive the UDS signature.
      * @param secretKey The secret key for the transfer. 
      * @dev Can be used only once; revealing its value during the transaction.
      */
-    function TransferUDSSignature(address newSender, bytes calldata secretKey) external {
+    function TransferUDSSignature(address sender, bytes calldata secretKey) external {
         require(OWNER == msg.sender, "Owner action");
         require(SECRETKEY == keccak256(secretKey), "Invalid secretKey");
         require(!transferUDSSignature, "Already transferred UDS signature");
 
-        _uds.write.TransferSignature(newSender);
+        _uds.write.TransferSignature(sender);
 
         transferUDSSignature = true;
     }
 
     function PublishArticles(Article_Model[] calldata articles) 
     external {
-        Publisher_UDSModel memory publisherUDS;
-        address publisher = msg.sender;
-        bytes32 publisherUDSKey = bytes32(abi.encode(publisher));
         bytes32[] memory ids = new bytes32[](articles.length);
-        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey);
-
+        address publisher = msg.sender;
+        bytes32 publisherUDSKey = bytes32(abi.encode(publisher));   
+        Publisher_UDSModel memory publisherUDS = Publisher(publisher);
+       
         for (uint i = 0; i < articles.length; i++) {
             bytes32 id = keccak256(abi.encode(articles[i]));
             Publication_UDSModel memory publication;
@@ -156,10 +149,8 @@ contract AcademicArticles is IUDSSignature {
             ids[i] = id;
         }
 
-        if (publisherUDSEncoded.length > 0) {
+        if (publisherUDS.ids.length > 0) {
             bytes32[] memory newIds = new bytes32[](publisherUDS.ids.length + ids.length);
-
-            publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
 
             for (uint i = 0; i < newIds.length; i++) {
                 if (i < publisherUDS.ids.length) {
@@ -169,13 +160,10 @@ contract AcademicArticles is IUDSSignature {
                 }
             }
 
-            publisherUDS.ids = newIds;
-            
+            publisherUDS.ids = newIds;          
             _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey, abi.encode(publisherUDS));
         } else {
             publisherUDS.ids = ids;
-            publisherUDSEncoded = abi.encode(publisherUDS);
-
             _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey, abi.encode(publisherUDS));
         }
     }
@@ -183,23 +171,19 @@ contract AcademicArticles is IUDSSignature {
 
     function UnpublishArticles(bytes32[] calldata ids) 
     external {
-        Publisher_UDSModel memory publisherUDS ;
-        bytes32 publisherUDSKey = bytes32(abi.encode(msg.sender));
-        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, publisherUDSKey);
+        address publisher = msg.sender;
+        bytes32 publisherUDSKey = bytes32(abi.encode(publisher));
+        Publisher_UDSModel memory publisherUDS = Publisher(publisher);
 
-        if(publisherUDSEncoded.length > 0) {
-            publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
-        } else {
-            revert ("You have nothing to unpublish");
-        }
+        require(publisherUDS.ids.length == 0, "You have nothing to unpublish");
 
         for (uint i = 0; i < ids.length; i++) {
             bytes32 id = ids[i]; 
-            bytes memory publicationEncode = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, id);
-            Publication_UDSModel memory publicationUDS = abi.decode(publicationEncode, (Publication_UDSModel));
+            bytes memory publicationMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id);
+            Publication_UDSModel memory publicationUDS = abi.decode(publicationMetadata, (Publication_UDSModel));
 
-            require (publicationEncode.length > 0, string.concat("Article[", Strings.toString(i), "] is not published"));
-            require (publicationUDS.publisher == msg.sender, string.concat("Article[", Strings.toString(i), "] is not published by you"));
+            require (publicationMetadata.length > 0, string.concat("Article[", Strings.toString(i), "] is not published"));
+            require (publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
 
             _uds.write.CleanMetadata(UDS_CLASSIFICATION_PUBLICATION, id);     
         }
@@ -237,37 +221,37 @@ contract AcademicArticles is IUDSSignature {
         }
     }
 
-    function PublisherUDS(address publisher) 
-    external view 
+    function Publisher(address publisher) 
+    internal view 
     returns (Publisher_UDSModel memory publisherUDS) {
-        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+        bytes memory publisherUDSMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
-        if(publisherUDSEncoded.length > 0) {
-            publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
+        if(publisherUDSMetadata.length > 0) {
+            publisherUDS = abi.decode(publisherUDSMetadata, (Publisher_UDSModel));
         }
     }
 
     function Publication(bytes32 id) 
     external view 
     returns (Publication_UDSModel memory publication) {
-        bytes memory publicationUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, id);
+        bytes memory publicationUDSMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id);
 
-        if(publicationUDSEncoded.length > 0) {
-            publication = abi.decode(publicationUDSEncoded, (Publication_UDSModel));
+        if(publicationUDSMetadata.length > 0) {
+            publication = abi.decode(publicationUDSMetadata, (Publication_UDSModel));
         }
     }
 
     function PreviewPublicationsWithTitle(string memory title, uint limit) 
     external view  
     returns (PublicationPreview_Model[] memory publicationsPreview) {
-        bytes32[] memory publicationKeys = _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory publicationKeys = _uds.read.Keys(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
 
         publicationsPreview = new PublicationPreview_Model[](limit);
 
         uint previewCount;
         for (uint i = 0; i < publicationKeys.length && previewCount < limit; i++) {
             bytes32 id = publicationKeys[i];
-            Publication_UDSModel memory publication = abi.decode(_uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, id), (Publication_UDSModel));
+            Publication_UDSModel memory publication = abi.decode(_uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id), (Publication_UDSModel));
             string memory articleTitle = StringUtils.ToLower(publication.article.title);
 
             if (StringUtils.ContainWord(articleTitle, StringUtils.ToLower(title))) {
@@ -294,7 +278,7 @@ contract AcademicArticles is IUDSSignature {
     function PreviewPublications(uint startIndex, uint endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint currentSize) {     
-        currentSize = _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION).length;
+        currentSize = _uds.read.Keys(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION).length;
 
         if (!(startIndex >= currentSize || startIndex > endIndex)) {
             uint size = endIndex - startIndex + 1;
@@ -304,8 +288,8 @@ contract AcademicArticles is IUDSSignature {
             
             for (uint i = 0; i < size; i++) {
                 publicationsPreview[i] = PublicationPreview_Model(
-                    abi.decode(_uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION)[startIndex + i]), (Publication_UDSModel)).article.title,
-                    _uds.read.Keys(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION)[startIndex + i]
+                    abi.decode(_uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, _uds.read.Keys(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION)[startIndex + i]), (Publication_UDSModel)).article.title,
+                    _uds.read.Keys(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION)[startIndex + i]
                 );
             }
         }
@@ -314,10 +298,10 @@ contract AcademicArticles is IUDSSignature {
     function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
     external view 
     returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint currentSize) {
-        bytes memory publisherUDSEncoded = _uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+        bytes memory publisherUDSMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
-        if(publisherUDSEncoded.length > 0) {
-            Publisher_UDSModel memory publisherUDS = abi.decode(publisherUDSEncoded, (Publisher_UDSModel));
+        if(publisherUDSMetadata.length > 0) {
+            Publisher_UDSModel memory publisherUDS = abi.decode(publisherUDSMetadata, (Publisher_UDSModel));
             
             currentSize = publisherUDS.ids.length;
 
@@ -329,7 +313,7 @@ contract AcademicArticles is IUDSSignature {
                 
                 for (uint i = 0; i < size; i++) {
                     previewPublicationsOfPublisher[i] = PublicationPreview_Model(
-                        abi.decode(_uds.read.Metadata(SIGNATURE(), UDS_CLASSIFICATION_PUBLICATION, publisherUDS.ids[startIndex + i]), (Publication_UDSModel)).article.title,
+                        abi.decode(_uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publisherUDS.ids[startIndex + i]), (Publication_UDSModel)).article.title,
                         publisherUDS.ids[startIndex + i]
                     );
                 }
