@@ -39,7 +39,7 @@ contract AcademicArticles{
         string course;
         string articleType;
         string academicDegree;
-        string documentationUrl;
+        string documentationURI;
         string[] authors;
         string[] advisors;
         string[] examiningBoard;
@@ -49,6 +49,11 @@ contract AcademicArticles{
     struct PublicationPreview_Model {
         string title;
         bytes32 id;
+    }
+
+    struct ChangeDocumentationURI_Parameter {
+        bytes32 id;
+        string documentationURI;
     }
 
     /**
@@ -128,17 +133,17 @@ contract AcademicArticles{
         Publisher_UDSModel memory publisherUDS = Publisher(publisher);
        
         for (uint i = 0; i < articles.length; i++) {
-            bytes32 id = keccak256(abi.encode(articles[i]));
-            Publication_UDSModel memory publication;
+            bytes32 id = keccak256(abi.encode(articles[i].summary));
+            Publication_UDSModel memory publicationUDS;
 
-            publication.article = articles[i];
-            publication.publisher = publisher;
-            publication.datetime = block.timestamp;
-            publication.blockNumber = block.number;
+            publicationUDS.article = articles[i];
+            publicationUDS.publisher = publisher;
+            publicationUDS.datetime = block.timestamp;
+            publicationUDS.blockNumber = block.number;
 
-            try _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLICATION, id, abi.encode(publication)) {
+            try _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLICATION, id, abi.encode(publicationUDS)) {
             } catch Error(string memory errorMessage) {
-                if (keccak256(abi.encodePacked(errorMessage)) == keccak256(abi.encodePacked(UDSMessage.METADATA_ALREADY_SENT))) {
+                if (Strings.equal(errorMessage, UDSMessage.METADATA_ALREADY_SENT)) {
                     revert(string.concat("Article[", Strings.toString(i), "] already published"));          
                 } else {
                     revert( errorMessage);
@@ -177,14 +182,11 @@ contract AcademicArticles{
 
         for (uint i = 0; i < ids.length; i++) {
             bytes32 id = ids[i]; 
-            bytes memory publicationMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id);
+            Publication_UDSModel memory publicationUDS = Publication(id);
 
-            if (publicationMetadata.length == 0) {
-                revert(string.concat("Article[", Strings.toString(i), "] is not published"));
-            } else {
-                require (abi.decode(publicationMetadata, (Publication_UDSModel)).publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
-            }
-
+            require(publicationUDS.publisher != address(0), string.concat("Article[", Strings.toString(i), "] is not published"));
+            require (publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
+           
             _uds.write.CleanMetadata(UDS_CLASSIFICATION_PUBLICATION, id);     
         }
 
@@ -215,8 +217,35 @@ contract AcademicArticles{
         }
     }
 
+    function ChangeDocumentationURI(ChangeDocumentationURI_Parameter[] memory parameter) 
+    external {
+        address publisher = msg.sender;
+        Publisher_UDSModel memory publisherUDS = Publisher(publisher);
+
+        require(publisherUDS.ids.length > 0, "You have nothing to change");
+
+        for (uint i = 0; i < parameter.length; i++) {
+            bytes32 id = parameter[i].id; 
+            Publication_UDSModel memory publicationUDS = Publication(id);
+
+            require(publicationUDS.publisher != address(0), string.concat("Article[", Strings.toString(i), "] is not published"));
+            require(publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
+
+            publicationUDS.article.documentationURI = parameter[i].documentationURI;
+  
+            try _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLICATION, id, abi.encode(publicationUDS)) {
+            } catch Error(string memory errorMessage) {
+                if (Strings.equal(errorMessage, UDSMessage.SAME_METADATA_ALREADY_SENT)) {
+                    revert(string.concat("Article[", Strings.toString(i), "] he same documentation URI already exists"));  
+                } else {
+                    revert( errorMessage);
+                }
+            }   
+        }
+    }
+
     function Publisher(address publisher) 
-    private view 
+    public view 
     returns (Publisher_UDSModel memory publisherUDS) {
         bytes memory publisherUDSMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
@@ -226,7 +255,7 @@ contract AcademicArticles{
     }
 
     function Publication(bytes32 id) 
-    external view 
+    public view 
     returns (Publication_UDSModel memory publication) {
         bytes memory publicationUDSMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id);
 
@@ -236,7 +265,7 @@ contract AcademicArticles{
     }
 
     function PreviewPublicationsWithTitle(string memory title, uint limit) 
-    external view  
+    public view  
     returns (PublicationPreview_Model[] memory publicationsPreview) {
         bytes32[] memory publicationKeys = _uds.read.Keys(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
 
@@ -272,7 +301,7 @@ contract AcademicArticles{
     }
 
     function PreviewPublications(uint startIndex, uint endIndex) 
-    external view 
+    public view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint currentSize) {     
         currentSize = _uds.read.Keys(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION).length;
 
@@ -292,7 +321,7 @@ contract AcademicArticles{
     }
 
     function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
-    external view 
+    public view 
     returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint currentSize) {
         bytes memory publisherUDSMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
