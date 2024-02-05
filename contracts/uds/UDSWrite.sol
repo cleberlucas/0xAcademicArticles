@@ -16,7 +16,7 @@ abstract contract UDSWrite is IUDSWrite, UDSStorage, UDSRules {
         _interconnection.sender[signature] = sender;
         _interconnection.signature[sender] = signature;
 
-        emit UDSLog.SenderSigned(sender, signature);
+        emit UDSLog.SenderSigned(signature, sender);
     }
 
     function TransferSignature(address sender)
@@ -39,7 +39,7 @@ abstract contract UDSWrite is IUDSWrite, UDSStorage, UDSRules {
         _interconnection.sender[signature] = sender;
         _interconnection.signature[sender] = signature;
 
-        emit UDSLog.SignatureTransferred(sender, signature);
+        emit UDSLog.SignatureTransferred(signature, sender);
     }
 
     function SendMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
