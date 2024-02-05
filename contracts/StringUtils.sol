@@ -3,14 +3,14 @@ pragma solidity ^0.8.23;
 
 /**
  * @title StringUtils
- * @notice This is a library for string manipulation functions.
+ * @dev This is a library for string manipulation functions.
  */
 library StringUtils {
     /**
-     * @notice Converts the input string to lowercase.
+     * @dev Converts the input string to lowercase.
      * @param str The input string to be converted.
      * @return toLower The resulting lowercase string.
-     * @custom:based This function is based on the implementation available at: https://gist.github.com/ottodevs/c43d0a8b4b891ac2da675f825b1d1dbf?permalink_comment_id=3310614#gistcomment-3310614
+     * @notice This function is based on the implementation available at: https://gist.github.com/ottodevs/c43d0a8b4b891ac2da675f825b1d1dbf?permalink_comment_id=3310614#gistcomment-3310614
      */
     function ToLower(string memory str) internal pure returns (string memory toLower) {
         bytes memory bStr = bytes(str);
@@ -28,11 +28,11 @@ library StringUtils {
     }
 
     /**
-     * @notice Checks if a specific word is contained within another string.
+     * @dev Checks if a specific word is contained within another string.
      * @param what The word to check for.
      * @param where The string in which to check for the word.
      * @return found A boolean indicating whether the word was found in the string.
-     * @custom:based This function is based on the implementation available at: https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol
+     * @notice This function is based on the implementation available at: https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol
      */
     function ContainWord(string memory what, string memory where) internal pure returns (bool found){
         bytes memory whatBytes = bytes(what);

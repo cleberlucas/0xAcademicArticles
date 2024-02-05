@@ -11,12 +11,13 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 /**
  * @title Academic Articles
  * @notice This contract serves as a platform for publishing academic articles.
- * @dev It manages academic articles with integration to the UDS (Unified Data Storage) platform.
+ * @dev It manages academic articles with integration to the UDS (Unified data storage) platform.
  * @author Cleber Lucas
  */
 contract AcademicArticles{
+
     /**
-    * @notice Represents the storage model for connecting to the UDS.
+    * @dev Represents the storage model for connecting to the UDS.
     */
     struct UDS_StorageModel {
         IUDSRead read;    // Instance of the UDSRead interface for reading data in the UDS.
@@ -24,7 +25,7 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Represents metadata for a publication in the UDS.
+    * @dev Represents metadata for a publication in the UDS.
     */
     struct Publication_UDSModel {
         Article_Model article;    // Information about the article being published.
@@ -41,7 +42,7 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Represents detailed information about an article.
+    * @dev Represents detailed information about an article.
     */
     struct Article_Model {
         string title;              // Title of the article.
@@ -59,7 +60,7 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Represents a preview of a publication for display purposes.
+    * @dev Represents a preview of a publication for display purposes.
     */
     struct PublicationPreview_Model {
         string title;      // Title of the publication.
@@ -67,7 +68,7 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Represents parameters for changing the documentation CID of an article.
+    * @dev Represents parameters for changing the documentation CID of an article.
     */
     struct ChangeDocumentationCID_Parameter {
         bytes32 id;                // Unique identifier of the article.
@@ -75,48 +76,46 @@ contract AcademicArticles{
     }
 
     /**
-     * @notice Instance of a bridge for storage on the UDS.
+     * @dev Instance of a bridge for storage on the UDS.
      */
     UDS_StorageModel private _uds;
 
     /**
-     * @custom:initial-scope Internal control variables.
-     * @notice Secret key used for signature transfer.
+     * @dev Secret key used for signature transfer.
      */
     bytes32 private constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
 
     /**
-     * @notice Fixed keys used as classification on the UDS.
+     * @dev Fixed keys used as classification on the UDS.
      */
     bytes32 private constant UDS_SIGNATURE = "AcademicArticles";
     bytes32 private constant UDS_CLASSIFICATION_PUBLISHER = "Publisher";
     bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
 
     /**
-     * @notice Variable to prevent double execution.
+     * @dev Variable to prevent double execution.
      */
     bool private connectToUDS;
     bool private transferUDSSignature;
 
     /**
-     * @notice Owner of the contract.
-     * @custom:final-scope Internal control variables.
+     * @dev Owner of the contract.
      */
     address private immutable OWNER;
 
     /**
-     * @notice Constructor initializes the contract with the deploying address as the owner.
+     * @dev Constructor initializes the contract with the deploying address as the owner.
      */
     constructor() {
         OWNER = msg.sender;
     }
 
     /**
-    * @notice Allows connection to the UDS.
-    * @param account The address of the UDS account to connect to.
-    */
-    function ConnectToUDS(address account) 
-     external {
+     * @dev Allows sign in UDS.
+     * @param account The address of the UDS account to connect to.
+     */
+    function SignToUDS(address account) 
+    external {
         // Ensure that only the contract owner can perform this action.
         require(OWNER == msg.sender, "Owner action");
 
@@ -135,11 +134,11 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Transfers the UDS signature to a new address.
-    * @param sender The new address to receive the UDS signature.
-    * @param secretKey The secret key for the transfer.
-    * @dev Can only be used once, as the secret key is revealed during the transaction.
-    */
+     * @dev Transfers the UDS signature to a new address.
+     * @param sender The new address to receive the UDS signature.
+     * @param secretKey The secret key for the transfer.
+     * @notice Can only be used once, as the secret key is revealed during the transaction.
+     */
     function TransferUDSSignature(address sender, bytes calldata secretKey) 
     external {
         // Ensure that only the contract owner can perform this action.
@@ -160,9 +159,9 @@ contract AcademicArticles{
 
 
     /**
-    * @notice Publishes articles.
-    * @param articles An array of Article_Model containing article information.
-    */
+     * @dev Publishes articles.
+     * @param articles An array of Article_Model containing article information.
+     */
     function PublishArticles(Article_Model[] calldata articles) 
     external {
         // Create an array to store the generated IDs for the articles.
@@ -239,9 +238,9 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Unpublishes articles.
-    * @param ids An array of article IDs to be unpublished.
-    */
+     * @dev Unpublishes articles.
+     * @param ids An array of article IDs to be unpublished.
+     */
     function UnpublishArticles(bytes32[] calldata ids) 
     external {
         // Get the address of the publisher initiating the unpublishing.
@@ -308,9 +307,9 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Changes the documentation CID for specified articles.
-    * @param parameter An array of ChangeDocumentationCID_Parameter containing article ID and new documentation CID.
-    */
+     * @dev Changes the documentation CID for specified articles.
+     * @param parameter An array of ChangeDocumentationCID_Parameter containing article ID and new documentation CID.
+     */
     function ChangeDocumentationCID(ChangeDocumentationCID_Parameter[] memory parameter) 
     external {
         // Get the address of the publisher initiating the change.
@@ -352,9 +351,11 @@ contract AcademicArticles{
         }
     }
 
-    /// @notice Retrieves information about a publisher based on the provided address.
-    /// @param publisher The address of the publisher.
-    /// @return publisherUDS A Publisher_UDSModel containing metadata about the publisher.
+    /**
+     * @dev Retrieves information about a publisher based on the provided address.
+     * @param publisher The address of the publisher.
+     * @return publisherUDS A Publisher_UDSModel containing metadata about the publisher.
+     */
     function Publisher(address publisher) 
     public view 
     returns (Publisher_UDSModel memory publisherUDS) {
@@ -368,9 +369,11 @@ contract AcademicArticles{
         }
     }
 
-    /// @notice Retrieves information about a publication based on the provided ID.
-    /// @param id The ID of the publication.
-    /// @return publication A Publication_UDSModel containing metadata about the publication.
+    /**
+     * @dev Retrieves information about a publication based on the provided ID.
+     * @param id The ID of the publication.
+     * @return publication A Publication_UDSModel containing metadata about the publication.
+     */
     function Publication(bytes32 id) 
     public view 
     returns (Publication_UDSModel memory publication) {
@@ -384,10 +387,12 @@ contract AcademicArticles{
         }
     }
 
-    /// @notice Retrieves a preview of publications with a specific title up to a specified limit.
-    /// @param title The title to search for in publications.
-    /// @param limit The maximum number of publications to retrieve in the preview.
-    /// @return publicationsPreview An array of PublicationPreview_Model containing preview information about publications.
+    /**
+     * @dev Retrieves a preview of publications with a specific title up to a specified limit.
+     * @param title The title to search for in publications.
+     * @param limit The maximum number of publications to retrieve in the preview.
+     * @return publicationsPreview An array of PublicationPreview_Model containing preview information about publications.
+     */
     function PreviewPublicationsWithTitle(string memory title, uint limit) 
     public view 
     returns (PublicationPreview_Model[] memory publicationsPreview) {
@@ -443,11 +448,13 @@ contract AcademicArticles{
         }
     }
 
-    /// @notice Retrieves a preview of publications within a specified range.
-    /// @param startIndex The starting index of publications to retrieve.
-    /// @param endIndex The ending index of publications to retrieve.
-    /// @return publicationsPreview An array of PublicationPreview_Model containing preview information about publications.
-    /// @return currentSize The total number of publications in the UDS.
+    /**
+     * @dev Retrieves a preview of publications within a specified range.
+     * @param startIndex The starting index of publications to retrieve.
+     * @param endIndex The ending index of publications to retrieve.
+     * @return publicationsPreview An array of PublicationPreview_Model containing preview information about publications.
+     * @return currentSize The total number of publications in the UDS.
+     */
     function PreviewPublications(uint startIndex, uint endIndex) 
     public view 
     returns (PublicationPreview_Model[] memory publicationsPreview, uint currentSize) {
@@ -485,12 +492,14 @@ contract AcademicArticles{
         }
     }
 
-    /// @notice Retrieves a preview of publications by a specific publisher within a specified range.
-    /// @param publisher The address of the publisher.
-    /// @param startIndex The starting index of publications to retrieve.
-    /// @param endIndex The ending index of publications to retrieve.
-    /// @return previewPublicationsOfPublisher An array of PublicationPreview_Model containing preview information about publications.
-    /// @return currentSize The total number of publications by the specified publisher in the UDS.
+    /**
+     * @dev Retrieves a preview of publications by a specific publisher within a specified range.
+     * @param publisher The address of the publisher.
+     * @param startIndex The starting index of publications to retrieve.
+     * @param endIndex The ending index of publications to retrieve.
+     * @return previewPublicationsOfPublisher An array of PublicationPreview_Model containing preview information about publications.
+     * @return currentSize The total number of publications by the specified publisher in the UDS.
+     */
     function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
     public view 
     returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint currentSize) {
