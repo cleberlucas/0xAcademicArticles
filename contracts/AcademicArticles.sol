@@ -51,7 +51,7 @@ contract AcademicArticles{
         string course;             // Course related to the article.
         string articleType;        // Type of the article (e.g., research, thesis).
         string academicDegree;     // Academic degree associated with the article.
-        string documentationURI;   // URI for additional documentation related to the article.
+        string documentationCID;   // CID for additional documentation related to the article.
         string[] authors;          // Array of authors contributing to the article.
         string[] advisors;         // Array of advisors for the article.
         string[] examiningBoard;   // Array of examining board members for the article.
@@ -67,11 +67,11 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Represents parameters for changing the documentation URI of an article.
+    * @notice Represents parameters for changing the documentation CID of an article.
     */
-    struct ChangeDocumentationURI_Parameter {
+    struct ChangeDocumentationCID_Parameter {
         bytes32 id;                // Unique identifier of the article.
-        string documentationURI;   // New documentation URI for the article.
+        string documentationCID;   // New documentation CID for the article.
     }
 
     /**
@@ -308,10 +308,10 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Changes the documentation URI for specified articles.
-    * @param parameter An array of ChangeDocumentationURI_Parameter containing article ID and new documentation URI.
+    * @notice Changes the documentation CID for specified articles.
+    * @param parameter An array of ChangeDocumentationCID_Parameter containing article ID and new documentation CID.
     */
-    function ChangeDocumentationURI(ChangeDocumentationURI_Parameter[] memory parameter) 
+    function ChangeDocumentationCID(ChangeDocumentationCID_Parameter[] memory parameter) 
     external {
         // Get the address of the publisher initiating the change.
         address publisher = msg.sender;
@@ -322,7 +322,7 @@ contract AcademicArticles{
         // If the publisher has not published anything, abort the flow.
         require(publisherUDS.ids.length > 0, "You have nothing to change");
 
-        // Iterate through the specified parameters to update documentation URIs for the corresponding articles.
+        // Iterate through the specified parameters to update documentation CIDs for the corresponding articles.
         for (uint i = 0; i < parameter.length; i++) {
             // Get the ID of the article from the parameter.
             bytes32 id = parameter[i].id;
@@ -334,16 +334,16 @@ contract AcademicArticles{
             require(publicationUDS.publisher != address(0), string.concat("Article[", Strings.toString(i), "] is not published"));
             require(publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
 
-            // Update the documentation URI for the article.
-            publicationUDS.article.documentationURI = parameter[i].documentationURI;
+            // Update the documentation CID for the article.
+            publicationUDS.article.documentationCID = parameter[i].documentationCID;
 
-            // Try to update the metadata from the UDS with the new documentation URI.
+            // Try to update the metadata from the UDS with the new documentation CID.
             try _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLICATION, id, abi.encode(publicationUDS)) {
             } catch Error(string memory errorMessage) {
                 // Handling the error for this contract's context
                 if (Strings.equal(errorMessage, UDSMessage.SAME_METADATA_ALREADY_SENT)) {
-                    // Revert if the new documentation URI already exists for the article.
-                    revert(string.concat("Article[", Strings.toString(i), "] the same documentation URI already exists"));
+                    // Revert if the new documentation CID already exists for the article.
+                    revert(string.concat("Article[", Strings.toString(i), "] the same documentation CID already exists"));
                 } else {
                     // Revert for other errors.
                     revert(errorMessage);
