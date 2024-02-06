@@ -12,7 +12,7 @@ library StringUtils {
      * @return toLower The resulting lowercase string.
      * @notice This function is based on the implementation available at: https://gist.github.com/ottodevs/c43d0a8b4b891ac2da675f825b1d1dbf?permalink_comment_id=3310614#gistcomment-3310614
      */
-    function ToLower(string memory str) internal pure returns (string memory toLower) {
+    function ToLower(string memory str) public pure returns (string memory toLower) {
         bytes memory bStr = bytes(str);
         bytes memory bLower = new bytes(bStr.length);
 
@@ -34,7 +34,7 @@ library StringUtils {
      * @return found A boolean indicating whether the word was found in the string.
      * @notice This function is based on the implementation available at: https://github.com/HermesAteneo/solidity-repeated-word-in-string/blob/main/RepeatedWords.sol
      */
-    function ContainWord(string memory what, string memory where) internal pure returns (bool found){
+    function ContainWord(string memory what, string memory where) public pure returns (bool found){
         bytes memory whatBytes = bytes(what);
         bytes memory whereBytes = bytes(where);
 

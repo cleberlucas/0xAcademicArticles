@@ -15,7 +15,9 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
      * @dev Returns an array of all senders.
      * @return senders An array containing the addresses of all senders.
      */
-    function Senders() external view override returns (address[] memory senders) {
+    function Senders() 
+    external view 
+    returns (address[] memory senders) {
         senders = _interconnection.senders;
     }
 
@@ -24,7 +26,9 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
      * @param sender The address of the sender.
      * @return signature The signature corresponding to the provided sender address.
      */
-    function Signature(address sender) external view override returns (bytes32 signature) {
+    function Signature(address sender) 
+    external view 
+    returns (bytes32 signature) {
         signature = _interconnection.signature[sender];
     }
 
@@ -33,7 +37,9 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
      * @param signature The signature to query.
      * @return sender The address of the sender corresponding to the provided signature.
      */
-    function Sender(bytes32 signature) external view override returns (address sender) {
+    function Sender(bytes32 signature) 
+    external view 
+    returns (address sender) {
         sender = _interconnection.sender[signature];
     }
 
@@ -42,7 +48,9 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
      * @param signature The signature to query.
      * @return classifications An array containing the classifications related to the provided signature.
      */
-    function Classifications(bytes32 signature) external view override returns (bytes32[] memory classifications) {
+    function Classifications(bytes32 signature) 
+    external view
+    returns (bytes32[] memory classifications) {
         classifications = _token.classifications[signature];
     }
 
@@ -52,7 +60,9 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
      * @param classification The classification to query.
      * @return keys An array containing the keys related to the provided signature and classification.
      */
-    function Keys(bytes32 signature, bytes32 classification) external view override returns (bytes32[] memory keys) {
+    function Keys(bytes32 signature, bytes32 classification) 
+    external view 
+    returns (bytes32[] memory keys) {
         keys = _token.keys[signature][classification];
     }
 
@@ -63,7 +73,9 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
      * @param key The key to query.
      * @return metadata The metadata corresponding to the provided signature, classification, and key.
      */
-    function Metadata(bytes32 signature, bytes32 classification, bytes32 key) external view override returns (bytes memory metadata) {
+    function Metadata(bytes32 signature, bytes32 classification, bytes32 key) 
+    external view
+    returns (bytes memory metadata) {
         metadata = _token.metadata[signature][classification][key];
     }
 }

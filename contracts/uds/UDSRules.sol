@@ -75,8 +75,7 @@ abstract contract UDSRules {
      * @dev Run rules for signature.
      */
     function RunSignRule(UDSStorageModel.Interconnection storage _interconnection, bytes32 signature) 
-        private view 
-    {
+    private view {
         // Get the sender's address.
         address sender = msg.sender;
 
@@ -97,8 +96,7 @@ abstract contract UDSRules {
      * @dev Run rules for transferring signature.
      */
     function RunTransferSignatureRule(UDSStorageModel.Interconnection storage _interconnection, address sender) 
-        private view 
-    {
+    private view {
         // Get the address of the old sender performing the transfer.
         address oldSender = msg.sender;
 
@@ -119,8 +117,7 @@ abstract contract UDSRules {
      * @dev Run rules for sending metadata.
      */
     function RunSendMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key, bytes calldata metadata)
-        private view 
-    {
+    private view {
         // Get the sender's address and signature.
         address sender = msg.sender;
         bytes32 signature = _interconnection.signature[sender];
@@ -142,8 +139,7 @@ abstract contract UDSRules {
      * @dev Run rules for updating metadata.
      */
     function RunUpdateMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key, bytes calldata metadata) 
-        private view 
-    {
+    private view {
         // Get the sender's address, signature, and existing metadata.
         address sender = msg.sender;
         bytes32 signature = _interconnection.signature[sender];
@@ -169,8 +165,7 @@ abstract contract UDSRules {
      * @dev Run rules for cleaning metadata.
     */
     function RunCleanMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key)
-        private view 
-    {
+    private view {
         // Get the sender's address and signature.
         address sender = msg.sender;
         bytes32 signature = _interconnection.signature[sender];

@@ -35,7 +35,7 @@ contract AcademicArticles{
     }
 
     /**
-    * @notice Represents metadata for a publisher in the UDS.
+    * @dev Represents metadata for a publisher in the UDS.
     */
     struct Publisher_UDSModel {
         bytes32[] ids;    // Array of unique identifiers representing publications by the publisher.
@@ -82,6 +82,7 @@ contract AcademicArticles{
 
     /**
      * @dev Secret key used for signature transfer.
+     * @notice This is an example, it must be changed when deploying
      */
     bytes32 private constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
 
@@ -115,7 +116,7 @@ contract AcademicArticles{
      * @param account The address of the UDS account to connect to.
      */
     function SignToUDS(address account) 
-    external {
+    public {
         // Ensure that only the contract owner can perform this action.
         require(OWNER == msg.sender, "Owner action");
 
@@ -140,7 +141,7 @@ contract AcademicArticles{
      * @notice Can only be used once, as the secret key is revealed during the transaction.
      */
     function TransferUDSSignature(address sender, bytes calldata secretKey) 
-    external {
+    public {
         // Ensure that only the contract owner can perform this action.
         require(OWNER == msg.sender, "Owner action");
 
@@ -163,7 +164,7 @@ contract AcademicArticles{
      * @param articles An array of Article_Model containing article information.
      */
     function PublishArticles(Article_Model[] calldata articles) 
-    external {
+    public {
         // Create an array to store the generated IDs for the articles.
         bytes32[] memory ids = new bytes32[](articles.length);
 
@@ -242,7 +243,7 @@ contract AcademicArticles{
      * @param ids An array of article IDs to be unpublished.
      */
     function UnpublishArticles(bytes32[] calldata ids) 
-    external {
+    public {
         // Get the address of the publisher initiating the unpublishing.
         address publisher = msg.sender;
 
@@ -311,7 +312,7 @@ contract AcademicArticles{
      * @param parameter An array of ChangeDocumentationCID_Parameter containing article ID and new documentation CID.
      */
     function ChangeDocumentationCID(ChangeDocumentationCID_Parameter[] memory parameter) 
-    external {
+    public {
         // Get the address of the publisher initiating the change.
         address publisher = msg.sender;
 
