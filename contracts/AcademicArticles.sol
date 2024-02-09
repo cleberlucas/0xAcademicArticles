@@ -308,51 +308,6 @@ contract AcademicArticles{
     }
 
     /**
-     * @dev Changes the documentation CID for specified articles.
-     * @param parameter An array of ChangeDocumentationCID_Parameter containing article ID and new documentation CID.
-     */
-    function ChangeDocumentationCID(ChangeDocumentationCID_Parameter[] memory parameter) 
-    public {
-        // Get the address of the publisher initiating the change.
-        address publisher = msg.sender;
-
-        // Retrieve information about the publisher from the UDS.
-        Publisher_UDSModel memory publisherUDS = Publisher(publisher);
-
-        // If the publisher has not published anything, abort the flow.
-        require(publisherUDS.ids.length > 0, "You have nothing to change");
-
-        // Iterate through the specified parameters to update documentation CIDs for the corresponding articles.
-        for (uint i = 0; i < parameter.length; i++) {
-            // Get the ID of the article from the parameter.
-            bytes32 id = parameter[i].id;
-
-            // Retrieve information about the publication from the UDS based on the article ID.
-            Publication_UDSModel memory publicationUDS = Publication(id);
-
-            // Ensure that the article is published and is published by the same publisher initiating the change.
-            require(publicationUDS.publisher != address(0), string.concat("Article[", Strings.toString(i), "] is not published"));
-            require(publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
-
-            // Update the documentation CID for the article.
-            publicationUDS.article.documentationCID = parameter[i].documentationCID;
-
-            // Try to update the metadata from the UDS with the new documentation CID.
-            try _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLICATION, id, abi.encode(publicationUDS)) {
-            } catch Error(string memory errorMessage) {
-                // Handling the error for this contract's context
-                if (Strings.equal(errorMessage, UDSMessage.SAME_METADATA_ALREADY_SENT)) {
-                    // Revert if the new documentation CID already exists for the article.
-                    revert(string.concat("Article[", Strings.toString(i), "] the same documentation CID already exists"));
-                } else {
-                    // Revert for other errors.
-                    revert(errorMessage);
-                }
-            }
-        }
-    }
-
-    /**
      * @dev Retrieves information about a publisher based on the provided address.
      * @param publisher The address of the publisher.
      * @return publisherUDS A Publisher_UDSModel containing metadata about the publisher.
