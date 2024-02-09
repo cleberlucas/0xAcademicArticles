@@ -55,27 +55,27 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
     }
 
     /**
-     * @dev Returns an array of keys associated with a specific signature and classification.
+     * @dev Returns an array of ids associated with a specific signature and classification.
      * @param signature The signature to query.
      * @param classification The classification to query.
-     * @return keys An array containing the keys related to the provided signature and classification.
+     * @return ids An array containing the ids related to the provided signature and classification.
      */
-    function Keys(bytes32 signature, bytes32 classification) 
+    function Ids(bytes32 signature, bytes32 classification) 
     external view 
-    returns (bytes32[] memory keys) {
-        keys = _token.keys[signature][classification];
+    returns (bytes32[] memory ids) {
+        ids = _token.ids[signature][classification];
     }
 
     /**
-     * @dev Returns the metadata associated with a specific signature, classification, and key.
+     * @dev Returns the metadata associated with a specific signature, classification, and id.
      * @param signature The signature to query.
      * @param classification The classification to query.
-     * @param key The key to query.
-     * @return metadata The metadata corresponding to the provided signature, classification, and key.
+     * @param id The id to query.
+     * @return metadata The metadata corresponding to the provided signature, classification, and id.
      */
-    function Metadata(bytes32 signature, bytes32 classification, bytes32 key) 
+    function Metadata(bytes32 signature, bytes32 classification, bytes32 id) 
     external view
     returns (bytes memory metadata) {
-        metadata = _token.metadata[signature][classification][key];
+        metadata = _token.metadata[signature][classification][id];
     }
 }

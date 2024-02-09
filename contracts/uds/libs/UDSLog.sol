@@ -13,27 +13,27 @@ library UDSLog {
      * @dev Emitted when metadata is sent.
      * @param signature The signature associated with the metadata.
      * @param classification The classification associated with the metadata.
-     * @param key The key associated with the metadata.
+     * @param id The id associated with the metadata.
      * @param metadata The hash of the metadata that was sent.
      */
-    event MetadataSended(bytes32 indexed signature, bytes32 indexed classification, bytes32 indexed key, bytes32 metadata);
+    event MetadataSended(bytes32 indexed signature, bytes32 indexed classification, bytes32 indexed id, bytes32 metadata);
     
     /**
      * @dev Emitted when metadata is updated.
      * @param signature The signature associated with the metadata.
      * @param classification The classification associated with the metadata.
-     * @param key The key associated with the metadata.
+     * @param id The id associated with the metadata.
      * @param metadata The updated hash of the metadata.
      */
-    event MetadataUpdated(bytes32 indexed signature, bytes32 indexed classification, bytes32 indexed key, bytes32 metadata);
+    event MetadataUpdated(bytes32 indexed signature, bytes32 indexed classification, bytes32 indexed id, bytes32 metadata);
     
     /**
      * @dev Emitted when metadata is cleaned (removed).
      * @param signature The signature associated with the metadata.
      * @param classification The classification associated with the metadata.
-     * @param key The key associated with the metadata.
+     * @param id The id associated with the metadata.
      */
-    event MetadataCleaned(bytes32 indexed signature, bytes32 indexed classification, bytes32 indexed key);
+    event MetadataCleaned(bytes32 indexed signature, bytes32 indexed classification, bytes32 indexed id);
     
     /**
      * @dev Emitted when a sender signs a signature.

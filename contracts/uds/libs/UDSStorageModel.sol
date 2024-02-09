@@ -6,7 +6,7 @@ pragma solidity ^0.8.23;
  * @dev Library defining the storage model for Unified Data Storage (UDS).
  * @notice This library includes two main structs: Interconnection and Token.
  *         The Interconnection struct is used for managing senders and their associated signatures.
- *         The Token struct is used for managing metadata classifications, keys, and actual metadata.
+ *         The Token struct is used for managing metadata classifications, ids, and actual metadata.
  */
 library UDSStorageModel {
     
@@ -18,7 +18,7 @@ library UDSStorageModel {
 
     struct Token {   
         mapping(bytes32 signature => bytes32[]) classifications;                                                    // Mapping from signature to an array of classifications.
-        mapping(bytes32 signature => mapping(bytes32 classification => bytes32[])) keys;                            // Mapping from signature and classification to an array of keys.
-        mapping(bytes32 signature => mapping(bytes32 classification => mapping(bytes32 key => bytes))) metadata;    // Mapping from signature, classification, and key to actual metadata.
+        mapping(bytes32 signature => mapping(bytes32 classification => bytes32[])) ids;                            // Mapping from signature and classification to an array of ids.
+        mapping(bytes32 signature => mapping(bytes32 classification => mapping(bytes32 id => bytes))) metadata;    // Mapping from signature, classification, and id to actual metadata.
     }
 }

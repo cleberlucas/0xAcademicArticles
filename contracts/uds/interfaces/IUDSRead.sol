@@ -5,7 +5,7 @@ pragma solidity ^0.8.23;
  * @title IUDSRead
  * @dev Interface for interacting with UDS (Unified data storage) Read functionalities.
  * @notice This interface provides methods for retrieving information related to senders,
- *         signatures, classifications, keys, and metadata.
+ *         signatures, classifications, ids, and metadata.
  */
 interface IUDSRead {
     
@@ -37,19 +37,19 @@ interface IUDSRead {
     function Classifications(bytes32 signature) external view returns (bytes32[] memory classifications);
     
     /**
-     * @dev Returns an array of keys associated with a specific signature and classification.
+     * @dev Returns an array of ids associated with a specific signature and classification.
      * @param signature The signature to query.
      * @param classification The classification to query.
-     * @return keys An array containing the keys related to the provided signature and classification.
+     * @return ids An array containing the ids related to the provided signature and classification.
      */
-    function Keys(bytes32 signature, bytes32 classification) external view returns (bytes32[] memory keys);
+    function Ids(bytes32 signature, bytes32 classification) external view returns (bytes32[] memory ids);
     
     /**
-     * @dev Returns the metadata associated with a specific signature, classification, and key.
+     * @dev Returns the metadata associated with a specific signature, classification, and id.
      * @param signature The signature to query.
      * @param classification The classification to query.
-     * @param key The key to query.
-     * @return metadata The metadata corresponding to the provided signature, classification, and key.
+     * @param id The id to query.
+     * @return metadata The metadata corresponding to the provided signature, classification, and id.
      */
-    function Metadata(bytes32 signature, bytes32 classification, bytes32 key) external view returns (bytes memory metadata);
+    function Metadata(bytes32 signature, bytes32 classification, bytes32 id) external view returns (bytes memory metadata);
 }

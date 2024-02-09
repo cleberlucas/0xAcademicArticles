@@ -75,66 +75,66 @@ abstract contract UDSWrite is IUDSWrite, UDSStorage, UDSRules {
     }
 
     /**
-     * @dev Allows sending metadata for a specific classification and key.
+     * @dev Allows sending metadata for a specific classification and id.
      * @param classification The classification of the metadata.
-     * @param key The key associated with the metadata.
+     * @param id The id associated with the metadata.
      * @param metadata The metadata to be stored.
      */
-    function SendMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
+    function SendMetadata(bytes32 classification, bytes32 id, bytes calldata metadata)
     external
-    SendMetadataRule(_interconnection, _token, classification, key, metadata) {
+    SendMetadataRule(_interconnection, _token, classification, id, metadata) {
         // Retrieve the sender's signature.
         bytes32 signature = _interconnection.signature[msg.sender];
 
-        // Check if there are existing keys for the specified classification.
-        if (_token.keys[signature][classification].length == 0) {
-            // If no existing keys, add the classification to the sender's token.
+        // Check if there are existing ids for the specified classification.
+        if (_token.ids[signature][classification].length == 0) {
+            // If no existing ids, add the classification to the sender's token.
             _token.classifications[signature].push(classification);
         }
  
-        // Add the key to the sender's token.
-        _token.keys[signature][classification].push(key);
+        // Add the id to the sender's token.
+        _token.ids[signature][classification].push(id);
 
         // Store the metadata in the sender's token.
-        _token.metadata[signature][classification][key] = metadata;
+        _token.metadata[signature][classification][id] = metadata;
 
         // Emit the MetadataSended event to indicate successful metadata sending and storage.
-        emit UDSLog.MetadataSended(signature, classification, key, keccak256(metadata));
+        emit UDSLog.MetadataSended(signature, classification, id, keccak256(metadata));
     }
 
     /**
-     * @dev Allows updating metadata for a specific classification and key.
+     * @dev Allows updating metadata for a specific classification and id.
      * @param classification The classification of the metadata.
-     * @param key The key associated with the metadata.
+     * @param id The id associated with the metadata.
      * @param metadata The updated metadata.
      */
-    function UpdateMetadata(bytes32 classification, bytes32 key, bytes calldata metadata)
+    function UpdateMetadata(bytes32 classification, bytes32 id, bytes calldata metadata)
     external
-    UpdateMetadataRule(_interconnection, _token, classification, key, metadata) {
+    UpdateMetadataRule(_interconnection, _token, classification, id, metadata) {
         // Retrieve the sender's signature.
         bytes32 signature = _interconnection.signature[msg.sender];
 
-        // Update the metadata for the specified classification and key in the sender's token.
-        _token.metadata[signature][classification][key] = metadata;
+        // Update the metadata for the specified classification and id in the sender's token.
+        _token.metadata[signature][classification][id] = metadata;
 
         // Emit the MetadataUpdated event to indicate successful metadata update.
-        emit UDSLog.MetadataUpdated(signature, classification, key, keccak256(metadata));
+        emit UDSLog.MetadataUpdated(signature, classification, id, keccak256(metadata));
     }
 
     /**
-     * @dev Allows cleaning (removing) metadata for a specific classification and key.
+     * @dev Allows cleaning (removing) metadata for a specific classification and id.
      * @param classification The classification of the metadata.
-     * @param key The key associated with the metadata.
+     * @param id The id associated with the metadata.
      */
-    function CleanMetadata(bytes32 classification, bytes32 key)
+    function CleanMetadata(bytes32 classification, bytes32 id)
     external
-    CleanMetadataRule(_interconnection, _token, classification, key) {
+    CleanMetadataRule(_interconnection, _token, classification, id) {
         // Retrieve the sender's signature.
         bytes32 signature = _interconnection.signature[msg.sender];
 
-        // Check if there is only one key for the specified classification.
-        if (_token.keys[signature][classification].length == 1 ) {
-            // If only one key, remove the classification from the sender's token.
+        // Check if there is only one id for the specified classification.
+        if (_token.ids[signature][classification].length == 1 ) {
+            // If only one id, remove the classification from the sender's token.
             for (uint i = 0; i < _token.classifications[signature].length; i++) {
                 if (_token.classifications[signature][i] == classification) {
                     _token.classifications[signature][i] = _token.classifications[signature][_token.classifications[signature].length - 1];
@@ -143,23 +143,23 @@ abstract contract UDSWrite is IUDSWrite, UDSStorage, UDSRules {
                 }
             }
 
-            // Set the keys for the classification to an empty array.
-            _token.keys[signature][classification] = new bytes32[](0);
+            // Set the ids for the classification to an empty array.
+            _token.ids[signature][classification] = new bytes32[](0);
         } else {
-            // If more than one key, remove the specified key from the sender's token.
-            for (uint i = 0; i < _token.keys[signature][classification].length; i++) {
-                if (_token.keys[signature][classification][i] == key) {
-                    _token.keys[signature][classification][i] = _token.keys[signature][classification][_token.keys[signature][classification].length - 1];
-                    _token.keys[signature][classification].pop();           
+            // If more than one id, remove the specified id from the sender's token.
+            for (uint i = 0; i < _token.ids[signature][classification].length; i++) {
+                if (_token.ids[signature][classification][i] == id) {
+                    _token.ids[signature][classification][i] = _token.ids[signature][classification][_token.ids[signature][classification].length - 1];
+                    _token.ids[signature][classification].pop();           
                     break;
                 }
             }
         }
 
-        // Set the metadata for the specified classification and key to an empty byte array.
-        _token.metadata[signature][classification][key] = new bytes(0);
+        // Set the metadata for the specified classification and id to an empty byte array.
+        _token.metadata[signature][classification][id] = new bytes(0);
 
         // Emit the MetadataCleaned event to indicate successful metadata cleaning (removal).
-        emit UDSLog.MetadataCleaned(signature, classification, key);
+        emit UDSLog.MetadataCleaned(signature, classification, id);
     }
 }

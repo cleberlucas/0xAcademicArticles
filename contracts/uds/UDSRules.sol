@@ -37,11 +37,11 @@ abstract contract UDSRules {
     * @param _interconnection The storage instance for UDS interconnection.
     * @param _token The storage instance for UDS tokens.
     * @param classification The classification of the metadata.
-    * @param key The key associated with the metadata.
+    * @param id The id associated with the metadata.
     * @param metadata The updated metadata.
     */
-    modifier UpdateMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key, bytes calldata metadata) {
-        RunUpdateMetadataRule(_interconnection, _token, classification, key, metadata);
+    modifier UpdateMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 id, bytes calldata metadata) {
+        RunUpdateMetadataRule(_interconnection, _token, classification, id, metadata);
         _;
     }
 
@@ -50,11 +50,11 @@ abstract contract UDSRules {
     * @param _interconnection The storage instance for UDS interconnection.
     * @param _token The storage instance for UDS tokens.
     * @param classification The classification of the metadata.
-    * @param key The key associated with the metadata.
+    * @param id The id associated with the metadata.
     * @param metadata The metadata to be stored.
     */
-    modifier SendMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key, bytes calldata metadata) {
-        RunSendMetadataRule(_interconnection, _token, classification, key, metadata);
+    modifier SendMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 id, bytes calldata metadata) {
+        RunSendMetadataRule(_interconnection, _token, classification, id, metadata);
         _;
     }
 
@@ -63,10 +63,10 @@ abstract contract UDSRules {
     * @param _interconnection The storage instance for UDS interconnection.
     * @param _token The storage instance for UDS tokens.
     * @param classification The classification of the metadata.
-    * @param key The key associated with the metadata.
+    * @param id The id associated with the metadata.
     */
-    modifier CleanMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key) {
-        RunCleanMetadataRule(_interconnection, _token, classification, key);
+    modifier CleanMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 id) {
+        RunCleanMetadataRule(_interconnection, _token, classification, id);
         _;
     }
 
@@ -116,7 +116,7 @@ abstract contract UDSRules {
     /**
      * @dev Run rules for sending metadata.
      */
-    function RunSendMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key, bytes calldata metadata)
+    function RunSendMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 id, bytes calldata metadata)
     private view {
         // Get the sender's address and signature.
         address sender = msg.sender;
@@ -131,19 +131,19 @@ abstract contract UDSRules {
         // Check if the metadata is non-empty.
         require(metadata.length > 0, UDSMessage.METADATA_EMPTY);
 
-        // Check if the metadata for the specified classification and key is not already sent.
-        require(_token.metadata[signature][classification][key].length == 0, UDSMessage.METADATA_ALREADY_SENT);
+        // Check if the metadata for the specified classification and id is not already sent.
+        require(_token.metadata[signature][classification][id].length == 0, UDSMessage.METADATA_ALREADY_SENT);
     }
 
     /**
      * @dev Run rules for updating metadata.
      */
-    function RunUpdateMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key, bytes calldata metadata) 
+    function RunUpdateMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 id, bytes calldata metadata) 
     private view {
         // Get the sender's address, signature, and existing metadata.
         address sender = msg.sender;
         bytes32 signature = _interconnection.signature[sender];
-        bytes storage oldMetadata = _token.metadata[signature][classification][key];
+        bytes storage oldMetadata = _token.metadata[signature][classification][id];
 
         // Check if the sender is a contract.
         require(sender.code.length > 0, UDSMessage.ONLY_CONTRACT);
@@ -164,7 +164,7 @@ abstract contract UDSRules {
     /**
      * @dev Run rules for cleaning metadata.
     */
-    function RunCleanMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 key)
+    function RunCleanMetadataRule(UDSStorageModel.Interconnection storage _interconnection, UDSStorageModel.Token storage _token, bytes32 classification, bytes32 id)
     private view {
         // Get the sender's address and signature.
         address sender = msg.sender;
@@ -176,7 +176,7 @@ abstract contract UDSRules {
         // Check if the sender is already signed.
         require(signature != bytes32(0), UDSMessage.ONLY_SIGNED_EXEC);
 
-        // Check if the metadata for the specified classification and key is sent.
-        require(_token.metadata[signature][classification][key].length > 0, UDSMessage.METADATA_NOT_SENT_TO_DELETE);
+        // Check if the metadata for the specified classification and id is sent.
+        require(_token.metadata[signature][classification][id].length > 0, UDSMessage.METADATA_NOT_SENT_TO_DELETE);
     }
 }
