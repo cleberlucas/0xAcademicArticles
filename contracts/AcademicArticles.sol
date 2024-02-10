@@ -14,7 +14,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
  * @dev It manages academic articles with integration to the UDS (Unified data storage) platform.
  * @author Cleber Lucas
  */
-contract AcademicArticles{
+contract AcademicArticles { 
 
     /**
     * @dev Represents the storage model for connecting to the UDS.
