@@ -12,6 +12,7 @@ library UDSMessage {
     string public constant METADATA_EMPTY = "Metadata entry is empty, add a non-empty entry";
     string public constant METADATA_NOT_SENT_TO_DELETE = "No metadata to be deleted";
     string public constant METADATA_NOT_SENT_TO_UPDATE = "No metadata to be updated, try sending first";
+    string public constant NEW_SENDER_ALREADY_SIGNED = "New sender already signed";
     string public constant NEW_SENDER_CANNOT_BE_YOU = "New sender cannot be you, change to a different sender that is not you";
     string public constant NEW_SENDER_NOT_CONTRACT = "New sender is not a contract, change to a valid contract account";
     string public constant NEW_SENDER_NO_SAME_SIGNATURE = "New sender does not have the same signature as you, verify if the signature of the new sender is the same as yours";

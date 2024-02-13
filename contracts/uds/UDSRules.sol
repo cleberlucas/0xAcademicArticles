@@ -106,11 +106,14 @@ abstract contract UDSRules {
         // Check if the old sender is already signed.
         require(_interconnection.signature[oldSender] != bytes32(0), UDSMessage.ONLY_SIGNED_EXEC);
 
+        // Check if the new sender is not the same as the old sender.
+        require(sender != oldSender, UDSMessage.NEW_SENDER_CANNOT_BE_YOU);
+
         // Check if the new sender is a contract.
         require(sender.code.length > 0, UDSMessage.NEW_SENDER_NOT_CONTRACT);
 
-        // Check if the new sender is not the same as the old sender.
-        require(sender != oldSender, UDSMessage.NEW_SENDER_CANNOT_BE_YOU);
+        // Check if the new sender is already signed.
+        require(_interconnection.signature[sender] == bytes32(0), UDSMessage.NEW_SENDER_ALREADY_SIGNED);
     }
 
     /**
