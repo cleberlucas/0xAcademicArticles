@@ -19,7 +19,7 @@ contract AcademicArticles {
     /**
     * @dev Represents the storage model for connecting to the UDS.
     */
-    struct UDS_StorageModel {
+    struct UDSStorageModel {
         IUDSRead read;    // Instance of the UDSRead interface for reading data in the UDS.
         IUDSWrite write;   // Instance of the UDSWrite interface for writing data to the UDS.
     }
@@ -27,8 +27,8 @@ contract AcademicArticles {
     /**
     * @dev Represents metadata for a publication in the UDS.
     */
-    struct UDS_PublicationModel {
-        Article_Model article;    // Information about the article being published.
+    struct UDSPublicationModel {
+        ArticleModel article;    // Information about the article being published.
         address publisher;        // Address of the publisher.
         uint datetime;            // Timestamp of the publication.
         uint blockNumber;         // Block number when the publication was made.
@@ -37,14 +37,14 @@ contract AcademicArticles {
     /**
     * @dev Represents metadata for a publisher in the UDS.
     */
-    struct UDS_PublisherModel {
+    struct UDSPublisherModel {
         bytes32[] publicationIds;    // Array of unique identifiers representing publications by the publisher.
     }
 
     /**
     * @dev Represents detailed information about an article.
     */
-    struct Article_Model {
+    struct ArticleModel {
         string title;              // Title of the article.
         string summary;            // Summary or abstract of the article, also used as the unique identifier (id) by hashing.
         string additionalInfo;     // Additional information about the article.
@@ -62,7 +62,7 @@ contract AcademicArticles {
     /**
     * @dev Represents a preview of a publication for display purposes.
     */
-    struct PublicationPreview_Model {
+    struct PublicationPreviewModel {
         string title;      // Title of the publication.
         bytes32 id;        // Unique identifier of the publication.
     }
@@ -70,37 +70,42 @@ contract AcademicArticles {
     /**
      * @dev Instance of a bridge for storage on the UDS.
      */
-    UDS_StorageModel private _uds;
-
-    /**
-     * @dev Secret key used for signature transfer.
-     * @notice This is an example, it must be changed when deploying
-     */
-    bytes32 private constant SECRETKEY = 0x07855b46a623a8ecabac76ed697aa4e13631e3b6718c8a0d342860c13c30d2fc;
+    UDSStorageModel private _uds;
 
     /**
      * @dev Fixed keys used as classification on the UDS.
      */
-    bytes32 private constant UDS_SIGNATURE = "AcademicArticles";
     bytes32 private constant UDS_CLASSIFICATION_PUBLISHER = "Publisher";
     bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
 
     /**
-     * @dev Variable to prevent double execution.
+     * @dev Variable to prevent double execution of transfer and connection in UDS.
      */
-    bool private connectToUDS;
     bool private transferUDSSignature;
+    bool private connectToUDS;
 
     /**
      * @dev Owner of the contract.
      */
     address private immutable OWNER;
+ 
+    /**
+     * @dev Secret key used to authenticate UDS signature transfer.
+     */
+    bytes32 private immutable SECRET_KEY_HASH;
 
     /**
-     * @dev Constructor initializes the contract with the deploying address as the owner.
+     * @dev Signature used as a unique key for data access to the UDS.
      */
-    constructor() {
+    bytes32 private immutable UDS_SIGNATURE;
+
+    /**
+     * @dev Constructor initializes the contract with the deploying address as the owner, secret key and unique signature of UDS.
+     */
+    constructor(bytes32 secretKeyHash, bytes32 UDSSignature) {
         OWNER = msg.sender;
+        SECRET_KEY_HASH = secretKeyHash;
+        UDS_SIGNATURE = UDSSignature;
     }
 
     /**
@@ -137,8 +142,8 @@ contract AcademicArticles {
         // Ensure that only the contract owner can perform this action.
         require(OWNER == msg.sender, "Owner action");
 
-        // Ensure that the provided secretKey matches the predefined secretKey.
-        require(SECRETKEY == keccak256(secretKey), "Invalid secretKey");
+        // Ensure that the hash provided secretKey matches the predefined secretKeyHash.
+        require(SECRET_KEY_HASH == keccak256(secretKey), "Invalid secretKey");
 
         // Ensure that the UDS signature has not been transferred before.
         require(!transferUDSSignature, "Already transferred UDS signature");
@@ -153,9 +158,9 @@ contract AcademicArticles {
 
     /**
      * @dev Publishes articles.
-     * @param articles An array of Article_Model containing article information.
+     * @param articles An array of ArticleModel containing article information.
      */
-    function PublishArticles(Article_Model[] calldata articles) 
+    function PublishArticles(ArticleModel[] calldata articles) 
     public {
         // Create an array to store the generated ids for the articles.
         bytes32[] memory publicationIds = new bytes32[](articles.length);
@@ -164,22 +169,22 @@ contract AcademicArticles {
         address publisher = msg.sender;
 
         // Encode the publisher address to use as a id for UDS.
-        bytes32 UDS_publisherId = bytes32(abi.encode(publisher));
+        bytes32 UDSpublisherId = bytes32(abi.encode(publisher));
 
         // Retrieve information about the publisher from the UDS.
-        UDS_PublisherModel memory UDS_publisher = Publisher(publisher);
+        UDSPublisherModel memory UDSPublisher = Publisher(publisher);
 
         // Iterate through the provided articles to publish them.
         for (uint i = 0; i < articles.length; i++) {
             // Generate a unique id for each article based on its summary.
-            bytes32 UDS_publicationId = keccak256(abi.encode(articles[i].summary));
+            bytes32 UDSPublicationId = keccak256(abi.encode(articles[i].summary));
 
             // Try to send metadata to the UDS for the new publication.
             try _uds.write.SendMetadata(
                 UDS_CLASSIFICATION_PUBLICATION,
-                UDS_publicationId,           
+                UDSPublicationId,           
                 abi.encode( 
-                    UDS_PublicationModel ( 
+                    UDSPublicationModel ( 
                         articles[i],
                         publisher,
                         block.timestamp,
@@ -199,34 +204,34 @@ contract AcademicArticles {
             }
 
             // Store the generated id for the published article.
-            publicationIds[i] = UDS_publicationId;
+            publicationIds[i] = UDSPublicationId;
         }
 
         // If the publisher has already posted, update their list of ids; otherwise, add the new ids.
-        if (UDS_publisher.publicationIds.length > 0) {
+        if (UDSPublisher.publicationIds.length > 0) {
             // Create a new array to store the combined list of ids.
-            bytes32[] memory newPublicationIds = new bytes32[](UDS_publisher.publicationIds.length + publicationIds.length);
+            bytes32[] memory newPublicationIds = new bytes32[](UDSPublisher.publicationIds.length + publicationIds.length);
 
             // Combine the existing ids with the new ids.
             for (uint i = 0; i < newPublicationIds.length; i++) {
-                if (i < UDS_publisher.publicationIds.length) {
-                    newPublicationIds[i] = UDS_publisher.publicationIds[i];
+                if (i < UDSPublisher.publicationIds.length) {
+                    newPublicationIds[i] = UDSPublisher.publicationIds[i];
                 } else {
-                    newPublicationIds[i] = publicationIds[i - UDS_publisher.publicationIds.length];
+                    newPublicationIds[i] = publicationIds[i - UDSPublisher.publicationIds.length];
                 }
             }
 
             // Update the publisher's list of ids with the combined list.
-            UDS_publisher.publicationIds = newPublicationIds;
+            UDSPublisher.publicationIds = newPublicationIds;
 
             // Update the metadata from the UDS with the updated list of ids for the publisher.
-            _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, UDS_publisherId, abi.encode(UDS_publisher));
+            _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, UDSpublisherId, abi.encode(UDSPublisher));
         } else {
             // If the publisher has not posted before, directly add the new ids.
-            UDS_publisher.publicationIds = publicationIds;
+            UDSPublisher.publicationIds = publicationIds;
 
             // Send metadata to the UDS with the list of ids for the publisher.
-            _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLISHER, UDS_publisherId, abi.encode(UDS_publisher));
+            _uds.write.SendMetadata(UDS_CLASSIFICATION_PUBLISHER, UDSpublisherId, abi.encode(UDSPublisher));
         }
     }
 
@@ -240,13 +245,13 @@ contract AcademicArticles {
         address publisher = msg.sender;
 
         // Encode the publisher address to use as a id for UDS.
-        bytes32 UDS_publisherId = bytes32(abi.encode(publisher));
+        bytes32 UDSpublisherId = bytes32(abi.encode(publisher));
 
         // Retrieve information about the publisher from the UDS.
-        UDS_PublisherModel memory UDS_publisher = Publisher(publisher);
+        UDSPublisherModel memory UDSPublisher = Publisher(publisher);
 
         // If the publisher has not published anything, abort the flow.
-        require(UDS_publisher.publicationIds.length > 0, "You have nothing to unpublish");
+        require(UDSPublisher.publicationIds.length > 0, "You have nothing to unpublish");
 
         // Iterate through the specified ids to unpublish the corresponding articles.
         for (uint i = 0; i < ids.length; i++) {
@@ -254,7 +259,7 @@ contract AcademicArticles {
             bytes32 id = ids[i];
 
             // Retrieve information about the publication from the UDS based on the article id.
-            UDS_PublicationModel memory publicationUDS = Publication(id);
+            UDSPublicationModel memory publicationUDS = Publication(id);
 
             // Ensure that the article is published and is published by the same publisher initiating the unpublishing.
             require(publicationUDS.publisher != address(0), string.concat("Article[", Strings.toString(i), "] is not published"));
@@ -265,20 +270,20 @@ contract AcademicArticles {
         }
 
         // If the same quantity of articles is passed to be removed, execute the command to clean everything; otherwise, remove the passed ids from the publisher's ids list.
-        if (UDS_publisher.publicationIds.length == ids.length) {
-            _uds.write.CleanMetadata(UDS_CLASSIFICATION_PUBLISHER, UDS_publisherId);
+        if (UDSPublisher.publicationIds.length == ids.length) {
+            _uds.write.CleanMetadata(UDS_CLASSIFICATION_PUBLISHER, UDSpublisherId);
         } else {
             // Create a new array to store the remaining ids.
-            bytes32[] memory newPublicationIds = new bytes32[](UDS_publisher.publicationIds.length - ids.length);
+            bytes32[] memory newPublicationIds = new bytes32[](UDSPublisher.publicationIds.length - ids.length);
             uint i_;
 
             // Iterate through the publisher's existing ids and filter out the ones to be removed.
-            for (uint i = 0; i < UDS_publisher.publicationIds.length; i++) {
+            for (uint i = 0; i < UDSPublisher.publicationIds.length; i++) {
                 bool addId = true;
 
                 // Check if the current id is from the list of ids to be removed.
                 for (uint ii = 0; ii < ids.length; ii++) {
-                    if (ids[ii] == UDS_publisher.publicationIds[i]) {
+                    if (ids[ii] == UDSPublisher.publicationIds[i]) {
                         addId = false;
                         break;
                     }
@@ -286,52 +291,52 @@ contract AcademicArticles {
 
                 // If the id is not from the list of ids to be removed, add it to the new array.
                 if (addId) {
-                    newPublicationIds[i_] = UDS_publisher.publicationIds[i];
+                    newPublicationIds[i_] = UDSPublisher.publicationIds[i];
                     i_++;
                 }
             }
 
             // Update the publisher's list of ids with the remaining ids.
-            UDS_publisher.publicationIds = newPublicationIds;
+            UDSPublisher.publicationIds = newPublicationIds;
 
             // Update the metadata from the UDS with the updated list of ids for the publisher.
-            _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, UDS_publisherId, abi.encode(UDS_publisher));
+            _uds.write.UpdateMetadata(UDS_CLASSIFICATION_PUBLISHER, UDSpublisherId, abi.encode(UDSPublisher));
         }
     }
 
     /**
      * @dev Retrieves information about a publisher based on the provided address.
      * @param publisher The address of the publisher.
-     * @return UDS_publisher A UDS_PublisherModel containing metadata about the publisher.
+     * @return UDSPublisher A UDSPublisherModel containing metadata about the publisher.
      */
     function Publisher(address publisher) 
     public view 
-    returns (UDS_PublisherModel memory UDS_publisher) {
+    returns (UDSPublisherModel memory UDSPublisher) {
         // Retrieve metadata about the publisher from the UDS based on the provided address.
-        bytes memory UDS_publisherMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+        bytes memory UDSPublisherMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
         // Check if metadata about the publisher exists.
-        if (UDS_publisherMetadata.length > 0) {
+        if (UDSPublisherMetadata.length > 0) {
             // Decode the metadata to obtain information about the publisher.
-            UDS_publisher = abi.decode(UDS_publisherMetadata, (UDS_PublisherModel));
+            UDSPublisher = abi.decode(UDSPublisherMetadata, (UDSPublisherModel));
         }
     }
 
     /**
      * @dev Retrieves information about a publication based on the provided id.
      * @param id The id of the publication.
-     * @return publication A UDS_PublicationModel containing metadata about the publication.
+     * @return publication A UDSPublicationModel containing metadata about the publication.
      */
     function Publication(bytes32 id) 
     public view 
-    returns (UDS_PublicationModel memory publication) {
+    returns (UDSPublicationModel memory publication) {
         // Retrieve metadata about the publication from the UDS based on the provided id.
-        bytes memory UDS_publicationMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id);
+        bytes memory UDSPublicationMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, id);
 
         // Check if metadata about the publication exists.
-        if (UDS_publicationMetadata.length > 0) {
+        if (UDSPublicationMetadata.length > 0) {
             // Decode the metadata to obtain information about the publication.
-            publication = abi.decode(UDS_publicationMetadata, (UDS_PublicationModel));
+            publication = abi.decode(UDSPublicationMetadata, (UDSPublicationModel));
         }
     }
 
@@ -339,11 +344,11 @@ contract AcademicArticles {
      * @dev Retrieves a preview of publications with a specific title up to a specified limit.
      * @param title The title to search for in publications.
      * @param limit The maximum number of publications to retrieve in the preview.
-     * @return publicationsPreview An array of PublicationPreview_Model containing preview information about publications.
+     * @return publicationsPreview An array of PublicationPreviewModel containing preview information about publications.
      */
     function PreviewPublicationsWithTitle(string memory title, uint limit) 
     public view 
-    returns (PublicationPreview_Model[] memory publicationsPreview) {
+    returns (PublicationPreviewModel[] memory publicationsPreview) {
         // Retrieve all publication ids from the UDS.
         bytes32[] memory publicationIds = _uds.read.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
 
@@ -351,7 +356,7 @@ contract AcademicArticles {
         title = StringUtils.ToLower(title);
 
         // Initialize the array to store the preview information.
-        publicationsPreview = new PublicationPreview_Model[](limit);
+        publicationsPreview = new PublicationPreviewModel[](limit);
 
         // Initialize a counter to keep track of the number of previews added.
         uint previewCount;
@@ -364,14 +369,14 @@ contract AcademicArticles {
             string memory articleTitle = StringUtils.ToLower(
                 abi.decode(
                     _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
-                    (UDS_PublicationModel)
+                    (UDSPublicationModel)
                 ).article.title
             );
 
             // Check if the search title is a part of the article title.
             if (StringUtils.ContainWord(title, articleTitle)) {
                 // Add a new preview with the article title and id to the array.
-                publicationsPreview[previewCount] = PublicationPreview_Model(articleTitle, publicationId);
+                publicationsPreview[previewCount] = PublicationPreviewModel(articleTitle, publicationId);
                 previewCount++;
             }
         }
@@ -379,10 +384,10 @@ contract AcademicArticles {
         // If the previewCount is less than the specified limit, adjust the array size.
         if (previewCount < limit) {
             // Create a copy of the original array.
-            PublicationPreview_Model[] memory publicationsPreviewCopy = publicationsPreview;
+            PublicationPreviewModel[] memory publicationsPreviewCopy = publicationsPreview;
 
             // Resize the array to the actual preview count.
-            publicationsPreview = new PublicationPreview_Model[](previewCount);
+            publicationsPreview = new PublicationPreviewModel[](previewCount);
 
             // Copy valid previews from the original array to the resized array.
             for (uint i = 0; i < previewCount; i++) {
@@ -400,12 +405,12 @@ contract AcademicArticles {
      * @dev Retrieves a preview of publications within a specified range.
      * @param startIndex The starting index of publications to retrieve.
      * @param endIndex The ending index of publications to retrieve.
-     * @return publicationsPreview An array of PublicationPreview_Model containing preview information about publications.
+     * @return publicationsPreview An array of PublicationPreviewModel containing preview information about publications.
      * @return currentSize The total number of publications in the UDS.
      */
     function PreviewPublications(uint startIndex, uint endIndex) 
     public view 
-    returns (PublicationPreview_Model[] memory publicationsPreview, uint currentSize) {
+    returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
         // Retrieve the total number of publications from the UDS.
         currentSize = _uds.read.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION).length;
 
@@ -418,21 +423,21 @@ contract AcademicArticles {
             size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
 
             // Initialize the array to store the preview information.
-            publicationsPreview = new PublicationPreview_Model[](size);
+            publicationsPreview = new PublicationPreviewModel[](size);
 
             // Retrieve all publication ids from the UDS.
-            bytes32[] memory UDS_publicationIds = _uds.read.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+            bytes32[] memory UDSPublicationIds = _uds.read.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
 
             // Iterate through the specified range of indexes and add previews to the array.
             for (uint i = 0; i < size; i++) {
                 // Retrieve the publication id based on the current index.
-                bytes32 publicationid = UDS_publicationIds[startIndex + i];
+                bytes32 publicationid = UDSPublicationIds[startIndex + i];
 
                 // Decode the publication metadata and retrieve the article title.
-                publicationsPreview[i] = PublicationPreview_Model(
+                publicationsPreview[i] = PublicationPreviewModel(
                     abi.decode(
                         _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationid),
-                        (UDS_PublicationModel)
+                        (UDSPublicationModel)
                     ).article.title,
                     publicationid
                 );
@@ -445,22 +450,22 @@ contract AcademicArticles {
      * @param publisher The address of the publisher.
      * @param startIndex The starting index of publications to retrieve.
      * @param endIndex The ending index of publications to retrieve.
-     * @return previewPublicationsOfPublisher An array of PublicationPreview_Model containing preview information about publications.
+     * @return previewPublicationsOfPublisher An array of PublicationPreviewModel containing preview information about publications.
      * @return currentSize The total number of publications by the specified publisher in the UDS.
      */
     function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
     public view 
-    returns (PublicationPreview_Model[] memory previewPublicationsOfPublisher, uint currentSize) {
+    returns (PublicationPreviewModel[] memory previewPublicationsOfPublisher, uint currentSize) {
         // Retrieve metadata about the publisher from the UDS.
-        bytes memory UDS_publisherMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
+        bytes memory UDSPublisherMetadata = _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLISHER, bytes32(abi.encode(publisher)));
 
         // Check if metadata about the publisher exists.
-        if (UDS_publisherMetadata.length > 0) {
+        if (UDSPublisherMetadata.length > 0) {
             // Decode the metadata to obtain information about the publisher.
-            UDS_PublisherModel memory UDS_publisher = abi.decode(UDS_publisherMetadata, (UDS_PublisherModel));
+            UDSPublisherModel memory UDSPublisher = abi.decode(UDSPublisherMetadata, (UDSPublisherModel));
 
             // Retrieve the total number of publications by the specified publisher.
-            currentSize = UDS_publisher.publicationIds.length;
+            currentSize = UDSPublisher.publicationIds.length;
 
             // Check if the specified start and end indexes are within valid bounds.
             if (!(startIndex >= currentSize || startIndex > endIndex)) {
@@ -471,18 +476,18 @@ contract AcademicArticles {
                 size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
 
                 // Initialize the array to store the preview information.
-                previewPublicationsOfPublisher = new PublicationPreview_Model[](size);
+                previewPublicationsOfPublisher = new PublicationPreviewModel[](size);
 
                 // Iterate through the specified range of indexes and add previews to the array.
                 for (uint i = 0; i < size; i++) {
                     // Retrieve the publication id based on the current index.
-                    bytes32 publicationid = UDS_publisher.publicationIds[startIndex + i];
+                    bytes32 publicationid = UDSPublisher.publicationIds[startIndex + i];
 
                     // Decode the publication metadata and retrieve the article title.
-                    previewPublicationsOfPublisher[i] = PublicationPreview_Model(
+                    previewPublicationsOfPublisher[i] = PublicationPreviewModel(
                         abi.decode(
                             _uds.read.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationid),
-                            (UDS_PublicationModel)
+                            (UDSPublicationModel)
                         ).article.title,
                         publicationid
                     );
