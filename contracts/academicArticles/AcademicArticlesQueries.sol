@@ -648,4 +648,51 @@ abstract contract AcademicArticlesQueries {
             }
         }
     }
+
+    function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
+    public view
+    returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
+        PublicationPreviewModel[] memory previewPublicationsOfPublisher = PreviewPublicationsOfPublisher(publisher);
+        
+        currentSize = previewPublicationsOfPublisher.length;
+
+        if (!(startIndex >= currentSize || startIndex > endIndex)) {
+            uint size = endIndex - startIndex + 1;
+
+            size = (size <= currentSize - startIndex) ? size : currentSize - startIndex;
+
+            publicationsPreview = new PublicationPreviewModel[](size);
+
+            for (uint i = 0; i < size; i++) {
+                publicationsPreview[i] = previewPublicationsOfPublisher[startIndex + i];
+            }
+        }
+    }
+
+    function PreviewPublicationsOfPublisher(address publisher) 
+    private view
+    returns (PublicationPreviewModel[] memory publicationsPreview) {
+        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+
+        for (uint i = 0; i < UDSPublicationIds.length; i++) {
+            bytes32 publicationId = UDSPublicationIds[i];
+
+            AcademicArticles.UDSPublicationModel memory publication = abi.decode(
+                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                (AcademicArticles.UDSPublicationModel)
+            );
+
+            if (publisher == publication.publisher) {
+                PublicationPreviewModel[] memory tempPublicationsPreview = publicationsPreview;
+
+                publicationsPreview = new PublicationPreviewModel[](tempPublicationsPreview.length + 1);
+
+                for (uint j = 0; j < tempPublicationsPreview.length; j++) {
+                    publicationsPreview[j] = tempPublicationsPreview[j];
+                }
+
+                publicationsPreview[tempPublicationsPreview.length] = PublicationPreviewModel(publication.article.title, publicationId);
+            }
+        }
+    }
 }
