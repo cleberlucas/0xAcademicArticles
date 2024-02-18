@@ -89,7 +89,7 @@ abstract contract AcademicArticlesQueries {
                 (AcademicArticles.UDSPublicationModel)
             );
 
-            if (Strings.equal(title, StringUtils.ToLower(publication.article.title))) {
+            if (StringUtils.ContainWord(title, StringUtils.ToLower(publication.article.title))) {
                 PublicationPreviewModel[] memory tempPublicationsPreview = publicationsPreview;
 
                 publicationsPreview = new PublicationPreviewModel[](tempPublicationsPreview.length + 1);
@@ -138,7 +138,7 @@ abstract contract AcademicArticlesQueries {
                 (AcademicArticles.UDSPublicationModel)
             );
 
-            if (Strings.equal(summary, StringUtils.ToLower(publication.article.summary))) {
+            if (StringUtils.ContainWord(summary, StringUtils.ToLower(publication.article.summary))) {
                 PublicationPreviewModel[] memory tempPublicationsPreview = publicationsPreview;
 
                 publicationsPreview = new PublicationPreviewModel[](tempPublicationsPreview.length + 1);
@@ -187,7 +187,7 @@ abstract contract AcademicArticlesQueries {
                 (AcademicArticles.UDSPublicationModel)
             );
 
-            if (Strings.equal(additionalInfo, StringUtils.ToLower(publication.article.additionalInfo))) {
+            if (StringUtils.ContainWord(additionalInfo, StringUtils.ToLower(publication.article.additionalInfo))) {
                 PublicationPreviewModel[] memory tempPublicationsPreview = publicationsPreview;
 
                 publicationsPreview = new PublicationPreviewModel[](tempPublicationsPreview.length + 1);
