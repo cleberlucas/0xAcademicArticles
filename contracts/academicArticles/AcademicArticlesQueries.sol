@@ -21,9 +21,9 @@ abstract contract AcademicArticlesQueries {
     bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
     bytes32 private immutable UDS_SIGNATURE;
 
-    constructor(bytes32 UDSSignature, address UDSaccount) {
+    constructor(bytes32 UDSSignature, address UDSAccount) {
         UDS_SIGNATURE = UDSSignature;
-        _UDSRead = IUDSRead(UDSaccount);
+        _UDSRead = IUDSRead(UDSAccount);
     }
 
     function PreviewPublications(uint startIndex, uint endIndex) 

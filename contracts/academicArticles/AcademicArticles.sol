@@ -42,24 +42,27 @@ abstract contract AcademicArticles {
     bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
 
     address private immutable OWNER;
+    address private immutable UDS_ACCOUNT;
     bytes32 private immutable SECRET_KEY_HASH;
     bytes32 private immutable UDS_SIGNATURE;
 
-    constructor(bytes32 secretKeyHash, bytes32 UDSSignature) {
+    constructor(bytes32 secretKeyHash, bytes32 UDSSignature, address UDSAccount) {
         OWNER = msg.sender;
+        
         SECRET_KEY_HASH = secretKeyHash;
         UDS_SIGNATURE = UDSSignature;
+        UDS_ACCOUNT = UDSAccount;
+
+        _UDS.read = IUDSRead(UDS_ACCOUNT);
+        _UDS.write = IUDSWrite(UDS_ACCOUNT);
     }
 
-    function SignToUDS(address UDSaccount) 
+    function SignToUDS() 
     public {
         require(OWNER == msg.sender, "Owner action");
-
         require(!_UDS.connectedToUDS, "Already connected to UDS");
 
-        _UDS.read = IUDSRead(UDSaccount);
-        _UDS.write = IUDSWrite(UDSaccount);
-        _UDS.write.Sign(UDS_SIGNATURE);
+        _UDS.write.Sign(UDS_SIGNATURE);     
         _UDS.connectedToUDS = true;
     }
 

@@ -17,7 +17,7 @@ library UDSStorageModel {
     }
 
     struct Token {   
-        mapping(bytes32 signature => bytes32[]) classifications;                                                    // Mapping from signature to an array of classifications.
+        mapping(bytes32 signature => bytes32[]) classifications;                                                   // Mapping from signature to an array of classifications.
         mapping(bytes32 signature => mapping(bytes32 classification => bytes32[])) ids;                            // Mapping from signature and classification to an array of ids.
         mapping(bytes32 signature => mapping(bytes32 classification => mapping(bytes32 id => bytes))) metadata;    // Mapping from signature, classification, and id to actual metadata.
     }
