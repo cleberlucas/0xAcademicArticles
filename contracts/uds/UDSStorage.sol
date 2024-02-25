@@ -8,9 +8,9 @@ import "./libs/UDSStorageModel.sol";
  * @dev Abstract contract implementing the storage components for Unified Data Storage (UDS).
  */
 abstract contract UDSStorage {
-    /// @dev Internal instance of UDSStorageModel.Data for managing data.
+    /// @dev Instance of Data for managing data.
     UDSStorageModel.Data internal _data;
     
-    /// @dev Internal instance of UDSStorageModel.Interconnection for managing sender interconnection.
+    /// @dev Instance of Interconnection for managing sender interconnection.
     UDSStorageModel.Interconnection internal _interconnection;
 }

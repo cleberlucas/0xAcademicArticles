@@ -45,34 +45,35 @@ abstract contract AcademicArticles {
         uint16 presentationYear;    // Year of presentation of the article.
     }
 
-    // UDS storage model.
+    /// @dev Instance of UDS for managing data.
     UDSStorageModel internal _UDS;
 
-    // Signature using in UDS.
+    /// @dev Signature using in UDS.
     bytes32 internal immutable UDS_SIGNATURE;
 
-     // Owner of the contract.
+    /// @dev Owner of the contract.
     address private immutable OWNER;
 
-    // Hash(keccak256) of the secret key.
+    /// @dev Hash(keccak256) of the secret key.
     bytes32 private immutable SECRET_KEY_HASH;
 
-    // Classification for publications on UDS.                                            
+    /// @dev Classification for publications on UDS.                                            
     bytes32 internal constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
     
     /**
-     * @dev Event emitted when articles is published.
+     * @dev Emitted when articles is published.
      * @param title The title of article
      */
     event ArticlePublished(string title);
 
     /**
-     * @dev Event emitted when articles is unpublished.
+     * @dev Emitted when articles is unpublished.
      * @param title The title of article
      */
     event ArticleUnpublished(string title);
 
     /**
+     * @dev
      * @param secretKeyHash Hash(keccak256) of the secret key.
      * @param UDSSignature Signature for using in UDS.
      * @param UDSAccount Address of the UDS.
@@ -115,7 +116,7 @@ abstract contract AcademicArticles {
     }
 
     /**
-     * @dev Function to publish articles to UDS.
+     * @dev Allows publish articles to UDS.
      * @param articles Array of ArticleModel containing details of articles to be published.
      */
     function PublishArticles(ArticleModel[] calldata articles) 
@@ -149,7 +150,7 @@ abstract contract AcademicArticles {
     }
 
     /**
-     * @dev Function to unpublish articles from UDS.
+     * @dev Allows unpublish articles from UDS.
      * @param ids Array of publication IDs to be unpublished.
      */
     function UnpublishArticles(bytes32[] calldata ids) 
@@ -170,7 +171,7 @@ abstract contract AcademicArticles {
     }
 
     /**
-     * @dev Function to retrieve publication details by ID.
+     * @dev Get a publication details by ID.
      * @param id Publication ID.
      * @return publication Publication details.
      */
