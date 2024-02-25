@@ -10,37 +10,37 @@ pragma solidity ^0.8.23;
 interface IUDSWrite {
     
     /**
-     * @dev Signs a given signature.
-     * @param signature The signature to be signed.
+     * @dev Allows a sender to sign a specific signature.
+     * @param signature The signature to be associated with the sender.
      */
     function Sign(bytes32 signature) external;
     
     /**
-     * @dev Transfers the ownership of a signature to a new sender.
-     * @param sender The address of the new sender to transfer the signature to.
+     * @dev Allows transferring the signature from one sender to another.
+     * @param sender The address of the new sender.
      */
     function TransferSignature(address sender) external;
     
     /**
-     * @dev Sends metadata for a specific classification and id.
-     * @param classification The classification associated with the metadata.
+     * @dev Allows sending metadata for a specific classification and id.
+     * @param classification The classification of the metadata.
      * @param id The id associated with the metadata.
-     * @param metadata The metadata to be sent.
+     * @param metadata The metadata to be stored.
      */
     function SendMetadata(bytes32 classification, bytes32 id, bytes calldata metadata) external;
     
     /**
-     * @dev Updates existing metadata for a specific classification and id.
-     * @param classification The classification associated with the metadata to be updated.
-     * @param id The id associated with the metadata to be updated.
+     * @dev Allows updating metadata for a specific classification and id.
+     * @param classification The classification of the metadata.
+     * @param id The id associated with the metadata.
      * @param metadata The updated metadata.
      */
     function UpdateMetadata(bytes32 classification, bytes32 id, bytes calldata metadata) external;
     
     /**
-     * @dev Cleans (removes) metadata for a specific classification and id.
-     * @param classification The classification associated with the metadata to be cleaned.
-     * @param id The id associated with the metadata to be cleaned.
+     * @dev Allows cleaning (removing) metadata for a specific classification and id.
+     * @param classification The classification of the metadata.
+     * @param id The id associated with the metadata.
      */
     function CleanMetadata(bytes32 classification, bytes32 id) external;
 }

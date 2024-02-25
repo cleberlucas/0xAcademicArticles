@@ -6,10 +6,9 @@ import "./UDSWrite.sol";
 import "./UDSRead.sol";
 
 /**
- * @title Unified data storage (UDS)
- * @dev This is a platform for storing contract data
- * @notice Unified storage platform where data is managed and classified by contracts utilizing this medium through their unique signatures.
- *      Storing data outside the contract enhances modularity and extensibility, as the data isn't stored directly within it.
+ * @title Unified Data Storage (UDS)
+ * @dev This is a platform for storing contract data.
+ * @notice In this platform, data from external contracts are stored and managed internally through their unique signatures. 
  * @author Cleber Lucas
  */
 contract UDS is UDSWrite, UDSRead {}

@@ -1,31 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-// Import necessary interfaces and libraries
 import "../uds/interfaces/IUDSWrite.sol";
 import "../uds/interfaces/IUDSRead.sol";
 import "../uds/libs/UDSMessage.sol";
-import "../StringUtils.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import "../StringUtils.sol";
 import "./AcademicArticles.sol";
 
-abstract contract AcademicArticlesQueries { 
-
+/**
+ * @title Academic Articles Queries
+ * @dev This contract provides functionality for querying academic articles through metadata stored in Unified Data Storage (UDS).
+ * @author Cleber Lucas
+ */
+abstract contract AcademicArticlesQueries {
+    
+    // Structure representing a preview of a publication.
     struct PublicationPreviewModel {
-        string title;
-        bytes32 id;
+        string title;   // Title of the publication.
+        bytes32 id;     // ID of the publication.
     }
 
+    // Interface for reading data from UDS.
     IUDSRead private _UDSRead;
 
-    bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
+    // Signature on UDS.
     bytes32 private immutable UDS_SIGNATURE;
 
+    // Classification for publications on UDS. 
+    bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
+
+    /**
+     * @dev Constructor to initialize UDS signature and account.
+     * @param UDSSignature The signature of the UDS.
+     * @param UDSAccount The address of the UDS account.
+     */
     constructor(bytes32 UDSSignature, address UDSAccount) {
         UDS_SIGNATURE = UDSSignature;
         _UDSRead = IUDSRead(UDSAccount);
     }
 
+    /**
+     * @dev Retrieves a preview of publications within a specified range.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications within the specified range.
+     * @return currentSize The total number of publications available.
+     */
     function PreviewPublications(uint startIndex, uint endIndex) 
     public view 
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -54,6 +75,14 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+        /**
+     * @dev Retrieves a preview of publications containing a given title within a specified range.
+     * @param title The title to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications containing the given title.
+     * @return currentSize The total number of publications containing the given title.
+     */
     function PreviewPublicationsContainsTitle(string memory title, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -74,6 +103,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications containing a given title.
+     * @param title The title to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications containing the given title.
+     */
     function PreviewPublicationsContainsTitle(string memory title) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -103,6 +137,15 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+    /**
+     * @dev Retrieves a preview of publications containing a given summary within a specified range.
+     * @param summary The summary to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications containing the given summary.
+     * @return currentSize The total number of publications containing the given summary.
+     */
     function PreviewPublicationsContainsSummary(string memory summary, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -123,6 +166,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications containing a given summary.
+     * @param summary The summary to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications containing the given summary.
+     */
     function PreviewPublicationsContainsSummary(string memory summary) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -152,6 +200,15 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+        /**
+     * @dev Retrieves a preview of publications containing a given additional information within a specified range.
+     * @param additionalInfo The additional information to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications containing the given additional information.
+     * @return currentSize The total number of publications containing the given additional information.
+     */
     function PreviewPublicationsContainsAdditionalInfo(string memory additionalInfo, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -172,6 +229,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications containing a given additional information.
+     * @param additionalInfo The additional information to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications containing the given additional information.
+     */
     function PreviewPublicationsContainsAdditionalInfo(string memory additionalInfo) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -201,6 +263,15 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+        /**
+     * @dev Retrieves a preview of publications associated with a given institution within a specified range.
+     * @param institution The institution to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications associated with the given institution.
+     * @return currentSize The total number of publications associated with the given institution.
+     */
     function PreviewPublicationsHavingInstitution(string memory institution, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -221,6 +292,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications associated with a given institution.
+     * @param institution The institution to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications associated with the given institution.
+     */
     function PreviewPublicationsHavingInstitution(string memory institution) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -250,6 +326,15 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+        /**
+     * @dev Retrieves a preview of publications associated with a given course within a specified range.
+     * @param course The course to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications associated with the given course.
+     * @return currentSize The total number of publications associated with the given course.
+     */
     function PreviewPublicationsHavingCourse(string memory course, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -270,6 +355,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications associated with a given course.
+     * @param course The course to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications associated with the given course.
+     */
     function PreviewPublicationsHavingCourse(string memory course) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -299,6 +389,15 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+    /**
+     * @dev Retrieves a preview of publications having a given article type within a specified range.
+     * @param articleType The article type to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications having the given article type.
+     * @return currentSize The total number of publications having the given article type.
+     */
     function PreviewPublicationsHavingArticleType(string memory articleType, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -319,6 +418,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications having a given article type.
+     * @param articleType The article type to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications having the given article type.
+     */
     function PreviewPublicationsHavingArticleType(string memory articleType) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -348,6 +452,14 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves a preview of publications having a given academic degree within a specified range.
+     * @param academicDegree The academic degree to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications having the given academic degree.
+     * @return currentSize The total number of publications having the given academic degree.
+     */
     function PreviewPublicationsHavingAcademicDegree(string memory academicDegree, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -368,6 +480,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications having a given academic degree.
+     * @param academicDegree The academic degree to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications having the given academic degree.
+     */
     function PreviewPublicationsHavingAcademicDegree(string memory academicDegree) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -397,9 +514,19 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+    /**
+     * @dev Retrieves a preview of publications having a given documentation content identifier (CID) within a specified range.
+     * @param documentationCID The documentation content identifier (CID) to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications having the given documentation CID.
+     * @return currentSize The total number of publications having the given documentation CID.
+     */
     function PreviewPublicationsHavingDocumentationCID(string memory documentationCID, uint startIndex, uint endIndex) 
     public view
-    returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
+    returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) 
+    {
         PublicationPreviewModel[] memory previewPublicationsHavingDocumentationCID = PreviewPublicationsHavingDocumentationCID(documentationCID);
         
         currentSize = previewPublicationsHavingDocumentationCID.length;
@@ -417,6 +544,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications having a given documentation content identifier (CID).
+     * @param documentationCID The documentation content identifier (CID) to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications having the given documentation CID.
+     */
     function PreviewPublicationsHavingDocumentationCID(string memory documentationCID) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -446,6 +578,14 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves a preview of publications having a given author within a specified range.
+     * @param author The author to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications having the given author.
+     * @return currentSize The total number of publications having the given author.
+     */
     function PreviewPublicationsHavingAuthor(string memory author, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -466,6 +606,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications having a given author.
+     * @param author The author to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications having the given author.
+     */
     function PreviewPublicationsHavingAuthor(string memory author) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -498,6 +643,15 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+
+    /**
+     * @dev Retrieves a preview of publications having a given advisor within a specified range.
+     * @param advisor The advisor to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications having the given advisor.
+     * @return currentSize The total number of publications having the given advisor.
+     */
     function PreviewPublicationsHavingAdvisor(string memory advisor, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -518,6 +672,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications having a given advisor.
+     * @param advisor The advisor to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications having the given advisor.
+     */
     function PreviewPublicationsHavingAdvisor(string memory advisor) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -550,6 +709,14 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves a preview of publications having a given board examiner within a specified range.
+     * @param boardExaminer The board examiner to search for in the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications having the given board examiner.
+     * @return currentSize The total number of publications having the given board examiner.
+     */
     function PreviewPublicationsHavingBoardExaminer(string memory boardExaminer, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -570,6 +737,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications having a given board examiner.
+     * @param boardExaminer The board examiner to search for in the publications.
+     * @return publicationsPreview An array containing preview models of publications having the given board examiner.
+     */
     function PreviewPublicationsHavingBoardExaminer(string memory boardExaminer) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -602,6 +774,14 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves a preview of publications presented in a specific year within a specified range.
+     * @param presentationYear The year of presentation to filter the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications presented in the specified year.
+     * @return currentSize The total number of publications presented in the specified year.
+     */
     function PreviewPublicationsInPresentationYear(uint16 presentationYear, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -622,6 +802,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications presented in a specific year.
+     * @param presentationYear The year of presentation to filter the publications.
+     * @return publicationsPreview An array containing preview models of publications presented in the specified year.
+     */
     function PreviewPublicationsInPresentationYear(uint16 presentationYear) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
@@ -649,6 +834,14 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves a preview of publications published by a specific publisher within a specified range.
+     * @param publisher The address of the publisher to filter the publications.
+     * @param startIndex The starting index of the publications to preview.
+     * @param endIndex The ending index of the publications to preview.
+     * @return publicationsPreview An array containing preview models of publications published by the specified publisher.
+     * @return currentSize The total number of publications published by the specified publisher.
+     */
     function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
@@ -669,6 +862,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
+    /**
+     * @dev Retrieves publications published by a specific publisher.
+     * @param publisher The address of the publisher to filter the publications.
+     * @return publicationsPreview An array containing preview models of publications published by the specified publisher.
+     */
     function PreviewPublicationsOfPublisher(address publisher) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {

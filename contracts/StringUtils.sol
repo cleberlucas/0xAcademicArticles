@@ -4,6 +4,7 @@ pragma solidity ^0.8.23;
 /**
  * @title StringUtils
  * @dev This is a library for string manipulation functions.
+ * @author Cleber Lucas
  */
 library StringUtils {
     /**

@@ -5,7 +5,7 @@ pragma solidity ^0.8.23;
  * @title UDSMessage
  * @dev Library containing constant strings for Unified Data Storage (UDS) error messages.
  * @notice These strings are meant to provide clear and standardized error messages for different 
- *         scenarios and rules specified.
+    scenarios and rules specified.
  */
 library UDSMessage {
     string public constant METADATA_ALREADY_SENT = "Metadata has already been sent, try updating them";

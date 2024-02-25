@@ -51,7 +51,7 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
     function Classifications(bytes32 signature) 
     external view
     returns (bytes32[] memory classifications) {
-        classifications = _token.classifications[signature];
+        classifications = _data.classifications[signature];
     }
 
     /**
@@ -63,7 +63,7 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
     function Ids(bytes32 signature, bytes32 classification) 
     external view 
     returns (bytes32[] memory ids) {
-        ids = _token.ids[signature][classification];
+        ids = _data.ids[signature][classification];
     }
 
     /**
@@ -76,6 +76,6 @@ abstract contract UDSRead is IUDSRead, UDSStorage {
     function Metadata(bytes32 signature, bytes32 classification, bytes32 id) 
     external view
     returns (bytes memory metadata) {
-        metadata = _token.metadata[signature][classification][id];
+        metadata = _data.metadata[signature][classification][id];
     }
 }

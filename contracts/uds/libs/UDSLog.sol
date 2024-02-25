@@ -5,7 +5,7 @@ pragma solidity ^0.8.23;
  * @title UDSLog
  * @dev Library for logging Unified Data Storage (UDS) related events.
  * @notice This library defines events for metadata actions such as sending, updating, and cleaning,
- *         as well as events for sender-related actions like signing and transferring signatures.
+    as well as events for sender-related actions like signing and transferring signatures.
  */
 library UDSLog {
     
