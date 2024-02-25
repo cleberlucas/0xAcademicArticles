@@ -7,8 +7,8 @@ import "../uds/libs/UDSMessage.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
- * @title AcademicArticles
- * @dev A smart contract for publishing academic articles and managing their metadata on the Unified Data Storage (UDS).
+ * @title Academic Articles
+ * @dev A smart contract for publishing academic articles and managing their data on the Unified Data Storage (UDS).
  * @author Cleber Lucas
  */
 abstract contract AcademicArticles {
@@ -46,25 +46,36 @@ abstract contract AcademicArticles {
     }
 
     // UDS storage model.
-    UDSStorageModel private _UDS;
+    UDSStorageModel internal _UDS;
 
-    // Signature on UDS.
-    bytes32 private immutable UDS_SIGNATURE;
+    // Signature using in UDS.
+    bytes32 internal immutable UDS_SIGNATURE;
 
      // Owner of the contract.
     address private immutable OWNER;
 
-    // Hash of the secret key.
+    // Hash(keccak256) of the secret key.
     bytes32 private immutable SECRET_KEY_HASH;
 
     // Classification for publications on UDS.                                            
-    bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
+    bytes32 internal constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
+    
+    /**
+     * @dev Event emitted when articles is published.
+     * @param title The title of article
+     */
+    event ArticlePublished(string title);
 
     /**
-     * @dev Constructor function
-     * @param secretKeyHash Hash of the secret key.
-     * @param UDSSignature UDS signature.
-     * @param UDSAccount Address of the UDS account.
+     * @dev Event emitted when articles is unpublished.
+     * @param title The title of article
+     */
+    event ArticleUnpublished(string title);
+
+    /**
+     * @param secretKeyHash Hash(keccak256) of the secret key.
+     * @param UDSSignature Signature for using in UDS.
+     * @param UDSAccount Address of the UDS.
      */
     constructor(bytes32 secretKeyHash, bytes32 UDSSignature, address UDSAccount) {
         OWNER = msg.sender;
@@ -109,7 +120,6 @@ abstract contract AcademicArticles {
      */
     function PublishArticles(ArticleModel[] calldata articles) 
     public {
-        bytes32[] memory publicationIds = new bytes32[](articles.length);
         address publisher = msg.sender;
 
         for (uint i = 0; i < articles.length; i++) {
@@ -127,7 +137,7 @@ abstract contract AcademicArticles {
                         )
                     )
             ){
-                publicationIds[i] = UDSPublicationId;
+                emit ArticlePublished(articles[i].title);
             } catch Error(string memory errorMessage) {
                 if (Strings.equal(errorMessage, UDSMessage.METADATA_ALREADY_SENT)) {
                     revert(string.concat("Article[", Strings.toString(i), "] already published"));
@@ -154,6 +164,8 @@ abstract contract AcademicArticles {
             require(publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
 
             _UDS.write.CleanMetadata(UDS_CLASSIFICATION_PUBLICATION, id);
+
+            emit ArticleUnpublished(publicationUDS.article.title);
         }
     }
 

@@ -8,49 +8,26 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import "../StringUtils.sol";
 import "./AcademicArticles.sol";
 
+pragma solidity ^0.8.23;
+
 /**
  * @title Academic Articles Queries
- * @dev This contract provides functionality for querying academic articles through metadata stored in Unified Data Storage (UDS).
+ * @dev Library for querying academic articles.
+ * @notice Contains several publication query functions, performing a search for almost all publication attributes stored on the Unified Data Storage (UDS).
  * @author Cleber Lucas
  */
-abstract contract AcademicArticlesQueries {
-    
+library AcademicArticlesQueries {
+
     // Structure representing a preview of a publication.
     struct PublicationPreviewModel {
-        string title;   // Title of the publication.
+        string title;   // Title of published article
         bytes32 id;     // ID of the publication.
     }
 
-    // Interface for reading data from UDS.
-    IUDSRead private _UDSRead;
-
-    // Signature on UDS.
-    bytes32 private immutable UDS_SIGNATURE;
-
-    // Classification for publications on UDS. 
-    bytes32 private constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
-
-    /**
-     * @dev Constructor to initialize UDS signature and account.
-     * @param UDSSignature The signature of the UDS.
-     * @param UDSAccount The address of the UDS account.
-     */
-    constructor(bytes32 UDSSignature, address UDSAccount) {
-        UDS_SIGNATURE = UDSSignature;
-        _UDSRead = IUDSRead(UDSAccount);
-    }
-
-    /**
-     * @dev Retrieves a preview of publications within a specified range.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications within the specified range.
-     * @return currentSize The total number of publications available.
-     */
-    function PreviewPublications(uint startIndex, uint endIndex) 
+    function PreviewPublications(uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view 
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        currentSize = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION).length;
+        currentSize = UDSRead.Ids(UDSSignature, UDSClassificationPublication).length;
 
         if (!(startIndex >= currentSize || startIndex > endIndex)) {
             uint size = endIndex - startIndex + 1;
@@ -59,14 +36,14 @@ abstract contract AcademicArticlesQueries {
 
             publicationsPreview = new PublicationPreviewModel[](size);
 
-            bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+            bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
             for (uint i = 0; i < size; i++) {
                 bytes32 publicationid = UDSPublicationIds[startIndex + i];
 
                 publicationsPreview[i] = PublicationPreviewModel(
                     abi.decode(
-                        _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationid),
+                        UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationid),
                         (AcademicArticles.UDSPublicationModel)
                     ).article.title,
                     publicationid
@@ -75,18 +52,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-        /**
-     * @dev Retrieves a preview of publications containing a given title within a specified range.
-     * @param title The title to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications containing the given title.
-     * @return currentSize The total number of publications containing the given title.
-     */
-    function PreviewPublicationsContainsTitle(string memory title, uint startIndex, uint endIndex) 
+    function PreviewPublicationsContainsTitle(string calldata title, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsContainsTitle = PreviewPublicationsContainsTitle(title);
+        PublicationPreviewModel[] memory previewPublicationsContainsTitle = PreviewPublicationsContainsTitle(title, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsContainsTitle.length;
 
@@ -103,15 +72,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications containing a given title.
-     * @param title The title to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications containing the given title.
-     */
-    function PreviewPublicationsContainsTitle(string memory title) 
+    function PreviewPublicationsContainsTitle(string memory title, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         title = StringUtils.ToLower(title);
 
@@ -119,7 +83,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -137,19 +101,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-    /**
-     * @dev Retrieves a preview of publications containing a given summary within a specified range.
-     * @param summary The summary to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications containing the given summary.
-     * @return currentSize The total number of publications containing the given summary.
-     */
-    function PreviewPublicationsContainsSummary(string memory summary, uint startIndex, uint endIndex) 
+    function PreviewPublicationsContainsSummary(string calldata summary, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsContainsSummary = PreviewPublicationsContainsSummary(summary);
+        PublicationPreviewModel[] memory previewPublicationsContainsSummary = PreviewPublicationsContainsSummary(summary, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsContainsSummary.length;
 
@@ -166,15 +121,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications containing a given summary.
-     * @param summary The summary to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications containing the given summary.
-     */
-    function PreviewPublicationsContainsSummary(string memory summary) 
+    function PreviewPublicationsContainsSummary(string memory summary, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         summary = StringUtils.ToLower(summary);
 
@@ -182,7 +132,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -200,19 +150,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-        /**
-     * @dev Retrieves a preview of publications containing a given additional information within a specified range.
-     * @param additionalInfo The additional information to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications containing the given additional information.
-     * @return currentSize The total number of publications containing the given additional information.
-     */
-    function PreviewPublicationsContainsAdditionalInfo(string memory additionalInfo, uint startIndex, uint endIndex) 
+    function PreviewPublicationsContainsAdditionalInfo(string calldata additionalInfo, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsContainsAdditionalInfo = PreviewPublicationsContainsAdditionalInfo(additionalInfo);
+        PublicationPreviewModel[] memory previewPublicationsContainsAdditionalInfo = PreviewPublicationsContainsAdditionalInfo(additionalInfo, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsContainsAdditionalInfo.length;
 
@@ -229,15 +170,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications containing a given additional information.
-     * @param additionalInfo The additional information to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications containing the given additional information.
-     */
-    function PreviewPublicationsContainsAdditionalInfo(string memory additionalInfo) 
+    function PreviewPublicationsContainsAdditionalInfo(string memory additionalInfo, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         additionalInfo = StringUtils.ToLower(additionalInfo);
 
@@ -245,7 +181,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -263,19 +199,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-        /**
-     * @dev Retrieves a preview of publications associated with a given institution within a specified range.
-     * @param institution The institution to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications associated with the given institution.
-     * @return currentSize The total number of publications associated with the given institution.
-     */
-    function PreviewPublicationsHavingInstitution(string memory institution, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingInstitution(string calldata institution, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingInstitution = PreviewPublicationsHavingInstitution(institution);
+        PublicationPreviewModel[] memory previewPublicationsHavingInstitution = PreviewPublicationsHavingInstitution(institution, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingInstitution.length;
 
@@ -292,15 +219,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications associated with a given institution.
-     * @param institution The institution to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications associated with the given institution.
-     */
-    function PreviewPublicationsHavingInstitution(string memory institution) 
+    function PreviewPublicationsHavingInstitution(string memory institution, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         institution = StringUtils.ToLower(institution);
 
@@ -308,7 +230,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -326,19 +248,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-        /**
-     * @dev Retrieves a preview of publications associated with a given course within a specified range.
-     * @param course The course to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications associated with the given course.
-     * @return currentSize The total number of publications associated with the given course.
-     */
-    function PreviewPublicationsHavingCourse(string memory course, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingCourse(string calldata course, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingCourse = PreviewPublicationsHavingCourse(course);
+
+        PublicationPreviewModel[] memory previewPublicationsHavingCourse = PreviewPublicationsHavingCourse(course, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingCourse.length;
 
@@ -355,15 +269,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications associated with a given course.
-     * @param course The course to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications associated with the given course.
-     */
-    function PreviewPublicationsHavingCourse(string memory course) 
+    function PreviewPublicationsHavingCourse(string memory course, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         course = StringUtils.ToLower(course);
 
@@ -371,7 +280,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -389,19 +298,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-    /**
-     * @dev Retrieves a preview of publications having a given article type within a specified range.
-     * @param articleType The article type to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications having the given article type.
-     * @return currentSize The total number of publications having the given article type.
-     */
-    function PreviewPublicationsHavingArticleType(string memory articleType, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingArticleType(string calldata articleType, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingArticleType = PreviewPublicationsHavingArticleType(articleType);
+        PublicationPreviewModel[] memory previewPublicationsHavingArticleType = PreviewPublicationsHavingArticleType(articleType, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingArticleType.length;
 
@@ -418,15 +318,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications having a given article type.
-     * @param articleType The article type to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications having the given article type.
-     */
-    function PreviewPublicationsHavingArticleType(string memory articleType) 
+    function PreviewPublicationsHavingArticleType(string memory articleType, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         articleType = StringUtils.ToLower(articleType);
 
@@ -434,7 +329,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -452,18 +347,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves a preview of publications having a given academic degree within a specified range.
-     * @param academicDegree The academic degree to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications having the given academic degree.
-     * @return currentSize The total number of publications having the given academic degree.
-     */
-    function PreviewPublicationsHavingAcademicDegree(string memory academicDegree, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingAcademicDegree(string calldata academicDegree, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingAcademicDegree = PreviewPublicationsHavingAcademicDegree(academicDegree);
+        PublicationPreviewModel[] memory previewPublicationsHavingAcademicDegree = PreviewPublicationsHavingAcademicDegree(academicDegree, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingAcademicDegree.length;
 
@@ -480,15 +367,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications having a given academic degree.
-     * @param academicDegree The academic degree to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications having the given academic degree.
-     */
-    function PreviewPublicationsHavingAcademicDegree(string memory academicDegree) 
+    function PreviewPublicationsHavingAcademicDegree(string memory academicDegree, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         academicDegree = StringUtils.ToLower(academicDegree);
 
@@ -496,7 +378,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -514,20 +396,11 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-    /**
-     * @dev Retrieves a preview of publications having a given documentation content identifier (CID) within a specified range.
-     * @param documentationCID The documentation content identifier (CID) to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications having the given documentation CID.
-     * @return currentSize The total number of publications having the given documentation CID.
-     */
-    function PreviewPublicationsHavingDocumentationCID(string memory documentationCID, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingDocumentationCID(string calldata documentationCID, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) 
     {
-        PublicationPreviewModel[] memory previewPublicationsHavingDocumentationCID = PreviewPublicationsHavingDocumentationCID(documentationCID);
+        PublicationPreviewModel[] memory previewPublicationsHavingDocumentationCID = PreviewPublicationsHavingDocumentationCID(documentationCID, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingDocumentationCID.length;
 
@@ -544,15 +417,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications having a given documentation content identifier (CID).
-     * @param documentationCID The documentation content identifier (CID) to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications having the given documentation CID.
-     */
-    function PreviewPublicationsHavingDocumentationCID(string memory documentationCID) 
+    function PreviewPublicationsHavingDocumentationCID(string memory documentationCID, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         documentationCID = StringUtils.ToLower(documentationCID);
 
@@ -560,7 +428,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -578,18 +446,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves a preview of publications having a given author within a specified range.
-     * @param author The author to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications having the given author.
-     * @return currentSize The total number of publications having the given author.
-     */
-    function PreviewPublicationsHavingAuthor(string memory author, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingAuthor(string calldata author, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingAuthor = PreviewPublicationsHavingAuthor(author);
+        PublicationPreviewModel[] memory previewPublicationsHavingAuthor = PreviewPublicationsHavingAuthor(author, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingAuthor.length;
 
@@ -606,15 +466,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications having a given author.
-     * @param author The author to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications having the given author.
-     */
-    function PreviewPublicationsHavingAuthor(string memory author) 
+    function PreviewPublicationsHavingAuthor(string memory author, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         author = StringUtils.ToLower(author);
 
@@ -622,7 +477,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -643,19 +498,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-
-    /**
-     * @dev Retrieves a preview of publications having a given advisor within a specified range.
-     * @param advisor The advisor to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications having the given advisor.
-     * @return currentSize The total number of publications having the given advisor.
-     */
-    function PreviewPublicationsHavingAdvisor(string memory advisor, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingAdvisor(string calldata advisor, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingAdvisor = PreviewPublicationsHavingAdvisor(advisor);
+        PublicationPreviewModel[] memory previewPublicationsHavingAdvisor = PreviewPublicationsHavingAdvisor(advisor, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingAdvisor.length;
 
@@ -672,15 +518,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications having a given advisor.
-     * @param advisor The advisor to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications having the given advisor.
-     */
-    function PreviewPublicationsHavingAdvisor(string memory advisor) 
+    function PreviewPublicationsHavingAdvisor(string memory advisor, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         advisor = StringUtils.ToLower(advisor);
 
@@ -688,7 +529,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -709,18 +550,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves a preview of publications having a given board examiner within a specified range.
-     * @param boardExaminer The board examiner to search for in the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications having the given board examiner.
-     * @return currentSize The total number of publications having the given board examiner.
-     */
-    function PreviewPublicationsHavingBoardExaminer(string memory boardExaminer, uint startIndex, uint endIndex) 
+    function PreviewPublicationsHavingBoardExaminer(string calldata boardExaminer, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsHavingBoardExaminer = PreviewPublicationsHavingBoardExaminer(boardExaminer);
+        PublicationPreviewModel[] memory previewPublicationsHavingBoardExaminer = PreviewPublicationsHavingBoardExaminer(boardExaminer, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsHavingBoardExaminer.length;
 
@@ -737,15 +570,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications having a given board examiner.
-     * @param boardExaminer The board examiner to search for in the publications.
-     * @return publicationsPreview An array containing preview models of publications having the given board examiner.
-     */
-    function PreviewPublicationsHavingBoardExaminer(string memory boardExaminer) 
+    function PreviewPublicationsHavingBoardExaminer(string memory boardExaminer, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         boardExaminer = StringUtils.ToLower(boardExaminer);
 
@@ -753,7 +581,7 @@ abstract contract AcademicArticlesQueries {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -774,18 +602,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves a preview of publications presented in a specific year within a specified range.
-     * @param presentationYear The year of presentation to filter the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications presented in the specified year.
-     * @return currentSize The total number of publications presented in the specified year.
-     */
-    function PreviewPublicationsInPresentationYear(uint16 presentationYear, uint startIndex, uint endIndex) 
+    function PreviewPublicationsInPresentationYear(uint16 presentationYear, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsInPresentationYear = PreviewPublicationsInPresentationYear(presentationYear);
+        PublicationPreviewModel[] memory previewPublicationsInPresentationYear = PreviewPublicationsInPresentationYear(presentationYear, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsInPresentationYear.length;
 
@@ -802,21 +622,16 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications presented in a specific year.
-     * @param presentationYear The year of presentation to filter the publications.
-     * @return publicationsPreview An array containing preview models of publications presented in the specified year.
-     */
-    function PreviewPublicationsInPresentationYear(uint16 presentationYear) 
+    function PreviewPublicationsInPresentationYear(uint16 presentationYear, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         for (uint i = 0; i < UDSPublicationIds.length; i++) {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
@@ -834,18 +649,10 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves a preview of publications published by a specific publisher within a specified range.
-     * @param publisher The address of the publisher to filter the publications.
-     * @param startIndex The starting index of the publications to preview.
-     * @param endIndex The ending index of the publications to preview.
-     * @return publicationsPreview An array containing preview models of publications published by the specified publisher.
-     * @return currentSize The total number of publications published by the specified publisher.
-     */
-    function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex) 
+    function PreviewPublicationsOfPublisher(address publisher, uint startIndex, uint endIndex, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     public view
     returns (PublicationPreviewModel[] memory publicationsPreview, uint currentSize) {
-        PublicationPreviewModel[] memory previewPublicationsOfPublisher = PreviewPublicationsOfPublisher(publisher);
+        PublicationPreviewModel[] memory previewPublicationsOfPublisher = PreviewPublicationsOfPublisher(publisher, UDSRead, UDSSignature, UDSClassificationPublication);
         
         currentSize = previewPublicationsOfPublisher.length;
 
@@ -862,21 +669,17 @@ abstract contract AcademicArticlesQueries {
         }
     }
 
-    /**
-     * @dev Retrieves publications published by a specific publisher.
-     * @param publisher The address of the publisher to filter the publications.
-     * @return publicationsPreview An array containing preview models of publications published by the specified publisher.
-     */
-    function PreviewPublicationsOfPublisher(address publisher) 
+    function PreviewPublicationsOfPublisher(address publisher, IUDSRead UDSRead, bytes32 UDSSignature, bytes32 UDSClassificationPublication) 
     private view
     returns (PublicationPreviewModel[] memory publicationsPreview) {
-        bytes32[] memory UDSPublicationIds = _UDSRead.Ids(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION);
+
+        bytes32[] memory UDSPublicationIds = UDSRead.Ids(UDSSignature, UDSClassificationPublication);
 
         for (uint i = 0; i < UDSPublicationIds.length; i++) {
             bytes32 publicationId = UDSPublicationIds[i];
 
             AcademicArticles.UDSPublicationModel memory publication = abi.decode(
-                _UDSRead.Metadata(UDS_SIGNATURE, UDS_CLASSIFICATION_PUBLICATION, publicationId),
+                UDSRead.Metadata(UDSSignature, UDSClassificationPublication, publicationId),
                 (AcademicArticles.UDSPublicationModel)
             );
 
