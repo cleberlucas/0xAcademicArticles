@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./libs/UDSLog.sol";
-import "./interfaces/IUDSWrite.sol";
+import "./UDSLog.sol";
+import "./IUDSWrite.sol";
 import "./UDSStorage.sol";
 import "./UDSRules.sol";
 

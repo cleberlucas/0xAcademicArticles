@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "../uds/interfaces/IUDSWrite.sol";
-import "../uds/interfaces/IUDSRead.sol";
-import "../uds/libs/UDSMessage.sol";
+import "../uds/IUDSWrite.sol";
+import "../uds/IUDSRead.sol";
+import "../uds/UDSMessage.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import "../StringUtils.sol";
 import "./AcademicArticles.sol";

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "./libs/UDSStorageModel.sol";
+import "./UDSStorageModel.sol";
 
 /**
  * @title UDSStorage
