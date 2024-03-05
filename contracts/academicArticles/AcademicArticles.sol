@@ -59,18 +59,6 @@ abstract contract AcademicArticles {
 
     /// @dev Classification for publications on UDS.                                            
     bytes32 internal constant UDS_CLASSIFICATION_PUBLICATION = "Publication";
-    
-    /**
-     * @dev Emitted when articles is published.
-     * @param title The title of article
-     */
-    event ArticlePublished(string title);
-
-    /**
-     * @dev Emitted when articles is unpublished.
-     * @param title The title of article
-     */
-    event ArticleUnpublished(string title);
 
     /**
      * @dev
@@ -137,9 +125,7 @@ abstract contract AcademicArticles {
                             block.number
                         )
                     )
-            ){
-                emit ArticlePublished(articles[i].title);
-            } catch Error(string memory errorMessage) {
+            ) {} catch Error(string memory errorMessage) {
                 if (Strings.equal(errorMessage, UDSMessage.METADATA_ALREADY_SENT)) {
                     revert(string.concat("Article[", Strings.toString(i), "] already published"));
                 } else {
@@ -165,8 +151,6 @@ abstract contract AcademicArticles {
             require(publicationUDS.publisher == publisher, string.concat("Article[", Strings.toString(i), "] is not published by you"));
 
             _UDS.write.CleanMetadata(UDS_CLASSIFICATION_PUBLICATION, id);
-
-            emit ArticleUnpublished(publicationUDS.article.title);
         }
     }
 
